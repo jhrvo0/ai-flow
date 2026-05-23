@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Flow: Mapa de Contexto</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0b1120;
+  color: #e2e8f0;
+  padding: 24px;
+  line-height: 1.5;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1a2333, #0f172a);
+  border: 1px solid #1e3a5f;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.header h1 {
+  font-size: 28px;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header h1 .icon { font-size: 32px; -webkit-text-fill-color: initial; }
+.header .badge {
+  background: #1e3a5f;
+  color: #93c5fd;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  border: 1px solid #3b82f6;
+}
+.header .badge .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 4px; }
+
+/* Pipeline Flow */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+.pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+  position: relative;
+}
+.pipeline-circle {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  position: relative;
+  transition: transform 0.2s;
+  cursor: default;
+}
+.pipeline-circle:hover { transform: scale(1.1); }
+.pipeline-circle.planner { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.pipeline-circle.coder { background: linear-gradient(135deg, #22c55e, #15803d); }
+.pipeline-circle.gate { background: linear-gradient(135deg, #eab308, #a16207); }
+.pipeline-circle.reviewer { background: linear-gradient(135deg, #f97316, #c2410c); }
+.pipeline-circle.tester { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+.pipeline-circle.docs { background: linear-gradient(135deg, #06b6d4, #0e7490); }
+.pipeline-circle.commit { background: linear-gradient(135deg, #ec4899, #be185d); }
+.pipeline-circle.pass { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.pipeline-circle.fail { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.pipeline-label { font-size: 10px; color: #94a3b8; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+.pipeline-arrow {
+  color: #334155;
+  font-size: 18px;
+  min-width: 20px;
+  text-align: center;
+}
+.pipeline-arrow.loop { color: #eab308; }
+
+/* Grid */
+.grid { display: grid; gap: 20px; margin-bottom: 32px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+/* Cards */
+.card {
+  background: #131c31;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 20px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+.card.agent-planner { border-left: 4px solid #3b82f6; }
+.card.agent-coder { border-left: 4px solid #22c55e; }
+.card.agent-reviewer { border-left: 4px solid #f97316; }
+.card.agent-tester { border-left: 4px solid #a855f7; }
+.card.agent-docs { border-left: 4px solid #06b6d4; }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.card-model {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.card-role {
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.card-role.planner { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.card-role.coder { background: rgba(34,197,94,0.15); color: #86efac; }
+.card-role.reviewer { background: rgba(249,115,22,0.15); color: #fdba74; }
+.card-role.tester { background: rgba(168,85,247,0.15); color: #d8b4fe; }
+.card-role.docs { background: rgba(6,182,212,0.15); color: #67e8f9; }
+
+.card-body { font-size: 13px; color: #94a3b8; }
+.card-body p { margin-bottom: 8px; }
+.card-body ul { padding-left: 16px; margin-bottom: 8px; }
+.card-body li { margin-bottom: 4px; }
+.card-rules {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #fca5a5;
+}
+.card-rules strong { color: #fca5a5; }
+
+/* Flow diagram */
+.flow-diagram {
+  background: #131c31;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 28px;
+  overflow-x: auto;
+  margin-bottom: 28px;
+}
+.flow-diagram h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #f1f5f9;
+}
+.flow-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* Quick prompts */
+.prompt-card {
+  background: #0f172a;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 10px;
+}
+.prompt-card code {
+  display: block;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 12px;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* Models table */
+.models-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.models-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #1e293b;
+}
+.models-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #131c31;
+  color: #cbd5e1;
+}
+.models-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Workflow steps */
+.workflow-list { counter-reset: step; }
+.workflow-item {
+  counter-increment: step;
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1e293b;
+  align-items: flex-start;
+}
+.workflow-item:last-child { border-bottom: none; }
+.workflow-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #1e3a5f;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.workflow-num.done { background: rgba(34,197,94,0.2); color: #86efac; }
+.workflow-num.active { background: rgba(59,130,246,0.2); color: #93c5fd; animation: pulse 2s infinite; }
+.workflow-content { flex: 1; }
+.workflow-title { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+.workflow-desc { font-size: 12px; color: #64748b; }
+.workflow-agent { font-size: 11px; color: #3b82f6; margin-top: 2px; }
+
+/* Rules wall */
+.rules-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.rule-item {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.rule-icon { font-size: 18px; flex-shrink: 0; }
+.rule-text { font-size: 12px; color: #cbd5e1; }
+.rule-text strong { color: #fca5a5; display: block; margin-bottom: 2px; }
+
+/* Status badges */
+.status-ok {
+  display: inline-block;
+  background: rgba(34,197,94,0.15);
+  color: #86efac;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.status-warn {
+  display: inline-block;
+  background: rgba(234,179,8,0.15);
+  color: #fde047;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.status-critical {
+  display: inline-block;
+  background: rgba(239,68,68,0.15);
+  color: #fca5a5;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  color: #334155;
+  font-size: 12px;
+  padding: 24px 0;
+}
+
+/* Tooltip */
+.tooltip-trigger {
+  cursor: help;
+  border-bottom: 1px dashed #64748b;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1><span class="icon">⚡</span> AI-Flow: Mapa de Contexto</h1>
+      <div style="color:#64748b;font-size:13px;margin-top:4px;">
+        Fluxo completo de desenvolvimento assistido por IA &mdash; LM Studio + Modelos Locais
+      </div>
+    </div>
+    <div class="badge">
+      <span class="dot"></span>
+      Pronto para uso
+    </div>
+  </div>
+
+  <!-- Pipeline Visual -->
+  <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+    <h2 style="font-size:16px;color:#f1f5f9;">Pipeline do fluxo</h2>
+    <span style="font-size:11px;color:#64748b;">Clique nas setas para detalhes</span>
+  </div>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-circle planner">P</div>
+      <div class="pipeline-label">Planner</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle coder">C</div>
+      <div class="pipeline-label">Coder</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle gate">QG</div>
+      <div class="pipeline-label">Quality Gate</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle reviewer">R</div>
+      <div class="pipeline-label">Reviewer</div>
+    </div>
+    <div class="pipeline-arrow loop">↻</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle fail" style="width:40px;height:40px;font-size:14px;">✕</div>
+      <div class="pipeline-label" style="color:#ef4444;">Corrigir?</div>
+    </div>
+    <div class="pipeline-arrow" style="color:#eab308;">←</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle coder" style="width:40px;height:40px;font-size:14px;">C</div>
+      <div class="pipeline-label">Correção</div>
+    </div>
+    <div class="pipeline-arrow" style="color:#eab308;">↻</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle pass" style="width:40px;height:40px;font-size:14px;">✓</div>
+      <div class="pipeline-label" style="color:#22c55e;">Aprovado</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle tester">T</div>
+      <div class="pipeline-label">Tester</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle docs">D</div>
+      <div class="pipeline-label">Docs/Commit</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="pipeline-circle commit">⌘</div>
+      <div class="pipeline-label">Manual</div>
+    </div>
+  </div>
+
+  <!-- Agent Cards -->
+  <h2 style="font-size:16px;color:#f1f5f9;margin-bottom:16px;">Agentes do fluxo</h2>
+  <div class="grid grid-2">
+
+    <!-- Planner -->
+    <div class="card agent-planner">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🧠 Planner</div>
+          <div class="card-model">huihui-qwen3-4b-instruct-2507 · planning</div>
+        </div>
+        <span class="card-role planner">Planejador</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Entender o pedido, explorar o projeto, propor plano, listar riscos e critérios de aceite.</p>
+        <ul>
+          <li>Usa <strong>glob</strong> e <strong>grep</strong> para entender a estrutura</li>
+          <li>Identifica arquivos afetados ANTES de começar</li>
+          <li>Sugere testes necessários</li>
+        </ul>
+        <div class="card-rules">
+          <strong>⛔ Restrições:</strong> Não edita código · Não executa comandos · Só analisa
+        </div>
+        <div class="prompt-card">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Prompt inicial:</div>
+          <code>Atue como **Planner** (.ai-flow/agents/planner.md).
+Preciso implementar: [DESCREVA AQUI]</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coder -->
+    <div class="card agent-coder">
+      <div class="card-header">
+        <div>
+          <div class="card-title">⚡ Coder</div>
+          <div class="card-model">qwen2.5-coder-7b-instruct · coding</div>
+        </div>
+        <span class="card-role coder">Implementador</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Único que edita código. Implementa o plano aprovado com disciplina.</p>
+        <ul>
+          <li>Segue estilo do projeto religiosamente</li>
+          <li>Uma mudança por vez, escopo restrito</li>
+          <li>Não refatora além do pedido</li>
+        </ul>
+        <div class="card-rules">
+          <strong>⛔ Restrições:</strong> Nunca commit automático · Nunca alterar .env/migrations sem perguntar · Nunca apagar >100KB sem confirmação
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviewer -->
+    <div class="card agent-reviewer">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🔍 Reviewer</div>
+          <div class="card-model">qwen2.5-coder-7b-instruct · review</div>
+        </div>
+        <span class="card-role reviewer">Auditor</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Analisar o <code>git diff</code> e o relatório do quality gate. Apontar problemas sem editar.</p>
+        <ul>
+          <li>Avalia: legibilidade, segurança, duplicação, complexidade, erros</li>
+          <li>Gera nota de 0 a 10</li>
+          <li>Produz prompt de correção pronto para o Coder</li>
+        </ul>
+        <div class="card-rules">
+          <strong>⛔ Restrições:</strong> Não edita código · Não sugere implementação vaga · Apenas análise
+        </div>
+      </div>
+    </div>
+
+    <!-- Tester -->
+    <div class="card agent-tester">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🧪 Tester</div>
+          <div class="card-model">(modelo de review) · testing</div>
+        </div>
+        <span class="card-role tester">Testador</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Executa comandos de teste, lint, typecheck e build. Interpreta erros.</p>
+        <ul>
+          <li>Comandos do <code>config.json</code>: npm test, eslint, tsc, build</li>
+          <li>Diferencia erro real de warning</li>
+          <li>Status final: <span class="status-ok">APROVADO</span> ou <span class="status-critical">REPROVADO</span></li>
+        </ul>
+        <div class="card-rules">
+          <strong>⛔ Restrições:</strong> Não altera código sem autorização explícita
+        </div>
+      </div>
+    </div>
+
+    <!-- Docs/Commit -->
+    <div class="card agent-docs">
+      <div class="card-header">
+        <div>
+          <div class="card-title">📝 Docs &amp; Commit</div>
+          <div class="card-model">llama-3.2-3b-instruct · summary</div>
+        </div>
+        <span class="card-role docs">Documentador</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Gera resumo, mensagem de commit (Conventional Commits) e descrição de PR.</p>
+        <ul>
+          <li><code>feat:</code> <code>fix:</code> <code>refactor:</code> <code>test:</code> <code>docs:</code> <code>chore:</code></li>
+          <li>Corpo explica o <strong>porquê</strong>, não só o que</li>
+          <li>PR description com checklist</li>
+        </ul>
+        <div class="card-rules">
+          <strong>⛔ Restrições:</strong> Não edita código · Commit é SEMPRE manual
+        </div>
+      </div>
+    </div>
+
+    <!-- Quality Gate (script) -->
+    <div class="card" style="border-left:4px solid #eab308;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🛡️ Quality Gate</div>
+          <div class="card-model">Python · análise estática</div>
+        </div>
+        <span class="card-role" style="background:rgba(234,179,8,0.15);color:#fde047;font-size:11px;padding:2px 10px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Script</span>
+      </div>
+      <div class="card-body">
+        <p><strong>Função:</strong> Gera relatório HTML com análise do <code>git diff</code>. Zero dependências.</p>
+        <ul>
+          <li>Detecta: arquivos grandes, funções longas, TODO/FIXME, prints esquecidos, linhas duplicadas</li>
+          <li>Gera nota geral (0-10)</li>
+          <li>Gera prompt de correção pronto para copiar</li>
+        </ul>
+        <div class="prompt-card" style="border-color:#334155;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Como rodar:</div>
+          <code>python .ai-flow\scripts\quality-gate.py
+.ai-flow\scripts\run-quality-gate.ps1  # + abre navegador</code>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Flow Diagram -->
+  <div class="flow-diagram">
+    <h2>🔄 Diagrama do fluxo</h2>
+    <svg class="flow-svg" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#3b82f6"/>
+          <stop offset="100%" stop-color="#1d4ed8"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#22c55e"/>
+          <stop offset="100%" stop-color="#15803d"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#eab308"/>
+          <stop offset="100%" stop-color="#a16207"/>
+        </linearGradient>
+        <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f97316"/>
+          <stop offset="100%" stop-color="#c2410c"/>
+        </linearGradient>
+        <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a855f7"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+        <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#06b6d4"/>
+          <stop offset="100%" stop-color="#0e7490"/>
+        </linearGradient>
+        <filter id="shadow">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+
+      <!-- Background -->
+      <rect x="0" y="0" width="800" height="340" rx="8" fill="#0f172a"/>
+
+      <!-- Nodes -->
+      <rect x="30" y="40" width="90" height="50" rx="8" fill="url(#g1)" filter="url(#shadow)"/>
+      <text x="75" y="70" text-anchor="middle" fill="white" font-size="13" font-weight="600">Planner</text>
+
+      <rect x="160" y="40" width="90" height="50" rx="8" fill="url(#g2)" filter="url(#shadow)"/>
+      <text x="205" y="70" text-anchor="middle" fill="white" font-size="13" font-weight="600">Coder</text>
+
+      <rect x="290" y="40" width="90" height="50" rx="8" fill="url(#g3)" filter="url(#shadow)"/>
+      <text x="335" y="70" text-anchor="middle" fill="white" font-size="13" font-weight="600">Quality Gate</text>
+
+      <rect x="420" y="40" width="90" height="50" rx="8" fill="url(#g4)" filter="url(#shadow)"/>
+      <text x="465" y="70" text-anchor="middle" fill="white" font-size="13" font-weight="600">Reviewer</text>
+
+      <!-- Decision diamond -->
+      <polygon points="530,65 555,40 580,65 555,90" fill="#eab308" filter="url(#shadow)"/>
+      <text x="555" y="69" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="700">OK?</text>
+
+      <rect x="620" y="40" width="90" height="50" rx="8" fill="url(#g5)" filter="url(#shadow)"/>
+      <text x="665" y="70" text-anchor="middle" fill="white" font-size="13" font-weight="600">Tester</text>
+
+      <rect x="30" y="240" width="90" height="50" rx="8" fill="url(#g6)" filter="url(#shadow)"/>
+      <text x="75" y="270" text-anchor="middle" fill="white" font-size="13" font-weight="600">Docs/Commit</text>
+
+      <!-- Commit manual -->
+      <rect x="160" y="240" width="90" height="50" rx="25" fill="url(#g4)" filter="url(#shadow)"/>
+      <text x="205" y="270" text-anchor="middle" fill="white" font-size="13" font-weight="600">Commit Manual</text>
+
+      <!-- Coder correction node -->
+      <rect x="290" y="240" width="90" height="50" rx="8" fill="url(#g2)" filter="url(#shadow)"/>
+      <text x="335" y="270" text-anchor="middle" fill="white" font-size="13" font-weight="600">Correção</text>
+
+      <rect x="420" y="240" width="90" height="50" rx="8" fill="url(#g3)" filter="url(#shadow)"/>
+      <text x="465" y="270" text-anchor="middle" fill="white" font-size="13" font-weight="600">Quality Gate</text>
+
+      <!-- Arrows main path -->
+      <line x1="120" y1="65" x2="160" y2="65" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+      <defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#475569"/></marker></defs>
+      <line x1="250" y1="65" x2="290" y2="65" stroke="#475569" stroke-width="2"/>
+      <line x1="380" y1="65" x2="420" y2="65" stroke="#475569" stroke-width="2"/>
+      <line x1="510" y1="65" x2="530" y2="65" stroke="#475569" stroke-width="2"/>
+      <line x1="580" y1="65" x2="620" y2="65" stroke="#475569" stroke-width="2"/>
+
+      <!-- Arrow tester → docs -->
+      <line x1="665" y1="90" x2="665" y2="200" stroke="#475569" stroke-width="2" stroke-dasharray="4,4"/>
+      <line x1="665" y1="200" x2="120" y2="200" stroke="#475569" stroke-width="2" stroke-dasharray="4,4"/>
+      <line x1="120" y1="200" x2="120" y2="240" stroke="#475569" stroke-width="2"/>
+      <text x="390" y="195" text-anchor="middle" fill="#64748b" font-size="11">aprovação</text>
+
+      <!-- Loop correction -->
+      <line x1="555" y1="90" x2="555" y2="150" stroke="#eab308" stroke-width="2" stroke-dasharray="4,4"/>
+      <line x1="555" y1="150" x2="335" y2="150" stroke="#eab308" stroke-width="2" stroke-dasharray="4,4"/>
+      <line x1="335" y1="150" x2="335" y2="240" stroke="#eab308" stroke-width="2" stroke-dasharray="4,4"/>
+      <!-- Arrow correction to QG -->
+      <line x1="380" y1="265" x2="420" y2="265" stroke="#eab308" stroke-width="2" stroke-dasharray="4,4"/>
+      <text x="445" y="195" text-anchor="middle" fill="#eab308" font-size="11">loop de correção</text>
+
+      <!-- Label: arrowhead redef for yellow -->
+      <defs><marker id="arrowyellow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eab308"/></marker></defs>
+      <line x1="555" y1="150" x2="335" y2="150" stroke="#eab308" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrowyellow)"/>
+
+      <!-- Arrow docs → commit -->
+      <line x1="120" y1="290" x2="160" y2="265" stroke="#475569" stroke-width="2"/>
+
+      <!-- Sub-labels -->
+      <text x="75" y="105" text-anchor="middle" fill="#64748b" font-size="10">analisa + planeja</text>
+      <text x="205" y="105" text-anchor="middle" fill="#64748b" font-size="10">implementa</text>
+      <text x="335" y="105" text-anchor="middle" fill="#64748b" font-size="10">analisa diff</text>
+      <text x="465" y="105" text-anchor="middle" fill="#64748b" font-size="10">revisa</text>
+      <text x="665" y="105" text-anchor="middle" fill="#64748b" font-size="10">testa</text>
+      <text x="75" y="305" text-anchor="middle" fill="#64748b" font-size="10">documenta</text>
+      <text x="205" y="305" text-anchor="middle" fill="#64748b" font-size="10">humano</text>
+      <text x="335" y="305" text-anchor="middle" fill="#64748b" font-size="10">corrige</text>
+      <text x="465" y="305" text-anchor="middle" fill="#64748b" font-size="10">valida</text>
+
+      <!-- Legend -->
+      <rect x="580" y="230" width="12" height="12" rx="2" fill="#eab308"/>
+      <text x="596" y="240" fill="#94a3b8" font-size="10">loop até aprovar</text>
+      <rect x="580" y="250" width="12" height="12" rx="2" fill="#475569"/>
+      <text x="596" y="260" fill="#94a3b8" font-size="10">sequência normal</text>
+    </svg>
+  </div>
+
+  <!-- Modelos & Config -->
+  <h2 style="font-size:16px;color:#f1f5f9;margin-bottom:16px;">Modelos &amp; Configuração</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">📦 Modelos LM Studio</div>
+          <div class="card-model">localhost:1234/v1</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="models-table">
+          <thead>
+            <tr>
+              <th>Agente</th>
+              <th>Modelo</th>
+              <th>Tamanho</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🧠 Planner</td>
+              <td>huihui-qwen3-4b-instruct-2507</td>
+              <td>2.5 GB</td>
+            </tr>
+            <tr>
+              <td>⚡ Coder</td>
+              <td>qwen2.5-coder-7b-instruct</td>
+              <td>4.7 GB</td>
+            </tr>
+            <tr>
+              <td>🔍 Reviewer</td>
+              <td>qwen2.5-coder-7b-instruct</td>
+              <td>4.7 GB</td>
+            </tr>
+            <tr>
+              <td>📝 Docs</td>
+              <td>llama-3.2-3b-instruct</td>
+              <td>2.0 GB</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">⚙️ Comandos do projeto</div>
+          <div class="card-model">Node.js + React + TypeScript</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="models-table">
+          <thead><tr><th>Ferramenta</th><th>Comando</th></tr></thead>
+          <tbody>
+            <tr><td>Testes</td><td><code style="font-size:11px;">npm test</code></td></tr>
+            <tr><td>Lint</td><td><code style="font-size:11px;">npm run lint</code></td></tr>
+            <tr><td>Typecheck</td><td><code style="font-size:11px;">npx tsc --noEmit</code></td></tr>
+            <tr><td>Build</td><td><code style="font-size:11px;">npm run build</code></td></tr>
+            <tr><td>Quality Gate</td><td><code style="font-size:11px;">python .ai-flow\scripts\quality-gate.py</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regras de segurança -->
+  <h2 style="font-size:16px;color:#f1f5f9;margin-bottom:16px;">🛡️ Regras de segurança (aplicam-se a todos os agentes)</h2>
+  <div class="rules-wall">
+    <div class="rule-item">
+      <div class="rule-icon">🚫</div>
+      <div class="rule-text"><strong>Sem commit automático</strong>Nenhum agente faz commit. O commit é sempre manual após revisão.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">📁</div>
+      <div class="rule-text"><strong>Arquivos grandes &gt;100KB</strong>Nunca apagar sem confirmação explícita do usuário.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🔐</div>
+      <div class="rule-text"><strong>Configs sensíveis</strong>Nunca alterar .env, migrations, docker-compose, CI/CD sem perguntar.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🎯</div>
+      <div class="rule-text"><strong>Escopo restrito</strong>Nunca modificar arquivos fora do escopo sem justificar por escrito.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">👁️</div>
+      <div class="rule-text"><strong>Diff visível</strong>Sempre mostrar o diff/resumo antes da etapa final.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">✂️</div>
+      <div class="rule-text"><strong>Mudanças pequenas</strong>Sempre priorizar mudanças pequenas e revisáveis. Prefira 3 PRs pequenos a 1 gigante.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🔧</div>
+      <div class="rule-text"><strong>Problema único</strong>Sempre preferir corrigir apenas o problema pedido, sem refatorações extras.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🤫</div>
+      <div class="rule-text"><strong>Sem secrets no código</strong>Nunca expor tokens, senhas ou chaves no código ou no diff.</div>
+    </div>
+  </div>
+
+  <!-- Quick reference -->
+  <h2 style="font-size:16px;color:#f1f5f9;margin:24px 0 16px;">📋 Referência rápida</h2>
+  <div class="grid grid-3">
+    <div class="card" style="border-left:4px solid #3b82f6;">
+      <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px;">🚀 Feature Flow</div>
+      <div style="font-size:12px;color:#94a3b8;">
+        branch → planner → coder → QG → reviewer → [loop] → tester → docs → commit manual
+      </div>
+      <div style="margin-top:10px;font-size:11px;">
+        <a href="workflows/feature-flow.md" style="color:#60a5fa;">workflows/feature-flow.md</a>
+      </div>
+    </div>
+    <div class="card" style="border-left:4px solid #ef4444;">
+      <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px;">🐛 Bugfix Flow</div>
+      <div style="font-size:12px;color:#94a3b8;">
+        branch → plano mínimo → coder → QG → reviewer → teste regressão → commit
+      </div>
+      <div style="margin-top:10px;font-size:11px;">
+        <a href="workflows/bugfix-flow.md" style="color:#60a5fa;">workflows/bugfix-flow.md</a>
+      </div>
+    </div>
+    <div class="card" style="border-left:4px solid #a855f7;">
+      <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px;">👁️ Review Flow</div>
+      <div style="font-size:12px;color:#94a3b8;">
+        diff → QG → reviewer → relatório (sem editar nada)
+      </div>
+      <div style="margin-top:10px;font-size:11px;">
+        <a href="workflows/review-flow.md" style="color:#60a5fa;">workflows/review-flow.md</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workflow steps compact -->
+  <h2 style="font-size:16px;color:#f1f5f9;margin:24px 0 16px;">🔢 Etapas do Feature Flow</h2>
+  <div class="card">
+    <div class="workflow-list">
+      <div class="workflow-item">
+        <div class="workflow-num">1</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Criar branch</div>
+          <div class="workflow-desc"><code>git checkout -b feature/nome</code></div>
+          <div class="workflow-agent">Terminal</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">2</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Chamar Planner</div>
+          <div class="workflow-desc">Copiar prompt do planner.md → obter plano detalhado</div>
+          <div class="workflow-agent">🧠 Planner — huihui-qwen3-4b</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">3</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Aprovar plano</div>
+          <div class="workflow-desc">Analisar riscos, critérios de aceite, testes sugeridos</div>
+          <div class="workflow-agent">👤 Humano</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">4</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Chamar Coder</div>
+          <div class="workflow-desc">Enviar plano aprovado → implementar</div>
+          <div class="workflow-agent">⚡ Coder — qwen2.5-coder-7b</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">5</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Quality Gate</div>
+          <div class="workflow-desc"><code>python .ai-flow\scripts\quality-gate.py</code></div>
+          <div class="workflow-agent">🛡️ Script Python</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">6</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Reviewer + Correção (loop)</div>
+          <div class="workflow-desc">Analisar diff + relatório → apontar problemas → Coder corrige → repetir QG</div>
+          <div class="workflow-agent">🔍 Reviewer + ⚡ Coder</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">7</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Tester</div>
+          <div class="workflow-desc">npm test, tsc, eslint — status aprovado/reprovado</div>
+          <div class="workflow-agent">🧪 Tester</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">8</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Docs &amp; Commit</div>
+          <div class="workflow-desc">Gerar mensagem Conventional Commits + descrição PR</div>
+          <div class="workflow-agent">📝 Docs — llama-3.2-3b</div>
+        </div>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-num">9</div>
+        <div class="workflow-content">
+          <div class="workflow-title">Commit Manual</div>
+          <div class="workflow-desc"><code>git add .</code> → revisar → <code>git commit</code></div>
+          <div class="workflow-agent">👤 Humano — sempre manual</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to dynamic map -->
+  <div class="card" style="border:1px solid #1e3a5f;background:linear-gradient(135deg,#131c31,#0f172a);">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#f1f5f9;">🗺 Quer ver o mapa AO VIVO do seu projeto?</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:4px;">
+          Estrutura de diretórios, arquivos modificados, branch, commits e quadro de tarefas — tudo gerado do seu Git.
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="font-family:monospace;font-size:12px;color:#60a5fa;background:#0f172a;padding:8px 14px;border-radius:6px;border:1px solid #1e3a5f;">
+            python .ai-flow\scripts\generate-context-map.py
+          </div>
+          <a href="../dashboard.html" style="font-family:monospace;font-size:12px;color:#22c55e;background:#0f172a;padding:8px 14px;border-radius:6px;border:1px solid #22c55e;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+            ⚡ Dashboard Central
+          </a>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">
+          ou: .ai-flow\scripts\generate-context-map.ps1
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    AI-Flow · .ai-flow/reports/context-map.html · Gerado em 23/05/2026
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Flow Dashboard</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0b1120;
+    color: #e2e8f0;
+    padding: 20px;
+    min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #1a2333, #0f172a);
+    border: 1px solid #1e3a5f;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #a78bfa);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+.header h1 {
+    font-size: 26px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.header .subtitle { color: #64748b; font-size: 13px; margin-top: 2px; }
+.header-right { text-align: right; }
+.header-badge {
+    background: #1e3a5f; color: #93c5fd;
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 13px; border: 1px solid #3b82f6;
+    display: inline-block;
+}
+.last-updated { color: #475569; font-size: 11px; margin-top: 4px; }
+
+/* Stats bar */
+.stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.stat-pill {
+    background: #131c31;
+    border: 1px solid #1e293b;
+    border-radius: 24px;
+    padding: 8px 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stat-pill strong { font-size: 16px; color: #60a5fa; }
+.stat-pill .changes strong { color: #eab308; }
+
+/* Search */
+.search-bar {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.search-input {
+    flex: 1; min-width: 200px;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #e2e8f0;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+}
+.search-input:focus { border-color: #3b82f6; }
+.search-input::placeholder { color: #475569; }
+.filter-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.filter-btn:hover { background: #334155; color: #e2e8f0; }
+.filter-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
+
+/* Project grid */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+}
+@media (max-width: 600px) { .project-grid { grid-template-columns: 1fr; } }
+
+/* Project card */
+.project-card {
+    background: #131c31;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+}
+.project-card:hover { border-color: #334155; transform: translateY(-2px); }
+.project-card.card-dirty { border-left: 3px solid #eab308; }
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #a78bfa, #22c55e);
+    opacity: 0;
+    transition: opacity .2s;
+}
+.project-card:hover::before { opacity: 1; }
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+.card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-path {
+    font-size: 11px;
+    color: #475569;
+    font-family: "SF Mono", "Fira Code", monospace;
+    margin-top: 2px;
+}
+.card-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.status-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+
+.badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.badge-aiflow { background: rgba(59,130,246,.15); color: #93c5fd; }
+
+.card-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #64748b;
+}
+.card-meta .meta-item { display: flex; align-items: center; gap: 4px; }
+.card-meta .meta-item span { color: #94a3b8; }
+
+.card-commit {
+    background: #0a0f1e;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.commit-hash { font-family: "SF Mono", monospace; color: #60a5fa; font-size: 11px; min-width: 55px; }
+.commit-msg { color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.card-links {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+.link-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    text-decoration: none;
+    transition: all .2s;
+    cursor: pointer;
+}
+.link-btn:hover { background: #334155; color: #e2e8f0; border-color: #475569; }
+.link-disabled { opacity: .4; cursor: not-allowed; }
+.link-disabled:hover { background: #1e293b; color: #64748b; }
+
+.gen-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #1e293b;
+}
+.gen-label { font-size: 11px; color: #475569; }
+.gen-btn {
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    color: #60a5fa;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.gen-btn:hover { background: #1e3a5f; }
+
+/* Empty state */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-size: 20px; color: #f1f5f9; margin-bottom: 8px; }
+.empty-desc { color: #64748b; font-size: 14px; margin-bottom: 16px; }
+.empty-desc code { background: #1e293b; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+.empty-cmd {
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: "SF Mono", monospace;
+    font-size: 13px;
+    color: #60a5fa;
+    display: inline-block;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    color: #334155;
+    font-size: 12px;
+    padding: 24px 0 8px;
+    margin-top: 24px;
+}
+.footer a { color: #475569; text-decoration: none; }
+.footer a:hover { color: #64748b; }
+
+/* Tooltip */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: #e2e8f0;
+    z-index: 1000;
+    display: none;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.notification.show { display: block; animation: fadeIn .3s; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon">⚡</div>
+            <div>
+                <h1>AI-Flow Dashboard</h1>
+                <div class="subtitle">
+                    0 projetos · 0 com alteracoes · 0 com AI-Flow
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-badge">📡 C:\Users\joaoh\OneDrive\Área de Trabalho\Teste</div>
+            <div class="last-updated">Atualizado em 23/05/2026 19:58:37</div>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-pill">📦 <strong>0</strong> projetos</div>
+        <div class="stat-pill">⚡ <strong>0</strong> com AI-Flow</div>
+        <div class="stat-pill changes">✏️ <strong>0</strong> com alteracoes</div>
+        <div class="stat-pill">📄 <strong>0</strong> arquivos no total</div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar projeto pelo nome..." oninput="filterProjects()">
+        <button class="filter-btn active" id="filterAll" onclick="setFilter('all')">Todos</button>
+        <button class="filter-btn" id="filterChanges" onclick="setFilter('changes')">Com alteracoes</button>
+        <button class="filter-btn" id="filterAiflow" onclick="setFilter('aiflow')">Com AI-Flow</button>
+    </div>
+
+    <div class="project-grid" id="projectGrid">
+        
+        <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">Nenhum projeto encontrado</div>
+            <div class="empty-desc">
+                Nao encontrei repositorios Git em <code>C:\Users\joaoh\OneDrive\Área de Trabalho\Teste</code>.<br>
+                Use <code>--root</code> para apontar para outra pasta:
+            </div>
+            <div class="empty-cmd">python .ai-flow\scripts\generate-dashboard.py --root "C:/Users/joaoh/Projetos"</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="#">AI-Flow Dashboard</a> · 23/05/2026 19:58:37 ·
+        <a href="#" onclick="runCmd('python .ai-flow\\scripts\\generate-dashboard.py'); return false;">🔄 Atualizar</a>
+    </div>
+
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+let currentFilter = 'all';
+
+function filterProjects() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.project-card');
+    cards.forEach(card => {
+        const name = card.querySelector('.card-name').textContent.toLowerCase();
+        const matchesSearch = name.includes(search);
+        let matchesFilter = true;
+        if (currentFilter === 'changes') {
+            matchesFilter = card.classList.contains('card-dirty');
+        } else if (currentFilter === 'aiflow') {
+            matchesFilter = card.querySelector('.badge-aiflow') !== null;
+        }
+        card.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+    });
+}
+
+function setFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter' + filter.charAt(0).toUpperCase() + filter.slice(1)).classList.add('active');
+    filterProjects();
+}
+
+function runCmd(cmd) {
+    const n = document.getElementById('notification');
+    n.textContent = '⚠ Comando copiado para o clipboard. Cole no terminal:\n\n' + cmd;
+    n.classList.add('show');
+    navigator.clipboard.writeText(cmd).catch(() => {});
+    setTimeout(() => n.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>

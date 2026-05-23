@@ -1,0 +1,50 @@
+{
+  "models": {
+    "model_for_planning": "huihui-qwen3-4b-instruct-2507",
+    "model_for_coding": "qwen2.5-coder-7b-instruct",
+    "model_for_review": "qwen2.5-coder-7b-instruct",
+    "model_for_summary": "llama-3.2-3b-instruct"
+  },
+  "api": {
+    "lm_studio_base_url": "http://localhost:1234/v1",
+    "ollama_base_url": "http://localhost:11434/v1",
+    "default_provider": "lm_studio",
+    "temperature_coding": 0.2,
+    "temperature_review": 0.1,
+    "temperature_planning": 0.3
+  },
+  "project": {
+    "language": "typescript",
+    "framework": "react",
+    "runtime": "node",
+    "package_manager": "npm"
+  },
+  "commands": {
+    "test": ["npm test", "npx vitest run"],
+    "lint": ["npm run lint", "npx eslint . --ext .ts,.tsx"],
+    "typecheck": ["npx tsc --noEmit"],
+    "build": ["npm run build"],
+    "format": ["npx prettier --check ."]
+  },
+  "quality_gate": {
+    "max_files_per_change": 5,
+    "max_lines_per_file": 300,
+    "max_function_lines": 50,
+    "block_extensions": [".exe", ".dll", ".so", ".dylib", ".bin"],
+    "sensitive_patterns": [
+      "migrations/",
+      ".env",
+      ".env.local",
+      ".env.production",
+      "config/database.yml",
+      "docker-compose.yml",
+      "secrets/"
+    ]
+  },
+  "paths": {
+    "quality_gate_output": ".ai-flow/reports/quality-gate.html",
+    "reports_dir": ".ai-flow/reports/",
+    "agents_dir": ".ai-flow/agents/",
+    "workflows_dir": ".ai-flow/workflows/"
+  }
+}

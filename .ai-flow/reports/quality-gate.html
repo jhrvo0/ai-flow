@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quality Gate Report</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px;
+    line-height: 1.6;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+.header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px;
+    border: 1px solid #334155;
+}
+.header h1 {
+    font-size: 28px;
+    color: #f8fafc;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.header .subtitle {
+    color: #94a3b8;
+    font-size: 14px;
+}
+.score-card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #334155;
+    text-align: center;
+}
+.score-number {
+    font-size: 64px;
+    font-weight: 800;
+    color: #22c55e;
+    line-height: 1;
+}
+.score-label {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-top: 4px;
+}
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.summary-card {
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #334155;
+    text-align: center;
+}
+.summary-card .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #60a5fa;
+}
+.summary-card .label {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-top: 4px;
+}
+.summary-card.red .value { color: #ef4444; }
+.summary-card.yellow .value { color: #eab308; }
+.summary-card.green .value { color: #22c55e; }
+.summary-card.blue .value { color: #60a5fa; }
+.section {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #334155;
+}
+.section h2 {
+    font-size: 20px;
+    color: #f8fafc;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+.alert {
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid;
+}
+.alert.alert-critical {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+.alert.alert-warning {
+    background: rgba(234, 179, 8, 0.1);
+    border-color: #eab308;
+}
+.alert.alert-info {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+}
+.alert-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.alert-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.alert-badge.critical { background: #ef4444; color: white; }
+.alert-badge.warning { background: #eab308; color: #1e293b; }
+.alert-badge.info { background: #60a5fa; color: #1e293b; }
+.alert-file {
+    font-size: 13px;
+    color: #94a3b8;
+    font-family: "SF Mono", "Fira Code", monospace;
+}
+.alert-body p {
+    color: #cbd5e1;
+    font-size: 14px;
+}
+.none {
+    color: #64748b;
+    font-style: italic;
+    font-size: 14px;
+}
+.file-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.file-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #334155;
+}
+.file-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+}
+.file-table tr:hover td { background: rgba(255,255,255,0.03); }
+.file-table .added { color: #22c55e; }
+.file-table .removed { color: #ef4444; }
+.diff-preview {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #cbd5e1;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.diff-preview .added { color: #22c55e; }
+.diff-preview .removed { color: #ef4444; }
+.prompt-box {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #60a5fa;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #cbd5e1;
+    margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.copy-hint {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: right;
+}
+.footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    padding: 20px;
+}
+.bar-chart {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.bar {
+    height: 6px;
+    border-radius: 3px;
+    background: #334155;
+    flex: 1;
+}
+.bar-fill {
+    height: 6px;
+    border-radius: 3px;
+}
+.bar-fill.green { background: #22c55e; }
+.bar-fill.yellow { background: #eab308; }
+.bar-fill.red { background: #ef4444; }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>Quality Gate Report</h1>
+        <div class="subtitle">
+            Gerado em 23/05/2026 19:48:05 |
+            Branch: ? |
+            Ultimo commit: ?
+        </div>
+    </div>
+
+    <div class="score-card">
+        <div class="score-number">10/10</div>
+        <div class="score-label">
+            Qualidade geral
+             - Excelente
+            
+            
+            
+            
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card blue">
+            <div class="value">0</div>
+            <div class="label">Arquivos alterados</div>
+        </div>
+        <div class="summary-card green">
+            <div class="value">+0</div>
+            <div class="label">Linhas adicionadas</div>
+        </div>
+        <div class="summary-card red">
+            <div class="value">0</div>
+            <div class="label">Linhas removidas</div>
+        </div>
+        <div class="summary-card red" class="red">
+            <div class="value">0</div>
+            <div class="label">Alertas criticos</div>
+        </div>
+        <div class="summary-card yellow">
+            <div class="value">0</div>
+            <div class="label">Alertas importantes</div>
+        </div>
+        <div class="summary-card blue">
+            <div class="value">0</div>
+            <div class="label">Melhorias opcionais</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Arquivos alterados</h2>
+        <table class="file-table">
+            <thead>
+                <tr>
+                    <th>Arquivo</th>
+                    <th style="width:80px;text-align:right;">Adicionadas</th>
+                    <th style="width:80px;text-align:right;">Removidas</th>
+                    <th style="width:150px;">Impacto</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Alertas criticos</h2>
+<p class="none">Nenhum alerta.</p>
+    </div>
+
+    <div class="section">
+        <h2>Alertas importantes</h2>
+<p class="none">Nenhum alerta.</p>
+    </div>
+
+    <div class="section">
+        <h2>Melhorias opcionais</h2>
+<p class="none">Nenhum alerta.</p>
+    </div>
+
+    <div class="section">
+        <h2>Preview do diff</h2>
+        <div class="diff-preview">
+
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Prompt para correcao</h2>
+        <p style="color:#94a3b8;font-size:14px;margin-bottom:12px;">
+            Copie o prompt abaixo e envie ao agente <strong>Coder</strong>
+            para corrigir os problemas apontados.
+        </p>
+        <div class="prompt-box">
+Atue como **Coder** (arquivo .ai-flow/agents/coder.md).
+
+Corrija os problemas apontados pelo Quality Gate e pelo Reviewer:
+
+[INSIRA AQUI OS PROBLEMAS APONTADOS PELO REVIEWER]
+
+Regras:
+- Mantenha o estilo do projeto
+- Nao refatore alem do necessario
+- Nao altere arquivos fora do escopo
+- Nao faca commit automatico
+- Uma mudanca por vez
+
+        </div>
+        <div class="copy-hint">Selecione e copie o texto acima</div>
+    </div>
+
+    <div class="footer">
+        AI-Flow Quality Gate &mdash; .ai-flow/scripts/quality-gate.py
+    </div>
+
+</div>
+</body>
+</html>
