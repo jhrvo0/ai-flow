@@ -290,54 +290,160 @@ def generate_html(data, sections):
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     stats = data.get("stats", {})
 
+    theme_css = Path(__file__).resolve().parent.parent / "assets" / "ai-flow-theme.css"
+    theme_link = ""
+    if theme_css.exists():
+        rel_path = os.path.relpath(theme_css, REPORTS_DIR)
+        theme_link = f'<link rel="stylesheet" href="{esc(rel_path)}">'
+
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Context Map</title>
+{theme_link}
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:#0b1120; color:#e2e8f0; padding:20px; line-height:1.5; }}
+body {{
+  font-family: var(--af-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  background: var(--af-bg-base, #0b1120);
+  color: var(--af-text, #e2e8f0);
+  padding: 20px;
+  line-height: 1.5;
+}}
 .container {{ max-width:1300px; margin:0 auto; }}
-.header {{ background:linear-gradient(135deg,#1a2333,#0f172a); border:1px solid #1e3a5f; border-radius:16px; padding:24px 32px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }}
-.header h1 {{ font-size:24px; background:linear-gradient(135deg,#60a5fa,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:flex; align-items:center; gap:10px; }}
-.header .subtitle {{ color:#64748b; font-size:13px; margin-top:4px; }}
-.header-badge {{ background:#1e3a5f; color:#93c5fd; padding:6px 16px; border-radius:20px; font-size:13px; border:1px solid #3b82f6; }}
-.branch-name {{ font-family:"SF Mono","Fira Code",monospace; color:#22c55e; font-size:14px; }}
-.card {{ background:#131c31; border:1px solid #1e293b; border-radius:12px; padding:20px; margin-bottom:20px; transition:border-color .2s; }}
-.card:hover {{ border-color:#1e3a5f; }}
-.card-title {{ font-size:15px; font-weight:700; color:#f1f5f9; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:8px; }}
+.header {{
+  background: linear-gradient(135deg, #1a2333, #0f172a);
+  border: 1px solid var(--af-border, #1e3a5f);
+  border-radius: var(--af-radius-xl, 16px);
+  padding: 24px 32px; margin-bottom:24px;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+}}
+.header h1 {{
+  font-size:24px;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; gap:10px;
+}}
+.header .subtitle {{ color:var(--af-text-muted, #64748b); font-size:13px; margin-top:4px; }}
+.header-badge {{
+  background: var(--af-bg-element, #1e3a5f);
+  color: var(--af-info, #93c5fd);
+  padding:6px 16px; border-radius:var(--af-radius-full, 20px);
+  font-size:13px; border:1px solid var(--af-info, #3b82f6);
+}}
+.branch-name {{ font-family:var(--af-font-mono, "SF Mono","Fira Code",monospace); color:var(--af-success, #22c55e); font-size:14px; }}
+.card {{
+  background: var(--af-bg-raised, #131c31);
+  border:1px solid var(--af-border, #1e293b);
+  border-radius:var(--af-radius-lg, 12px);
+  padding:20px; margin-bottom:20px;
+  transition:border-color .2s, transform .2s;
+}}
+.card:hover {{ border-color:var(--af-border-hover, #1e3a5f); }}
+.card-title {{
+  font-size:15px; font-weight:700;
+  color:var(--af-text-bright, #f1f5f9);
+  margin-bottom:14px; padding-bottom:8px;
+  border-bottom:1px solid var(--af-border, #1e293b);
+  display:flex; align-items:center; gap:8px;
+}}
 .grid-2 {{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }}
-@media(max-width:900px){{ .grid-2{{grid-template-columns:1fr;}} }}
-.stat-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }}
-.stat-card {{ background:#0f172a; border-radius:8px; padding:14px; text-align:center; }}
-.stat-value {{ font-size:28px; font-weight:800; color:#60a5fa; line-height:1.2; }}
-.stat-label {{ font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }}
-.tree-container {{ font-family:"SF Mono","Fira Code","Consolas",monospace; font-size:12px; line-height:1.8; max-height:500px; overflow-y:auto; background:#0a0f1e; border-radius:8px; padding:12px; }}
+.stat-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }}
+.stat-card {{
+  background: var(--af-bg-inset, #0f172a);
+  border-radius:var(--af-radius-md, 8px);
+  padding:14px; text-align:center;
+}}
+.stat-value {{ font-size:28px; font-weight:800; color:var(--af-primary, #a855f7); line-height:1.2; }}
+.stat-label {{ font-size:11px; color:var(--af-text-muted, #64748b); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }}
+.tree-container {{
+  font-family:var(--af-font-mono, "SF Mono","Fira Code","Consolas",monospace);
+  font-size:12px; line-height:1.8;
+  max-height:500px; overflow-y:auto;
+  background:var(--af-bg-inset, #0a0f1e);
+  border-radius:var(--af-radius-md, 8px);
+  padding:12px;
+  -webkit-overflow-scrolling: touch;
+}}
 .tree-entry {{ white-space:nowrap; transition:background .15s; border-radius:3px; padding:1px 4px; }}
 .tree-entry:hover {{ background:rgba(255,255,255,.04); }}
-.commit-item {{ display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid #1e293b; font-size:13px; }}
+.commit-item {{
+  display:flex; align-items:center; gap:12px;
+  padding:8px 0;
+  border-bottom:1px solid var(--af-border, #1e293b);
+  font-size:13px;
+}}
 .commit-item:last-child {{ border-bottom:none; }}
 .status-dot {{ width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block; }}
-.porcelain-item {{ display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13px; border-bottom:1px solid #0f172a; }}
-.arch-item {{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #1e293b; font-size:13px; }}
+.porcelain-item {{
+  display:flex; align-items:center; gap:10px; padding:6px 0;
+  font-size:13px;
+  border-bottom:1px solid var(--af-border, #0f172a);
+}}
+.arch-item {{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid var(--af-border, #1e293b);
+  font-size:13px;
+}}
 .arch-item:last-child {{ border-bottom:none; }}
-.warning-banner {{ background:rgba(234,179,8,.1); border:1px solid rgba(234,179,8,.3); border-radius:8px; padding:10px 14px; font-size:12px; color:#fde047; margin-top:10px; }}
+.warning-banner {{
+  background:rgba(234,179,8,.1); border:1px solid rgba(234,179,8,.3);
+  border-radius:var(--af-radius-md, 8px);
+  padding:10px 14px; font-size:12px; color:#fde047; margin-top:10px;
+}}
 .task-board {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }}
-@media(max-width:900px){{ .task-board{{grid-template-columns:1fr;}} }}
-.task-column {{ background:#0a0f1e; border-radius:8px; padding:12px; min-height:100px; }}
-.task-column-title {{ font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid; }}
-.task-column.todo .task-column-title {{ color:#64748b; border-color:#64748b; }}
-.task-column.wip .task-column-title {{ color:#eab308; border-color:#eab308; }}
-.task-column.done .task-column-title {{ color:#22c55e; border-color:#22c55e; }}
-.task-card {{ background:#131c31; border:1px solid #1e293b; border-radius:6px; padding:10px; margin-bottom:8px; font-size:12px; color:#cbd5e1; }}
-.task-card .task-label {{ display:inline-block; font-size:10px; padding:1px 6px; border-radius:3px; background:#1e3a5f; color:#93c5fd; margin-bottom:4px; }}
-.task-hint {{ color:#475569; font-style:italic; font-size:11px; text-align:center; padding:20px 0; }}
-.footer {{ text-align:center; color:#334155; font-size:12px; padding:20px; margin-top:20px; }}
+.task-column {{
+  background:var(--af-bg-inset, #0a0f1e);
+  border-radius:var(--af-radius-md, 8px);
+  padding:12px; min-height:100px;
+}}
+.task-column-title {{
+  font-size:12px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.5px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid;
+}}
+.task-column.todo .task-column-title {{ color:var(--af-text-muted, #64748b); border-color:var(--af-text-muted, #64748b); }}
+.task-column.wip .task-column-title {{ color:var(--af-warning, #eab308); border-color:var(--af-warning, #eab308); }}
+.task-column.done .task-column-title {{ color:var(--af-success, #22c55e); border-color:var(--af-success, #22c55e); }}
+.task-card {{
+  background:var(--af-bg-raised, #131c31);
+  border:1px solid var(--af-border, #1e293b);
+  border-radius:var(--af-radius-sm, 6px);
+  padding:10px; margin-bottom:8px; font-size:12px; color:#cbd5e1;
+}}
+.task-card .task-label {{
+  display:inline-block; font-size:10px; padding:1px 6px; border-radius:3px;
+  background:var(--af-bg-element, #1e3a5f);
+  color:var(--af-info, #93c5fd);
+  margin-bottom:4px;
+}}
+.task-hint {{ color:var(--af-text-muted, #475569); font-style:italic; font-size:11px; text-align:center; padding:20px 0; }}
+.footer {{ text-align:center; color:var(--af-border, #334155); font-size:12px; padding:20px; margin-top:20px; }}
 ::-webkit-scrollbar {{ width:6px; height:6px; }}
-::-webkit-scrollbar-track {{ background:#0a0f1e; }}
-::-webkit-scrollbar-thumb {{ background:#1e293b; border-radius:3px; }}
+::-webkit-scrollbar-track {{ background:var(--af-bg-inset, #0a0f1e); }}
+::-webkit-scrollbar-thumb {{ background:var(--af-border, #1e293b); border-radius:3px; }}
+
+/* Responsive */
+@media (max-width: 900px) {{
+  .grid-2 {{ grid-template-columns: 1fr; }}
+  .task-board {{ grid-template-columns: 1fr; }}
+}}
+@media (max-width: 768px) {{
+  body {{ padding: 12px; }}
+  .header {{ padding: 16px; flex-direction: column; text-align: center; }}
+  .header h1 {{ font-size: 20px; }}
+  .stat-grid {{ grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }}
+  .stat-value {{ font-size: 22px; }}
+}}
+@media (max-width: 480px) {{
+  body {{ padding: 8px; }}
+  .header h1 {{ font-size: 18px; }}
+  .card {{ padding: 14px; }}
+  .tree-container {{ font-size: 11px; max-height: 350px; }}
+  .commit-item {{ flex-wrap: wrap; gap: 4px; }}
+}}
 </style>
 </head>
 <body>
@@ -359,12 +465,12 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-seri
     <div class="card">
         <div class="card-title">📊 Estatisticas do projeto</div>
         <div class="stat-grid">
-            <div class="stat-card"><div class="stat-value">{stats.get('total_dirs', 0)}</div><div class="stat-label">Pastas</div></div>
-            <div class="stat-card"><div class="stat-value">{stats.get('total_files', 0)}</div><div class="stat-label">Arquivos</div></div>
-            <div class="stat-card"><div class="stat-value">{format_size(stats.get('total_size', 0))}</div><div class="stat-label">Tamanho total</div></div>
-            <div class="stat-card"><div class="stat-value">{len(data.get('commits', []))}</div><div class="stat-label">Ultimos commits</div></div>
-            <div class="stat-card"><div class="stat-value" style="color:#eab308;">{len(data.get('modified_files', []))}</div><div class="stat-label">Modificados</div></div>
-            <div class="stat-card"><div class="stat-value" style="color:#60a5fa;">{len(data.get('porcelain', []))}</div><div class="stat-label">Status entries</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-info, #60a5fa);">{stats.get('total_dirs', 0)}</div><div class="stat-label">Pastas</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-info, #60a5fa);">{stats.get('total_files', 0)}</div><div class="stat-label">Arquivos</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-info, #60a5fa);">{format_size(stats.get('total_size', 0))}</div><div class="stat-label">Tamanho total</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-info, #60a5fa);">{len(data.get('commits', []))}</div><div class="stat-label">Ultimos commits</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-warning, #eab308);">{len(data.get('modified_files', []))}</div><div class="stat-label">Modificados</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--af-info, #60a5fa);">{len(data.get('porcelain', []))}</div><div class="stat-label">Status entries</div></div>
         </div>
         {sections['ext_section']}
     </div>
@@ -382,9 +488,9 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-seri
         <div>
             <div class="card" style="margin-bottom:20px;">
                 <div class="card-title">🔀 Git — Branch atual</div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
                     <span class="branch-name" style="font-size:18px;">{esc(data.get('branch', '?'))}</span>
-                    <span style="font-size:12px;color:#64748b;">{stats.get('total_files', 0)} commits</span>
+                    <span style="font-size:12px;color:var(--af-text-muted, #64748b);">{stats.get('total_files', 0)} commits</span>
                 </div>
                 {sections['diff_section']}
             </div>
@@ -406,7 +512,7 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-seri
         </div>
         <div class="card" style="margin-bottom:0;">
             <div class="card-title">📌 Quadro de tarefas (WIP)</div>
-            <p style="color:#64748b;font-size:12px;margin-bottom:12px;">
+            <p style="color:var(--af-text-muted, #64748b);font-size:12px;margin-bottom:12px;">
                 Edite manualmente para acompanhar o progresso dos agentes.
             </p>
             <div class="task-board">

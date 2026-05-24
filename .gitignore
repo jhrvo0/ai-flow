@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.pyo
+*.pyd
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+
+# Local runtime config (template is config.example.json)
+.ai-flow/config.json
+.ai-flow/projects.json
+.ai-flow/project-index.json
+
+# Generated reports and logs
+.ai-flow/dashboard.html
+.ai-flow/reports/
+.ai-flow/reports/quality-gate.html
+.ai-flow/reports/project-context.html
+.ai-flow/reports/models-status.json
+.ai-flow/server_test_out.log
+.ai-flow/server_test_err.log
+.ai-flow/**/__pycache__/
+
+# Runtime data
+.ai-flow/history/
+.ai-flow/agent-work/
+.ai-flow/scratch/
+.ai-flow/artifacts/runs/
+.ai-flow/projects.json
+.ai-flow/project-index.json
+
+# Keep artifact scaffolding, ignore generated run payloads
+!.ai-flow/artifacts/.gitkeep
+!.ai-flow/artifacts/plans/.gitkeep
+!.ai-flow/artifacts/diffs/.gitkeep
+!.ai-flow/artifacts/reviews/.gitkeep
+!.ai-flow/artifacts/test-results/.gitkeep
+!.ai-flow/artifacts/screenshots/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / frontend caches
+node_modules/
+.next/
+dist/
+build/
+npm-debug.log*
+yarn-error.log*
