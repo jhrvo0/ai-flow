@@ -1,21 +1,61 @@
 # AI-Flow — Fluxo de Desenvolvimento Assistido por IA
 
-Estrutura reutilizável com múltiplos agentes para criação, revisão, correção e validação de código usando modelos locais (LM Studio / Ollama).
+Estrutura reutilizável com múltiplos agentes para criação, revisão, correção e validação de código usando modelos locais via **Ollama** (provider principal, com fallback para LM Studio).
+
+## Setup recomendado com Ollama
+
+Provider padrão: **Ollama** (http://127.0.0.1:11434/v1). LM Studio mantido como fallback opcional.
+
+### 1. Instalar Ollama
+
+Baixe e instale o [Ollama](https://ollama.ai). Verifique a instalação:
+
+```powershell
+ollama --version
+```
+
+### 2. Baixar os modelos recomendados
+
+Para máquina com **16 GB RAM e sem GPU**, baixe estes modelos (leves + 7B para coding):
+
+```powershell
+ollama pull llama3.2:3b
+ollama pull phi4-mini:3.8b
+ollama pull qwen2.5-coder:3b
+ollama pull qwen2.5-coder:7b
+```
+
+> Modelos 14B+ (como `qwen2.5-coder:14b`) **não são recomendados** para 16 GB sem GPU — podem causar swap excessivo.
+
+### 3. Validar configuração
+
+```powershell
+python .ai-flow\scripts\ai-flow.py validate-config
+```
+
+### 4. Abrir o dashboard
+
+```powershell
+python .ai-flow\scripts\ai-flow.py dashboard
+```
 
 ## Pré-requisitos
 
 - **Git** — para rastrear alterações via `git diff`
-- **Python 3** — para executar o quality gate (sem dependências externas)
-- **LM Studio** (ou Ollama) rodando com modelos carregados
+- **Python 3** — para executar scripts (sem dependências externas)
+- **Ollama** rodando (`ollama serve` ou aplicativo aberto)
 
 ### Modelos recomendados (setup típico)
 
-| Agente | Modelo | Motivo |
-|--------|--------|--------|
-| **Planner** | `huihui-qwen3-4b-instruct-2507` | Análise geral, equilíbrio |
-| **Coder** | `qwen2.5-coder-7b-instruct` | Melhor para código |
-| **Reviewer** | `qwen2.5-coder-7b-instruct` | Rigor na detecção de bugs |
-| **Docs/Commit** | `llama-3.2-3b-instruct` | Rápido para resumos |
+| Agente | Modelo Ollama | Motivo |
+|--------|---------------|--------|
+| **Planner/Architect** | `phi4-mini:3.8b` | Leve, análise geral |
+| **Coder** | `qwen2.5-coder:7b` | Melhor para código |
+| **Reviewer/Security** | `qwen2.5-coder:7b` | Rigor na detecção de bugs |
+| **Tester** | `llama3.2:3b` | Rápido para validação |
+| **Docs/Summarizer** | `llama3.2:3b` | Rápido para resumos |
+| **Patch Applier** | `qwen2.5-coder:3b` | Leve e rápido |
+| **Memory/Orchestrator** | `llama3.2:3b` | Tarefas leves |
 
 ## Dashboard central (entry point)
 

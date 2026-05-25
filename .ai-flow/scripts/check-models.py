@@ -155,8 +155,8 @@ def main():
     config = load_config()
 
     results = []
-    results.append(check_lm_studio(config))
     results.append(check_ollama(config))
+    results.append(check_lm_studio(config))
 
     status_counts = {}
     for r in results:

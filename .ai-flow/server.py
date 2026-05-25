@@ -5,7 +5,11 @@ Servidor HTTP local que serve o dashboard e expoe API para:
 - Gerenciar projetos (listar, adicionar, remover)
 - Rodar scripts (quality gate, context map)
 - Consultar Git (status, branch, log, diff)
-- Chamar LM Studio para execucao de agentes
+- Chamar Ollama (padrao) ou LM Studio para execucao de agentes
+- Editor Monaco com snapshots, undo/redo e terminal ao vivo
+
+Provider padrao: Ollama (http://127.0.0.1:11434/v1)
+Provider fallback: LM Studio (http://127.0.0.1:1234/v1)
 
 Uso:
   python .ai-flow/server.py
@@ -710,20 +714,14 @@ def resolve_agent_model(provider, agent_id, explicit_model=""):
     if model_key:
         return resolve_model(provider, model_key, fallback_model or "qwen2.5-coder-7b-instruct")
 
-    return resolve_model(provider, "model_for_coding", fallback_model or "qwen2.5-coder-7b-instruct")
+    return resolve_model(provider, "model_for_coding", fallback_model or "qwen2.5-coder:7b")
 
 
 # ─── Providers ────────────────────────────────────────────
 
 PROVIDER_HELP = {
-    "lm_studio": {
-        "label": "LM Studio",
-        "base_url_key": "lm_studio_base_url",
-        "default_url": "http://localhost:1234/v1",
-        "type": "http",
-    },
     "ollama": {
-        "label": "Ollama (HTTP)",
+        "label": "Ollama (HTTP) - Recomendado",
         "base_url_key": "ollama_base_url",
         "default_url": "http://localhost:11434/v1",
         "type": "http",
@@ -731,6 +729,12 @@ PROVIDER_HELP = {
     "ollama_cli": {
         "label": "Ollama (CLI)",
         "type": "cli",
+    },
+    "lm_studio": {
+        "label": "LM Studio (fallback)",
+        "base_url_key": "lm_studio_base_url",
+        "default_url": "http://localhost:1234/v1",
+        "type": "http",
     },
 }
 
@@ -782,8 +786,8 @@ def get_provider_config(provider=None):
     cfg = load_config()
     api_cfg = cfg.get("api", {})
     if not provider:
-        provider = api_cfg.get("default_provider", "lm_studio")
-    info = PROVIDER_HELP.get(provider, PROVIDER_HELP["lm_studio"])
+        provider = api_cfg.get("default_provider", "ollama")
+    info = PROVIDER_HELP.get(provider, PROVIDER_HELP.get("ollama", PROVIDER_HELP["lm_studio"]))
     base_url = api_cfg.get(info.get("base_url_key", ""), info.get("default_url", ""))
     return provider, base_url.rstrip("/"), info.get("type", "http")
 
@@ -889,6 +893,15 @@ def call_provider(provider, model, messages, temperature=0.2):
             result = json.loads(resp.read().decode("utf-8"))
             content = result["choices"][0]["message"]["content"]
             return {"ok": True, "response": content}
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")
+            detail = json.loads(body).get("error", body)
+            if isinstance(detail, dict):
+                detail = detail.get("message", str(detail))
+        except Exception:
+            detail = f"HTTP {e.code}: {e.reason}"
+        return {"ok": False, "error": detail}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -1054,6 +1067,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                     entry["available"] = check_ollama_cli()
                 else:
                     entry["available"] = True
+                if pid == "ollama":
+                    entry["recommended"] = True
                 available.append(entry)
             return ok_response(self, available)
 
@@ -1205,7 +1220,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
 
         # ─── Agent ───
         if path == "/api/agent/call":
-            model = data.get("model", "qwen2.5-coder-7b-instruct")
+            model = data.get("model", "qwen2.5-coder:7b")
             agent = data.get("agent", "")
             system = data.get("system", "")
             user = data.get("user", "")
@@ -1228,6 +1243,18 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             model = resolve_agent_model(provider, agent, model)
 
             result = call_provider(provider, model, messages, temperature)
+
+            if not result.get("ok"):
+                error_msg = result.get("error", "")
+                p = provider or "ollama"
+                if p in ("ollama", "ollama_cli"):
+                    if "not found" in error_msg.lower() or "404" in error_msg:
+                        result["error"] = f"Modelo '{model}' nao encontrado no Ollama. Rode: ollama pull {model}"
+                    elif "connection refused" in error_msg.lower() or "failed to connect" in error_msg.lower():
+                        result["error"] = f"Ollama nao esta rodando. Execute 'ollama serve' ou abra o aplicativo Ollama."
+                    elif "command not found" in error_msg.lower():
+                        result["error"] = "Ollama CLI nao encontrado. Instale o Ollama em https://ollama.ai"
+
             return json_response(self, result)
 
         # ─── Git commit ───
@@ -1616,8 +1643,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
 
             provider, base_url, ptype = get_provider_config(provider if provider else None)
 
-            model_planning = model if model else resolve_model(provider, "model_for_planning", "qwen2.5-coder-7b-instruct")
-            model_coding = model if model else resolve_model(provider, "model_for_coding", "qwen2.5-coder-7b-instruct")
+            model_planning = model if model else resolve_model(provider, "model_for_planning", "phi4-mini:3.8b")
+            model_coding = model if model else resolve_model(provider, "model_for_coding", "qwen2.5-coder:7b")
 
             planner_prompt, err = get_agent_content("planner")
             if err or not planner_prompt:

@@ -61,7 +61,7 @@ def run_cmd(cmd: list[str]) -> tuple[int, str]:
 
 
 def now_run_id() -> str:
-    return datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    return dt.datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
 
 def classify(task_type: str) -> tuple[str, str]:
@@ -139,7 +139,7 @@ def load_local_model_profile() -> dict:
     models = data.get("models", {})
     api = data.get("api", {})
     return {
-        "provider": api.get("default_provider", "lm_studio"),
+        "provider": api.get("default_provider", "ollama"),
         "planner": models.get("model_for_planning", "unknown"),
         "coder": models.get("model_for_coding", "unknown"),
         "reviewer": models.get("model_for_review", "unknown"),
@@ -378,7 +378,7 @@ def config_bundle() -> dict[str, Any]:
         source = CONFIG_EXAMPLE_PATH
         fallback = True
     else:
-        return {"source": None, "fallback": True, "data": {}, "error": "config ausente"}
+        return {"source": None, "fallback": True, "data": {}, "error": "config ausente (copie config.example.json para config.json)"}
 
     try:
         return {
@@ -406,7 +406,7 @@ def provider_probe(provider: str, bundle: dict[str, Any]) -> dict[str, Any]:
     if provider not in {"lm_studio", "ollama"}:
         return {"provider": provider, "available": False, "endpoint": None, "detail": "provider desconhecido", "models": []}
 
-    base_url = api.get(f"{provider}_base_url") or ("http://127.0.0.1:1234/v1" if provider == "lm_studio" else "http://127.0.0.1:11434/v1")
+    base_url = api.get(f"{provider}_base_url") or ("http://127.0.0.1:11434/v1" if provider == "ollama" else "http://127.0.0.1:1234/v1")
     urls = [base_url.rstrip("/") + "/models"]
     if provider == "ollama":
         urls.append(base_url.rstrip("/").replace("/v1", "") + "/api/tags")
@@ -776,9 +776,12 @@ def command_status(args: argparse.Namespace) -> int:
 
     print("\n## Configuracao")
     print_key_value("Fonte", bundle.get("source") or "config ausente")
+    if bundle.get("fallback"):
+        print("  [!] Usando config.example.json. Copie para config.json para configuracao local.")
     if bundle.get("error"):
         print_key_value("Erro", bundle["error"])
-    print_key_value("Provider padrao", bundle.get("data", {}).get("api", {}).get("default_provider", "lm_studio"))
+    print_key_value("Provider padrao", bundle.get("data", {}).get("api", {}).get("default_provider", "ollama"))
+    print_key_value("Provider padrao (efetivo)", "Ollama (http://127.0.0.1:11434/v1)")
 
     print("\n## Git")
     if not git.get("available"):
@@ -839,7 +842,7 @@ def command_show_config(args: argparse.Namespace) -> int:
         print_key_value("Erro", bundle["error"])
 
     print("\n## Provider e modelos")
-    print_key_value("Provider padrao", api.get("default_provider", "lm_studio"))
+    print_key_value("Provider padrao", api.get("default_provider", "ollama"))
     print_key_value("LM Studio", api.get("lm_studio_base_url", "http://127.0.0.1:1234/v1"))
     print_key_value("Ollama", api.get("ollama_base_url", "http://127.0.0.1:11434/v1"))
     for label, key in [
@@ -910,7 +913,7 @@ def validate_config_data(bundle: dict[str, Any]) -> tuple[list[str], list[str], 
     quality_gate = data.get("quality_gate", {})
     paths = data.get("paths", {})
 
-    provider = api.get("default_provider", "lm_studio")
+    provider = api.get("default_provider", "ollama")
     if provider not in VALID_PROVIDERS:
         errors.append(f"api.default_provider invalido: {provider}")
 
@@ -919,7 +922,7 @@ def validate_config_data(bundle: dict[str, Any]) -> tuple[list[str], list[str], 
         if base_url and not isinstance(base_url, str):
             errors.append(f"api.{provider_name}_base_url deve ser string")
 
-    for key in ["model_for_planning", "model_for_coding", "model_for_review", "model_for_summary"]:
+    for key in ["model_for_planning", "model_for_coding", "model_for_review", "model_for_tester", "model_for_docs", "model_for_summary"]:
         if not models.get(key):
             warnings.append(f"models.{key} ausente ou vazio")
 
@@ -1010,6 +1013,20 @@ def command_validate_config(args: argparse.Namespace) -> int:
     print("\n## Scripts principais")
     for item in details.get("script_checks", []):
         print(f"- {item['script']}: {'ok' if item['exists'] else 'ausente'}")
+
+    print("\n## Sugestoes")
+    provider = probe.get("provider", "")
+    if not probe.get("available") and provider == "ollama":
+        ollama_cli_rc, _ = run_command(["ollama", "--version"], cwd=REPO_ROOT)
+        if ollama_cli_rc == 0:
+            print("- Ollama CLI detectado, mas servidor HTTP nao responde.")
+            print("- Execute 'ollama serve' ou abra o aplicativo Ollama.")
+        else:
+            print("- Ollama nao encontrado. Instale em https://ollama.ai")
+    if bundle.get("fallback"):
+        print("- Use config.json (copie de config.example.json) para configuracao local.")
+    if warnings:
+        print("- Revise os avisos acima. Alguns campos de config estao ausentes.")
 
     print("\n## Resultado final")
     if errors:

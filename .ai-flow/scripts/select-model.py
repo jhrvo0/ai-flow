@@ -10,60 +10,60 @@ TASK_MAP = {
     "planner": {
         "config_key": "model_for_planning",
         "default": {
-            "model": "huihui-qwen3-4b-instruct-2507",
-            "provider": "lm_studio",
+            "model": "phi4-mini:3.8b",
+            "provider": "ollama",
             "temperature": 0.3,
-            "fallback": "qwen2.5-coder-7b-instruct",
-            "reason": "Bom para exploração de ideias e planejamento estruturado com baixa temperatura."
+            "fallback": "qwen2.5-coder:7b",
+            "reason": "Bom para exploracao de ideias e planejamento estruturado com baixa temperatura."
         }
     },
     "coder": {
         "config_key": "model_for_coding",
         "default": {
-            "model": "qwen2.5-coder-7b-instruct",
-            "provider": "lm_studio",
+            "model": "qwen2.5-coder:7b",
+            "provider": "ollama",
             "temperature": 0.2,
-            "fallback": "llama-3.2-3b-instruct",
-            "reason": "Especializado em geração de código com temperatura baixa para consistência."
+            "fallback": "llama3.2:3b",
+            "reason": "Especializado em geracao de codigo com temperatura baixa para consistencia."
         }
     },
     "reviewer": {
         "config_key": "model_for_review",
         "default": {
-            "model": "qwen2.5-coder-7b-instruct",
-            "provider": "lm_studio",
+            "model": "qwen2.5-coder:7b",
+            "provider": "ollama",
             "temperature": 0.1,
-            "fallback": "llama-3.2-3b-instruct",
-            "reason": "Revisão exige precisao; temperatura muito baixa para julgamentos consistentes."
+            "fallback": "llama3.2:3b",
+            "reason": "Revisao exige precisao; temperatura muito baixa para julgamentos consistentes."
         }
     },
     "tester": {
         "config_key": "model_for_tester",
         "default": {
-            "model": "llama-3.2-3b-instruct",
-            "provider": "lm_studio",
+            "model": "llama3.2:3b",
+            "provider": "ollama",
             "temperature": 0.2,
-            "fallback": "huihui-qwen3-4b-instruct-2507",
+            "fallback": "phi4-mini:3.8b",
             "reason": "Testes sao tarefas estruturadas. Modelo leve resolve bem."
         }
     },
     "docs": {
         "config_key": "model_for_docs",
         "default": {
-            "model": "llama-3.2-3b-instruct",
-            "provider": "lm_studio",
+            "model": "llama3.2:3b",
+            "provider": "ollama",
             "temperature": 0.3,
-            "fallback": "huihui-qwen3-4b-instruct-2507",
+            "fallback": "phi4-mini:3.8b",
             "reason": "Documentacao prefere modelo menor e mais rapido, com temperatura baixa."
         }
     },
     "summarizer": {
         "config_key": "model_for_summary",
         "default": {
-            "model": "llama-3.2-3b-instruct",
-            "provider": "lm_studio",
+            "model": "llama3.2:3b",
+            "provider": "ollama",
             "temperature": 0.3,
-            "fallback": "huihui-qwen3-4b-instruct-2507",
+            "fallback": "phi4-mini:3.8b",
             "reason": "Sumarizacao prefere modelo compacto e rapido com temperatura baixa."
         }
     }
@@ -95,7 +95,7 @@ def get_temperature_override(config, task_name):
 
 def resolve_provider(config):
     api = config.get("api", {})
-    return api.get("default_provider", "lm_studio")
+    return api.get("default_provider", "ollama")
 
 
 def main():

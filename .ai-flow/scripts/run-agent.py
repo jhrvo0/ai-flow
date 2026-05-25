@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 import sys
-import datetime
+from datetime import datetime
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -32,14 +32,15 @@ AGENT_ASSIGNMENT_MAP = {
     "planner": "planner",
     "architect": "planner",
     "coder": "coder",
+    "patch-applier": "coder",
     "reviewer": "reviewer",
+    "security": "reviewer",
     "tester": "tester",
     "docs": "docs",
-    "orchestrator": "planner",
-    "context-engineer": "planner",
-    "security": "reviewer",
-    "patch-applier": "coder",
+    "summarizer": "summarizer",
     "memory": "docs",
+    "orchestrator": "orchestrator",
+    "context-engineer": "context-engineer",
 }
 
 
@@ -90,6 +91,39 @@ def get_git_context():
         return {"diff": "", "status": "", "branch": "unknown", "error": str(e)}
 
 
+def load_current_task():
+    current_task_path = ARTIFACTS_DIR / "current-task.json"
+    if current_task_path.exists():
+        try:
+            data = json.loads(current_task_path.read_text(encoding="utf-8"))
+            path = data.get("path")
+            if path:
+                p = Path(path)
+                if p.exists() and p.is_dir():
+                    return p
+        except Exception:
+            pass
+    return None
+
+
+def save_run_metadata(run_dir, agent_id, model, provider, messages, response, git_context_used):
+    meta = {
+        "agent_id": agent_id,
+        "model": model,
+        "provider": provider,
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "git_context_used": git_context_used,
+        "prompt_saved": True,
+        "response_saved": True,
+    }
+    write_json(run_dir / "metadata.json", meta)
+
+
+def write_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def run_command(cmd):
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -132,12 +166,12 @@ def check_provider(config):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run Agent - executa um agente via LLM local")
+    parser = argparse.ArgumentParser(description="Run Agent - executa um agente via LLM local (Ollama padrao)")
     parser.add_argument("agent_id", nargs="?", default="", help="ID do agente: planner, coder, reviewer, tester, docs, architect, security, orchestrator")
     parser.add_argument("prompt", nargs="?", default="", help="Prompt ou descricao da tarefa")
     parser.add_argument("--system", "-s", help="Conteudo extra para system prompt")
     parser.add_argument("--model", "-m", help="Nome do modelo (sobrescreve config)")
-    parser.add_argument("--provider", "-p", help="Provider: lm_studio ou ollama")
+    parser.add_argument("--provider", "-p", help="Provider: ollama (padrao) ou lm_studio")
     parser.add_argument("--temperature", "-t", type=float, help="Temperature")
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens")
     parser.add_argument("--git-context", "-g", action="store_true", help="Incluir git diff/status no contexto")
@@ -153,7 +187,8 @@ def main():
         for agent_id in AGENT_FILE_NAMES:
             path = find_agent_file(agent_id)
             status = "[OK]" if path else "[arquivo nao encontrado]"
-            print(f"  {agent_id:20s} {status}")
+            assignment = AGENT_ASSIGNMENT_MAP.get(agent_id, agent_id)
+            print(f"  {agent_id:20s} {status:30s} (mapeia para config: {assignment})")
         return 0
 
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8")) if CONFIG_PATH.exists() else {}
@@ -167,8 +202,15 @@ def main():
             for m in result.get("models", []):
                 print(f"     - {m}")
         else:
-            print(f"[ERRO] {result.get('error')}")
+            error = result.get("error", "Provider offline")
+            if "ollama" in result.get("provider", ""):
+                error += "\n[Sugestao] Execute 'ollama serve' ou abra o aplicativo Ollama."
+            print(f"[ERRO] {error}")
         return 0 if result.get("ok") else 1
+
+    if not args.agent_id:
+        print("Forneca um ID de agente. Use --list-agents para ver os disponiveis.", file=sys.stderr)
+        return 1
 
     if not args.prompt and not args.system:
         print(f"Forneca um prompt ou --system para o agente '{args.agent_id}'", file=sys.stderr)
@@ -194,10 +236,11 @@ def main():
     from llm_client import chat_completion, load_config as llm_load_config
 
     cfg = llm_load_config()
+    resolved_agent = AGENT_ASSIGNMENT_MAP.get(args.agent_id, args.agent_id)
     result = chat_completion(
         messages=messages,
         model=args.model,
-        agent_id=AGENT_ASSIGNMENT_MAP.get(args.agent_id, args.agent_id),
+        agent_id=resolved_agent,
         provider=args.provider,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
@@ -215,15 +258,28 @@ def main():
     print(response)
 
     if args.save:
-        run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_dir = ARTIFACTS_DIR / "runs" / f"{run_id}-{args.agent_id}"
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "prompt.md").write_text(
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Try to save inside active task if exists
+        task_dir = load_current_task()
+        if task_dir:
+            run_subdir = task_dir / "runs" / f"{run_id}-{args.agent_id}"
+        else:
+            run_subdir = ARTIFACTS_DIR / "runs" / f"{run_id}-{args.agent_id}"
+
+        run_subdir.mkdir(parents=True, exist_ok=True)
+
+        model_used = result.get("model", args.model or "unknown")
+        provider_used = args.provider or config.get("api", {}).get("default_provider", "ollama")
+
+        save_run_metadata(run_subdir, args.agent_id, model_used, provider_used, messages, response, args.git_context)
+
+        (run_subdir / "prompt.md").write_text(
             f"# Agent: {args.agent_id}\n\n## Messages\n\n" + json.dumps(messages, indent=2, ensure_ascii=False),
             encoding="utf-8"
         )
-        (run_dir / "response.md").write_text(response, encoding="utf-8")
-        print(f"\n--- Salvo em: {run_dir}", file=sys.stderr)
+        (run_subdir / "response.md").write_text(response, encoding="utf-8")
+        print(f"\n--- Salvo em: {run_subdir}", file=sys.stderr)
 
     return 0
 

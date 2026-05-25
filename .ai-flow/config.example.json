@@ -3,57 +3,96 @@
   "_docs": "Consulte o arquivo model-registry.example.json para o catalogo completo de modelos, tiers e parametros recomendados.",
 
   "models": {
-    "model_for_planning": "huihui-qwen3-4b-instruct-2507",
-    "model_for_coding": "qwen2.5-coder-7b-instruct",
-    "model_for_review": "qwen2.5-coder-7b-instruct",
-    "model_for_summary": "llama-3.2-3b-instruct",
+    "model_for_planning": "phi4-mini:3.8b",
+    "model_for_coding": "qwen2.5-coder:7b",
+    "model_for_review": "qwen2.5-coder:7b",
+    "model_for_tester": "llama3.2:3b",
+    "model_for_docs": "llama3.2:3b",
+    "model_for_summary": "llama3.2:3b",
     "assignment": {
       "planner": {
-        "model": "huihui-qwen3-4b-instruct-2507",
+        "model": "phi4-mini:3.8b",
         "temperature": 0.3,
         "max_tokens": 2048,
         "top_p": 0.9,
-        "fallback_model": "qwen2.5-coder-7b-instruct"
+        "fallback_model": "qwen2.5-coder:7b"
+      },
+      "architect": {
+        "model": "phi4-mini:3.8b",
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9,
+        "fallback_model": "qwen2.5-coder:7b"
       },
       "coder": {
-        "model": "qwen2.5-coder-7b-instruct",
+        "model": "qwen2.5-coder:7b",
         "temperature": 0.2,
         "max_tokens": 4096,
         "top_p": 0.9
       },
+      "patch-applier": {
+        "model": "qwen2.5-coder:3b",
+        "temperature": 0.2,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
       "reviewer": {
-        "model": "qwen2.5-coder-7b-instruct",
+        "model": "qwen2.5-coder:7b",
+        "temperature": 0.1,
+        "max_tokens": 4096,
+        "top_p": 0.85
+      },
+      "security": {
+        "model": "qwen2.5-coder:7b",
         "temperature": 0.1,
         "max_tokens": 4096,
         "top_p": 0.85
       },
       "tester": {
-        "model": "llama-3.2-3b-instruct",
+        "model": "llama3.2:3b",
         "temperature": 0.2,
         "max_tokens": 2048,
         "top_p": 0.9,
-        "fallback_model": "qwen2.5-coder-7b-instruct"
+        "fallback_model": "qwen2.5-coder:7b"
       },
       "docs": {
-        "model": "llama-3.2-3b-instruct",
+        "model": "llama3.2:3b",
         "temperature": 0.4,
         "max_tokens": 1024,
         "top_p": 0.95
       },
       "summarizer": {
-        "model": "llama-3.2-3b-instruct",
+        "model": "llama3.2:3b",
         "temperature": 0.3,
         "max_tokens": 1024,
         "top_p": 0.9,
-        "fallback_model": "qwen2.5-coder-7b-instruct"
+        "fallback_model": "qwen2.5-coder:7b"
+      },
+      "memory": {
+        "model": "llama3.2:3b",
+        "temperature": 0.3,
+        "max_tokens": 1024,
+        "top_p": 0.9
+      },
+      "orchestrator": {
+        "model": "llama3.2:3b",
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
+      "context-engineer": {
+        "model": "llama3.2:3b",
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9
       }
     }
   },
 
   "api": {
-    "default_provider": "lm_studio",
-    "lm_studio_base_url": "http://127.0.0.1:1234/v1",
+    "default_provider": "ollama",
     "ollama_base_url": "http://127.0.0.1:11434/v1",
+    "lm_studio_base_url": "http://127.0.0.1:1234/v1",
     "temperature_coding": 0.2,
     "temperature_review": 0.1,
     "temperature_planning": 0.3

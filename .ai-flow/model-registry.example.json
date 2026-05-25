@@ -1,25 +1,26 @@
 {
   "$schema": "model-registry-schema.json",
-  "version": "1.0",
-  "description": "Registro central de modelos para AI-Flow. Define provedores, modelos disponiveis, papeis e parametros.",
+  "version": "2.0",
+  "description": "Registro central de modelos para AI-Flow. Provider principal: Ollama. LM Studio mantido como fallback.",
 
   "providers": {
-    "lm_studio": {
-      "label": "LM Studio",
-      "type": "http",
-      "base_url": "http://127.0.0.1:1234/v1",
-      "notes": "Requer LM Studio aberto com servidor HTTP ativado (Settings > Server > Porta 1234). Suporta qualquer modelo GGUF carregado."
-    },
     "ollama": {
-      "label": "Ollama",
+      "label": "Ollama (recomendado)",
       "type": "http",
       "base_url": "http://127.0.0.1:11434/v1",
-      "notes": "Requer 'ollama serve' rodando. Use 'ollama pull <modelo>' para baixar modelos. Endpoint compativel com OpenAI."
+      "notes": "Provider principal. Requer 'ollama serve' rodando. Use 'ollama pull <modelo>' para baixar modelos. Endpoint compativel com OpenAI.",
+      "cli_command": "ollama pull <modelo>"
     },
     "ollama_cli": {
       "label": "Ollama (CLI)",
       "type": "cli",
-      "notes": "Alternativa via linha de comando. Nao precisa de servidor HTTP. Use quando o endpoint HTTP nao estiver disponivel."
+      "notes": "Alternativa via linha de comando quando o servidor HTTP nao estiver disponivel. Use 'ollama run <modelo>'."
+    },
+    "lm_studio": {
+      "label": "LM Studio (fallback)",
+      "type": "http",
+      "base_url": "http://127.0.0.1:1234/v1",
+      "notes": "Provider secundario. Requer LM Studio aberto com servidor HTTP ativado (Settings > Server > Porta 1234)."
     }
   },
 
@@ -28,108 +29,173 @@
       "label": "Leve",
       "description": "Funciona em maquinas com 8GB RAM ou CPU-only. Modelos 1B-4B.",
       "typical_ram": "4-8 GB",
-      "recommended_models": ["llama-3.2-3b-instruct", "huihui-qwen3-4b-instruct-2507", "qwen2.5-coder-1.5b-instruct"]
+      "recommended_models": ["llama3.2:3b", "phi4-mini:3.8b", "qwen2.5-coder:3b", "gemma3:4b"]
     },
     "medium": {
       "label": "Medio",
       "description": "Equilibrio entre qualidade e desempenho. Requer 8-16GB RAM. Modelos 7B-8B.",
       "typical_ram": "8-16 GB",
-      "recommended_models": ["qwen2.5-coder-7b-instruct", "deepseek-coder-6.7b-instruct", "llama-3.1-8b-instruct"]
+      "recommended_models": ["qwen2.5-coder:7b", "deepseek-coder:6.7b"]
     },
     "strong": {
       "label": "Forte",
-      "description": "Maxima qualidade. Requer GPU com 10GB+ VRAM ou 32GB+ RAM. Modelos 14B+.",
-      "typical_ram": "16-32 GB",
-      "recommended_models": ["qwen2.5-coder-14b-instruct", "deepseek-coder-33b-instruct", "codestral-22b"]
+      "description": "Maxima qualidade. Requer GPU com 10GB+ VRAM ou 32GB+ RAM. NAO RECOMENDADO para 16GB sem GPU.",
+      "typical_ram": "32+ GB (ou GPU 10GB+ VRAM)",
+      "recommended_models": [],
+      "warnings": [
+        "Modelos 14B+ (qwen2.5-coder:14b) requerem GPU ou 32GB+ RAM",
+        "Modelos 27B+ (qwen2.5-coder:32b) requerem GPU com 16GB+ VRAM",
+        "Modelos 32B+ requerem GPU com 24GB+ VRAM ou 64GB RAM com quantizacao",
+        "Modelos 70B+ requerem GPU com 48GB+ VRAM"
+      ]
     }
   },
 
   "models": {
-    "llama-3.2-3b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
+    "llama3.2:3b": {
+      "ollama_pull": "ollama pull llama3.2:3b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "llama-3.2-3b-instruct",
       "tier": "light",
       "parameters": "3B",
       "quantization": "Q4_K_M (padrao)",
-      "roles": ["summarizer", "docs", "tester"],
-      "notes": "Modelo Meta 3B. Muito rapido, ideal para resumo e documentacao em maquinas modestas."
+      "ram_estimate": "~3 GB",
+      "roles": ["summarizer", "docs", "tester", "memory", "orchestrator", "context-engineer"],
+      "notes": "Modelo Meta 3B. Muito rapido, ideal para resumo e documentacao em maquinas modestas. Leve o suficiente para rodar junto com outros modelos."
     },
-    "huihui-qwen3-4b-instruct-2507": {
-      "provider_hints": ["lm_studio"],
+    "phi4-mini:3.8b": {
+      "ollama_pull": "ollama pull phi4-mini:3.8b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "tier": "light",
+      "parameters": "3.8B",
+      "quantization": "Q4_K_M (padrao)",
+      "ram_estimate": "~3 GB",
+      "roles": ["planner", "architect"],
+      "notes": "Microsoft Phi-4 Mini. Otimo para planejamento e raciocinio logico dado o tamanho pequeno. Alternativa leve ao Qwen Coder para planejamento."
+    },
+    "qwen2.5-coder:3b": {
+      "ollama_pull": "ollama pull qwen2.5-coder:3b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "qwen2.5-coder-1.5b-instruct",
+      "tier": "light",
+      "parameters": "3B",
+      "quantization": "Q4_K_M (padrao)",
+      "ram_estimate": "~3 GB",
+      "roles": ["patch-applier"],
+      "notes": "Modelo Alibaba 3B especializado em codigo. Rapido o suficiente para aplicar patches pequenos sem sacrificar precisao."
+    },
+    "gemma3:4b": {
+      "ollama_pull": "ollama pull gemma3:4b",
+      "provider_hints": ["ollama", "lm_studio"],
       "tier": "light",
       "parameters": "4B",
-      "quantization": "Q4_K_M",
-      "roles": ["planner", "tester"],
-      "notes": "Modelo 4B bilingual (chines/ingles). Surpreendentemente bom para planejamento dado o tamanho."
+      "quantization": "Q4_K_M (padrao)",
+      "ram_estimate": "~4 GB",
+      "roles": ["planner", "summarizer", "tester"],
+      "notes": "Google Gemma 3 4B. Bom equilibrio para tarefas gerais. Alternativa ao llama3.2:3b com janela de contexto maior."
     },
-    "qwen2.5-coder-7b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
+    "qwen2.5-coder:7b": {
+      "ollama_pull": "ollama pull qwen2.5-coder:7b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "qwen2.5-coder-7b-instruct",
       "tier": "medium",
       "parameters": "7B",
-      "quantization": "Q4_K_M",
-      "roles": ["coder", "reviewer", "planner"],
-      "notes": "Melhor custo-beneficio para coding. O Ollama localiza como 'qwen2.5-coder:7b'."
+      "quantization": "Q4_K_M (padrao)",
+      "ram_estimate": "~6 GB",
+      "roles": ["coder", "reviewer", "security"],
+      "notes": "Melhor custo-beneficio para coding no Ollama. Funciona bem em maquinas com 16GB RAM. Usar quantizacao Q4_K_M."
     },
-    "deepseek-coder-6.7b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
+    "deepseek-coder:6.7b": {
+      "ollama_pull": "ollama pull deepseek-coder:6.7b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "deepseek-coder-6.7b-instruct",
       "tier": "medium",
       "parameters": "6.7B",
-      "quantization": "Q4_K_M",
+      "quantization": "Q4_K_M (padrao)",
+      "ram_estimate": "~6 GB",
       "roles": ["coder"],
       "notes": "Alternativa ao Qwen Coder 7B. Otimo para geracao de codigo Python/TS."
     },
-    "qwen2.5-coder-14b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
+    "qwen2.5-coder:14b": {
+      "ollama_pull": "ollama pull qwen2.5-coder:14b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "qwen2.5-coder-14b-instruct",
       "tier": "strong",
       "parameters": "14B",
       "quantization": "Q4_K_M",
-      "roles": ["coder", "reviewer", "planner"],
-      "notes": "Modelo 14B especializado em codigo. Melhor precisao que o 7B. No Ollama: 'qwen2.5-coder:14b'."
+      "ram_estimate": "~10 GB (requer GPU ou 32GB+ RAM)",
+      "roles": ["coder", "reviewer"],
+      "notes": "Modelo 14B especializado em codigo. Melhor precisao que o 7B. NAO RECOMENDADO para 16GB RAM sem GPU — pode causar swap excessivo.",
+      "incompatible_16gb_no_gpu": true
     },
-    "llama-3.1-8b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
-      "tier": "medium",
-      "parameters": "8B",
-      "quantization": "Q4_K_M",
-      "roles": ["planner", "summarizer"],
-      "notes": "Bom para planejamento e raciocinio geral. No Ollama: 'llama3.1:8b'."
-    },
-    "deepseek-coder-33b-instruct": {
-      "provider_hints": ["lm_studio", "ollama"],
+    "deepseek-coder:33b": {
+      "ollama_pull": "ollama pull deepseek-coder:33b",
+      "provider_hints": ["ollama", "lm_studio"],
+      "lm_studio_alias": "deepseek-coder-33b-instruct",
       "tier": "strong",
       "parameters": "33B",
       "quantization": "Q4_K_M",
+      "ram_estimate": "~20 GB (requer GPU 16GB+ VRAM ou 32GB+ RAM)",
       "roles": ["coder", "reviewer"],
-      "notes": "Modelo muito potente. Requer GPU com 16GB+ VRAM ou 32GB+ RAM com quantizacao."
+      "notes": "Modelo muito potente. Requer GPU com 16GB+ VRAM ou 32GB+ RAM com quantizacao. NAO RECOMENDADO para 16GB RAM sem GPU.",
+      "incompatible_16gb_no_gpu": true
     }
   },
 
   "roles": {
     "planner": {
-      "label": "Planner",
+      "label": "Planner (phi4-mini:3.8b)",
       "description": "Analisa requisitos, propoe plano de implementacao e identifica arquivos afetados",
       "recommended_tier": "light",
+      "recommended_model": "phi4-mini:3.8b",
       "default_parameters": {
         "temperature": 0.3,
         "max_tokens": 2048,
         "top_p": 0.9
       },
-      "notes": "Planejamento nao exige modelo grande. Um modelo 3B-4B é suficiente e mais rapido."
+      "notes": "Planejamento nao exige modelo grande. phi4-mini:3.8b é suficiente e mais rapido."
+    },
+    "architect": {
+      "label": "Architect (phi4-mini:3.8b)",
+      "description": "Define arquitetura e estrutura do codigo",
+      "recommended_tier": "light",
+      "recommended_model": "phi4-mini:3.8b",
+      "default_parameters": {
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
+      "notes": "Arquitetura exige raciocinio estruturado. phi4-mini lida bem."
     },
     "coder": {
-      "label": "Coder",
+      "label": "Coder (qwen2.5-coder:7b)",
       "description": "Implementa codigo seguindo o plano estabelecido",
       "recommended_tier": "medium",
+      "recommended_model": "qwen2.5-coder:7b",
       "default_parameters": {
         "temperature": 0.2,
         "max_tokens": 4096,
         "top_p": 0.9
       },
-      "notes": "Para projetos complexos, considere usar tier 'strong'. Temperature baixa (0.1-0.2) evita alucinacoes."
+      "notes": "qwen2.5-coder:7b é o padrao para codigo. Temperature baixa (0.1-0.2) evita alucinacoes."
+    },
+    "patch-applier": {
+      "label": "Patch Applier (qwen2.5-coder:3b)",
+      "description": "Aplica patches de codigo de forma precisa",
+      "recommended_tier": "light",
+      "recommended_model": "qwen2.5-coder:3b",
+      "default_parameters": {
+        "temperature": 0.2,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
+      "notes": "Modelo leve (3B) é suficiente para aplicar patches. Rapido e eficiente."
     },
     "reviewer": {
-      "label": "Reviewer",
+      "label": "Reviewer (qwen2.5-coder:7b)",
       "description": "Revisa codigo, aponta problemas de qualidade, seguranca e boas praticas",
       "recommended_tier": "medium",
+      "recommended_model": "qwen2.5-coder:7b",
       "default_parameters": {
         "temperature": 0.1,
         "max_tokens": 4096,
@@ -137,10 +203,23 @@
       },
       "notes": "Temperature muito baixa (0.1) para revisao consistente e precisa."
     },
+    "security": {
+      "label": "Security (qwen2.5-coder:7b)",
+      "description": "Revisa seguranca do codigo, aponta vulnerabilidades",
+      "recommended_tier": "medium",
+      "recommended_model": "qwen2.5-coder:7b",
+      "default_parameters": {
+        "temperature": 0.1,
+        "max_tokens": 4096,
+        "top_p": 0.85
+      },
+      "notes": "Mesmo modelo do reviewer. Foco em OWASP, injection, secrets exposure."
+    },
     "tester": {
-      "label": "Tester",
+      "label": "Tester (llama3.2:3b)",
       "description": "Executa testes, analisa resultados e sugere correcoes",
       "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
       "default_parameters": {
         "temperature": 0.2,
         "max_tokens": 2048,
@@ -149,9 +228,10 @@
       "notes": "Testes sao tarefas estruturadas. Modelo leve resolve bem."
     },
     "docs": {
-      "label": "Docs",
+      "label": "Docs (llama3.2:3b)",
       "description": "Gera documentacao, mensagens de commit e descricoes de PR",
       "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
       "default_parameters": {
         "temperature": 0.4,
         "max_tokens": 1024,
@@ -160,57 +240,76 @@
       "notes": "Temperature um pouco mais alta (0.4) para variacao na escrita."
     },
     "summarizer": {
-      "label": "Summarizer",
+      "label": "Summarizer (llama3.2:3b)",
       "description": "Resume contextos grandes, diffs e historicos de conversa",
       "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
       "default_parameters": {
         "temperature": 0.3,
         "max_tokens": 1024,
         "top_p": 0.9
       },
       "notes": "Modelo leve e rapido é ideal. O importante é janela de contexto grande."
+    },
+    "memory": {
+      "label": "Memory (llama3.2:3b)",
+      "description": "Atualiza arquivos de memoria e decisoes do projeto",
+      "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
+      "default_parameters": {
+        "temperature": 0.3,
+        "max_tokens": 1024,
+        "top_p": 0.9
+      },
+      "notes": "Tarefa leve de estruturacao de texto. Modelo 3B é suficiente."
+    },
+    "orchestrator": {
+      "label": "Orchestrator (llama3.2:3b)",
+      "description": "Orquestra o fluxo de agentes e coordenacao",
+      "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
+      "default_parameters": {
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
+      "notes": "Orquestracao é logica, nao criativa. Modelo leve basta."
+    },
+    "context-engineer": {
+      "label": "Context Engineer (llama3.2:3b)",
+      "description": "Coleta e organiza contexto do projeto",
+      "recommended_tier": "light",
+      "recommended_model": "llama3.2:3b",
+      "default_parameters": {
+        "temperature": 0.3,
+        "max_tokens": 2048,
+        "top_p": 0.9
+      },
+      "notes": "Tarefa de coleta e estruturacao. Modelo leve é suficiente."
     }
   },
 
-  "fallbacks": {
-    "planner": {
-      "model": "qwen2.5-coder-7b-instruct",
-      "reason": "Se o modelo leve nao estiver disponivel, usa o coder 7B como fallback"
-    },
-    "coder": {
-      "model": "qwen2.5-coder-7b-instruct",
-      "reason": "Modelo medio padrão para codigo"
-    },
-    "reviewer": {
-      "model": "qwen2.5-coder-7b-instruct",
-      "reason": "Mesmo modelo do coder como fallback seguro"
-    },
-    "tester": {
-      "model": "huihui-qwen3-4b-instruct-2507",
-      "reason": "Fallback para modelo leve de teste"
-    },
-    "docs": {
-      "model": "llama-3.2-3b-instruct",
-      "reason": "Modelo leve e rapido para documentacao"
-    },
-    "summarizer": {
-      "model": "llama-3.2-3b-instruct",
-      "reason": "Modelo leve para resumo"
-    }
-  },
+  "incompatible_for_16gb_no_gpu": [
+    "qwen2.5-coder:14b",
+    "qwen2.5-coder:32b",
+    "deepseek-coder:33b",
+    "codestral:22b",
+    "llama3.1:70b",
+    "qwen2.5:72b",
+    "mixtral:8x7b"
+  ],
 
   "usage_notes": [
-    "Todos os modelos rodam 100% local. Nenhum dado sai da maquina.",
-    "Modelos leves (3B-4B) funcionam bem em CPUs modernas com 8GB RAM.",
-    "Modelos medios (7B) exigem idealmente 8-16GB RAM e funcionam melhor com quantizacao 4-bit.",
-    "Modelos fortes (14B+) precisam de GPU com 10GB+ VRAM ou CPU com 32GB+ RAM.",
-    "No LM Studio, ative a aceleracao GPU nas configuracoes se tiver placa NVIDIA/AMD.",
-    "No Ollama, use 'ollama pull <modelo>' para baixar o modelo antes de usar.",
+    "Provider PADRAO: Ollama (http://127.0.0.1:11434/v1).",
+    "LM Studio mantido como fallback secundario para testes locais.",
+    "Baixe os modelos com: ollama pull <nome-do-modelo>",
+    "Modelos leves (3B-4B) funcionam bem em CPUs modernas com 8-16GB RAM.",
+    "Modelos medios (7B) exigem idealmente 8-16GB RAM com quantizacao Q4_K_M.",
+    "Modelos fortes (14B+) NAO sao recomendados para maquinas com 16GB RAM sem GPU.",
+    "Para maquina com 16GB RAM sem GPU, usar apenas modelos light + qwen2.5-coder:7b (um de cada vez).",
+    "Se o servidor Ollama HTTP nao responder, tente 'ollama serve' ou reiniciar o Ollama.",
+    "Se o modelo nao for encontrado, use 'ollama pull <modelo>' antes de usar.",
     "Ajuste temperature conforme necessidade: mais baixa (0.1) para tarefas precisas, mais alta (0.5+) para criatividade.",
-    "Se o modelo nao responder, verifique se o provider esta rodando e a URL base esta correta.",
-    "Nem todos os modelos listados precisam estar instalados. O sistema usa apenas o que estiver configurado em assignment.",
-    "Cada modelo pode ter nome diferente entre LM Studio e Ollama (ex: 'qwen2.5-coder-7b-instruct' vs 'qwen2.5-coder:7b').",
-    "Para maquinas com pouca memoria RAM, use apenas modelos do tier 'light' e evite rodar varios providers simultaneamente.",
-    "Se o LM Studio estiver lento, reduza 'max_tokens' ou troque para um modelo com menos parametros."
+    "Todos os modelos rodam 100% local. Nenhum dado sai da maquina."
   ]
 }

@@ -511,9 +511,9 @@
         <div class="qg-header-badge">&bull; Quality Gate</div>
         <h1>Relatorio de Qualidade</h1>
         <div class="qg-header-meta">
-            <span>&#128197; 25/05/2026 18:51:41</span>
+            <span>&#128197; 25/05/2026 20:54:12</span>
             <span>&#128279; master</span>
-            <span>&#128196; 4003860 Add AI-Flow framework and agent docs</span>
+            <span>&#128196; 7a372be Add agent runner &amp; dashboard improvements</span>
             <span>&#128269; working tree + staged</span>
         </div>
     </div>
@@ -521,14 +521,14 @@
     <!-- ===== SCORE + STATUS ===== -->
     <div class="qg-score-wrap">
         <div class="qg-score-card qg-score-fail">
-            <div class="qg-score-number">2/10</div>
+            <div class="qg-score-number">4/10</div>
             <div class="qg-score-label">Qualidade geral</div>
         </div>
         <div class="qg-status-card qg-status-fail">
             <div class="qg-status-icon">X</div>
             <div class="qg-status-label">Reprovado</div>
             <div class="qg-status-detail">
-                14 criticos, 6 importantes, 74 opcionais
+                1 criticos, 14 importantes, 14 opcionais
             </div>
         </div>
     </div>
@@ -536,27 +536,27 @@
     <!-- ===== SUMMARY ===== -->
     <div class="qg-summary-grid">
         <div class="qg-summary-card color-files">
-            <div class="qg-summary-value">3</div>
+            <div class="qg-summary-value">11</div>
             <div class="qg-summary-label">Arquivos alterados</div>
         </div>
         <div class="qg-summary-card color-added">
-            <div class="qg-summary-value">+1317</div>
+            <div class="qg-summary-value">+1074</div>
             <div class="qg-summary-label">Linhas adicionadas</div>
         </div>
         <div class="qg-summary-card color-removed">
-            <div class="qg-summary-value">51</div>
+            <div class="qg-summary-value">263</div>
             <div class="qg-summary-label">Linhas removidas</div>
         </div>
         <div class="qg-summary-card color-critical">
-            <div class="qg-summary-value">14</div>
+            <div class="qg-summary-value">1</div>
             <div class="qg-summary-label">Alertas criticos</div>
         </div>
         <div class="qg-summary-card color-warnings">
-            <div class="qg-summary-value">6</div>
+            <div class="qg-summary-value">14</div>
             <div class="qg-summary-label">Alertas importantes</div>
         </div>
         <div class="qg-summary-card color-info">
-            <div class="qg-summary-value">74</div>
+            <div class="qg-summary-value">14</div>
             <div class="qg-summary-label">Melhorias opcionais</div>
         </div>
     </div>
@@ -577,41 +577,145 @@
             <tbody>
 
                 <tr>
-                    <td><span class="qg-file-path">.ai-flow/dashboard.html</span></td>
-                    <td class="qg-cell-added">+91</td>
-                    <td class="qg-cell-removed">-0</td>
+                    <td><span class="qg-file-path">.ai-flow/README.md</span></td>
+                    <td class="qg-cell-added">+49</td>
+                    <td class="qg-cell-removed">-9</td>
                     <td class="qg-cell-impact">
                         <div class="qg-bar">
                             <div class="qg-bar-track">
-                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:9.691160809371672%;"></div>
+                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:9.68280467445743%;"></div>
                             </div>
-                            <span class="qg-bar-label">91</span>
+                            <span class="qg-bar-label">58</span>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <td><span class="qg-file-path">.ai-flow/scripts/ai-flow.py</span></td>
-                    <td class="qg-cell-added">+931</td>
-                    <td class="qg-cell-removed">-8</td>
+                    <td><span class="qg-file-path">.ai-flow/config.example.json</span></td>
+                    <td class="qg-cell-added">+54</td>
+                    <td class="qg-cell-removed">-15</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:11.519198664440735%;"></div>
+                            </div>
+                            <span class="qg-bar-label">69</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/dashboard.html</span></td>
+                    <td class="qg-cell-added">+548</td>
+                    <td class="qg-cell-removed">-51</td>
                     <td class="qg-cell-impact">
                         <div class="qg-bar">
                             <div class="qg-bar-track">
                                 <div class="qg-bar-fill qg-bar-fill-red" style="width:100.0%;"></div>
                             </div>
-                            <span class="qg-bar-label">939</span>
+                            <span class="qg-bar-label">599</span>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <td><span class="qg-file-path">.ai-flow/scripts/quality-gate.py</span></td>
-                    <td class="qg-cell-added">+295</td>
-                    <td class="qg-cell-removed">-43</td>
+                    <td><span class="qg-file-path">.ai-flow/model-registry.example.json</span></td>
+                    <td class="qg-cell-added">+190</td>
+                    <td class="qg-cell-removed">-91</td>
                     <td class="qg-cell-impact">
                         <div class="qg-bar">
                             <div class="qg-bar-track">
-                                <div class="qg-bar-fill qg-bar-fill-red" style="width:35.99574014909478%;"></div>
+                                <div class="qg-bar-fill qg-bar-fill-red" style="width:46.91151919866444%;"></div>
                             </div>
-                            <span class="qg-bar-label">338</span>
+                            <span class="qg-bar-label">281</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/reports/project-context.html</span></td>
+                    <td class="qg-cell-added">+10</td>
+                    <td class="qg-cell-removed">-10</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-green" style="width:3.33889816360601%;"></div>
+                            </div>
+                            <span class="qg-bar-label">20</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/scripts/ai-flow.py</span></td>
+                    <td class="qg-cell-added">+25</td>
+                    <td class="qg-cell-removed">-8</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-green" style="width:5.509181969949917%;"></div>
+                            </div>
+                            <span class="qg-bar-label">33</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/scripts/check-models.py</span></td>
+                    <td class="qg-cell-added">+1</td>
+                    <td class="qg-cell-removed">-1</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-green" style="width:0.333889816360601%;"></div>
+                            </div>
+                            <span class="qg-bar-label">2</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/scripts/llm_client.py</span></td>
+                    <td class="qg-cell-added">+62</td>
+                    <td class="qg-cell-removed">-26</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:14.691151919866444%;"></div>
+                            </div>
+                            <span class="qg-bar-label">88</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/scripts/run-agent.py</span></td>
+                    <td class="qg-cell-added">+72</td>
+                    <td class="qg-cell-removed">-16</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:14.691151919866444%;"></div>
+                            </div>
+                            <span class="qg-bar-label">88</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/scripts/select-model.py</span></td>
+                    <td class="qg-cell-added">+22</td>
+                    <td class="qg-cell-removed">-22</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-green" style="width:7.345575959933222%;"></div>
+                            </div>
+                            <span class="qg-bar-label">44</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="qg-file-path">.ai-flow/server.py</span></td>
+                    <td class="qg-cell-added">+41</td>
+                    <td class="qg-cell-removed">-14</td>
+                    <td class="qg-cell-impact">
+                        <div class="qg-bar">
+                            <div class="qg-bar-track">
+                                <div class="qg-bar-fill qg-bar-fill-yellow" style="width:9.181969949916526%;"></div>
+                            </div>
+                            <span class="qg-bar-label">55</span>
                         </div>
                     </td>
                 </tr>
@@ -627,140 +731,10 @@
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-critical">!</span>
                     <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/dashboard.html</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Arquivo muito alterado: +931/-8 linhas (total: 939, limite: 300)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Arquivo muito alterado: +295/-43 linhas (total: 338, limite: 300)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: rm -rf</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: rmdir /s</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: del /s</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: format c:</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: git push --force</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: curl | sh</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: wget | sh</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: Invoke-WebRequest | Invoke-Expression</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: eval()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: exec()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: os.system()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: shell=True</p>
+                    <p>Arquivo muito alterado: +548/-51 linhas (total: 599, limite: 300)</p>
                 </div>
             </div>
     </div>
@@ -772,50 +746,130 @@
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-warning">!</span>
                     <span class="qg-alert-badge qg-badge-warning">WARNING</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/dashboard.html</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Arquivo alterado tem 975 linhas no diff (limite: 300). Considere dividir.</p>
+                    <p>Arquivo alterado tem 813 linhas no diff (limite: 300). Considere dividir.</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-warning">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-warning">!</span>
                     <span class="qg-alert-badge qg-badge-warning">WARNING</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Arquivo alterado tem 448 linhas (limite: 300). Considere dividir.</p>
+                    <p>Arquivo alterado tem 404 linhas no diff (limite: 300). Considere dividir.</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-warning">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-warning">!</span>
                     <span class="qg-alert-badge qg-badge-warning">WARNING</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/config.example.json</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Linha duplicada 6x: &quot;f&quot;- Tarefa: {state.get(&#x27;task_name&#x27;, &#x27;&#x27;)}&quot;,&quot;</p>
+                    <p>Linha duplicada 4x: &quot;&quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;&quot;</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-warning">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-warning">!</span>
                     <span class="qg-alert-badge qg-badge-warning">WARNING</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/select-model.py, .ai-flow/config.example.json</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Linha duplicada 4x: &quot;state = load_task_state(task_dir)&quot;</p>
+                    <p>Linha duplicada 5x: &quot;&quot;model&quot;: &quot;qwen2.5-coder:7b&quot;,&quot;</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-warning">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-warning">!</span>
                     <span class="qg-alert-badge qg-badge-warning">WARNING</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/select-model.py, .ai-flow/config.example.json</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Linha duplicada 4x: &quot;if bundle.get(&quot;error&quot;):&quot;</p>
+                    <p>Linha duplicada 9x: &quot;&quot;model&quot;: &quot;llama3.2:3b&quot;,&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/dashboard.html</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 4x: &quot;border: 1px solid rgba(255, 255, 255, 0.08) !important;&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/dashboard.html</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 6x: &quot;&lt;div class=&quot;form-group&quot;&gt;&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 8x: &quot;&quot;provider_hints&quot;: [&quot;ollama&quot;, &quot;lm_studio&quot;],&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 5x: &quot;&quot;quantization&quot;: &quot;Q4_K_M (padrao)&quot;,&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 5x: &quot;&quot;recommended_tier&quot;: &quot;light&quot;,&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 6x: &quot;&quot;default_parameters&quot;: {&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 6x: &quot;&quot;recommended_model&quot;: &quot;llama3.2:3b&quot;,&quot;</p>
+                </div>
+            </div>
+<div class="qg-alert qg-alert-warning">
+                <div class="qg-alert-header">
+                    <span class="qg-alert-icon qg-icon-warning">!</span>
+                    <span class="qg-alert-badge qg-badge-warning">WARNING</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/select-model.py</span>
+                </div>
+                <div class="qg-alert-body">
+                    <p>Linha duplicada 6x: &quot;&quot;provider&quot;: &quot;ollama&quot;,&quot;</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-warning">
@@ -837,590 +891,20 @@
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>bug encontrado: p_bugfix = sub.add_parser(&quot;bugfix&quot;, help=&quot;Fluxo legado de bugfix&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {name}: {value}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;## AI-Flow status&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Configuracao&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Git&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Scripts principais&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Relatorios&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefa atual&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(line)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefa atual&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa ativa encontrada&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefas recentes&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(line)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefas recentes&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa criada ainda&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;## Configuracao efetiva&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Provider e modelos&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Atribuicoes por agente&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Commands&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Comandos por stack&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Limites do quality gate&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Paths&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Como criar config local&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Copie .ai-flow/config.example.json para .ai-flow/config.json&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Ajuste provider, modelos e comandos da sua stack&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;## Validacao de config&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Checagem de provider&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Avisos&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {warning}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Erros&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {error}&quot;)</p>
+                    <span class="qg-alert-file">.ai-flow/README.md</span>
                 </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Scripts principais&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {item[&#x27;script&#x27;]}: {&#x27;ok&#x27; if item[&#x27;exists&#x27;] else &#x27;ausente&#x27;}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Resultado final&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- config invalida&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- config valida&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;## Tarefa iniciada&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Arquivos criados&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {name}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Proximos passos&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {step}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;## Tarefas&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa encontrada&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;{marker} {task_dir.name}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  tarefa: {state.get(&#x27;task_name&#x27;, task_dir.name)}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  status: {state.get(&#x27;status&#x27;, &#x27;unknown&#x27;)}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  etapa: {state.get(&#x27;stage&#x27;, &#x27;unknown&#x27;)}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  branch: {state.get(&#x27;branch&#x27;, &#x27;unknown&#x27;)}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  relatórios: {&#x27;, &#x27;.join(reports) if reports else &#x27;(nenhum)&#x27;}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Runs legados&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum run legado encontrado&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;- {run_dir.name}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(output)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[WARN] dashboard nao foi gerado com sucesso&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Dashboard gerado em {DASHBOARD_PATH}&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[ERRO] dashboard.html nao foi encontrado apos a geracao&quot;)</p>
+                    <p>bug encontrado: | **Reviewer/Security** | `qwen2.5-coder:7b` | Rigor na detecção de bugs |</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
+                    <span class="qg-alert-file">.ai-flow/model-registry.example.json</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(output)</p>
+                    <p>Todo encontrado: &quot;Todos os modelos rodam 100% local. Nenhum dado sai da maquina.&quot;</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1430,7 +914,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Artefato salvo em {task_dir / &#x27;01-context.md&#x27;}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;  [!] Usando config.example.json. Copie para config.json para configuraca</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1440,7 +924,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Estado atualizado: etapa={state.get(&#x27;stage&#x27;)}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Sugestoes&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1450,7 +934,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[INFO] Nenhuma tarefa ativa encontrada. Use init-task para registrar os a</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Ollama CLI detectado, mas servidor HTTP nao responde.&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1460,7 +944,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(output)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Execute &#x27;ollama serve&#x27; ou abra o aplicativo Ollama.&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1470,7 +954,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Artefato salvo em {task_dir / &#x27;04-quality-gate.html&#x27;}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Ollama nao encontrado. Instale em https://ollama.ai&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1480,7 +964,7 @@
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Estado atualizado: etapa={state.get(&#x27;stage&#x27;)}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Use config.json (copie de config.example.json) para configuracao local.</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
@@ -1488,89 +972,59 @@
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
                     <span class="qg-alert-file">.ai-flow/scripts/ai-flow.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[INFO] Nenhuma tarefa ativa encontrada. Use init-task para registrar os a</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[1/4] Coletando diff atual do working tree...&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[!] Git nao disponivel. O relatorio sera gerado com diff vazio.&quot;)</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-info">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-info">i</span>
-                    <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;[!] Nenhuma alteracao encontrada no working tree ou staged.&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;- Revise os avisos acima. Alguns campos de config estao ausentes.&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/llm_client.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[2/4] Analisando alteracoes ({source_label})...&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[ERRO] Nenhum config encontrado em {CONFIG_PATH} ou {CONFIG_EXAMPLE_PATH</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/run-agent.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Comandos perigosos: {len(dangerous_commands)}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;  {agent_id:20s} {status:30s} (mapeia para config: {assignment})&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/run-agent.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Dependencias novas: {len(new_dependencies)}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;[ERRO] {error}&quot;)</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/run-agent.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Ausencia de testes: {len(missing_tests)}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(&quot;Forneca um ID de agente. Use --list-agents para ver os disponiveis.&quot;, fil</p>
                 </div>
             </div>
 <div class="qg-alert qg-alert-info">
                 <div class="qg-alert-header">
                     <span class="qg-alert-icon qg-icon-info">i</span>
                     <span class="qg-alert-badge qg-badge-info">INFO</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
+                    <span class="qg-alert-file">.ai-flow/scripts/run-agent.py</span>
                 </div>
                 <div class="qg-alert-body">
-                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;     origem: {source_label}&quot;)</p>
+                    <p>Possivel debug/log esquecido: print() -&gt; print(f&quot;\n--- Salvo em: {run_subdir}&quot;, file=sys.stderr)</p>
                 </div>
             </div>
     </div>
@@ -1584,126 +1038,7 @@
     <!-- ===== DANGEROUS COMMANDS ===== -->
     <div class="qg-section">
         <div class="qg-section-title">Comandos perigosos</div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: rm -rf</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: rmdir /s</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: del /s</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: format c:</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: git push --force</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: curl | sh</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: wget | sh</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: Invoke-WebRequest | Invoke-Expression</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: eval()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: exec()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: os.system()</p>
-                </div>
-            </div>
-<div class="qg-alert qg-alert-critical">
-                <div class="qg-alert-header">
-                    <span class="qg-alert-icon qg-icon-critical">!</span>
-                    <span class="qg-alert-badge qg-badge-critical">CRITICAL</span>
-                    <span class="qg-alert-file">.ai-flow/scripts/quality-gate.py</span>
-                </div>
-                <div class="qg-alert-body">
-                    <p>Comando potencialmente perigoso detectado: shell=True</p>
-                </div>
-            </div>
+<p class="qg-none">Nenhum alerta.</p>
     </div>
 
     <!-- ===== TESTS ===== -->
@@ -1730,207 +1065,207 @@
                 <span>+{total_added} / -{total_removed} linhas</span>
             </div>
             <div class="qg-diff-content">
+diff --git a/.ai-flow/README.md b/.ai-flow/README.md
+--- a/.ai-flow/README.md
++++ b/.ai-flow/README.md
+<span class="qg-diff-hunk">@@ -1,21 +1,61 @@</span>
+<span class="qg-diff-remove">-Estrutura reutilizável com múltiplos agentes para criação, revisão, correção e validação de código usando modelos locais (LM Studio / Ollama).</span>
+<span class="qg-diff-add">+Estrutura reutilizável com múltiplos agentes para criação, revisão, correção e validação de código usando modelos locais via **Ollama** (provider principal, com fallback para LM Studio).</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+## Setup recomendado com Ollama</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+Provider padrão: **Ollama** (http://127.0.0.1:11434/v1). LM Studio mantido como fallback opcional.</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+### 1. Instalar Ollama</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+Baixe e instale o [Ollama](https://ollama.ai). Verifique a instalação:</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+```powershell</span>
+<span class="qg-diff-add">+ollama --version</span>
+<span class="qg-diff-add">+```</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+### 2. Baixar os modelos recomendados</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+Para máquina com **16 GB RAM e sem GPU**, baixe estes modelos (leves + 7B para coding):</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+```powershell</span>
+<span class="qg-diff-add">+ollama pull llama3.2:3b</span>
+<span class="qg-diff-add">+ollama pull phi4-mini:3.8b</span>
+<span class="qg-diff-add">+ollama pull qwen2.5-coder:3b</span>
+<span class="qg-diff-add">+ollama pull qwen2.5-coder:7b</span>
+<span class="qg-diff-add">+```</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+&gt; Modelos 14B+ (como `qwen2.5-coder:14b`) **não são recomendados** para 16 GB sem GPU — podem causar swap excessivo.</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+### 3. Validar configuração</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+```powershell</span>
+<span class="qg-diff-add">+python .ai-flow\scripts\ai-flow.py validate-config</span>
+<span class="qg-diff-add">+```</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+### 4. Abrir o dashboard</span>
+<span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+```powershell</span>
+<span class="qg-diff-add">+python .ai-flow\scripts\ai-flow.py dashboard</span>
+<span class="qg-diff-add">+```</span>
+<span class="qg-diff-remove">-- **Python 3** — para executar o quality gate (sem dependências externas)</span>
+<span class="qg-diff-remove">-- **LM Studio** (ou Ollama) rodando com modelos carregados</span>
+<span class="qg-diff-add">+- **Python 3** — para executar scripts (sem dependências externas)</span>
+<span class="qg-diff-add">+- **Ollama** rodando (`ollama serve` ou aplicativo aberto)</span>
+<span class="qg-diff-remove">-| Agente | Modelo | Motivo |</span>
+<span class="qg-diff-remove">-|--------|--------|--------|</span>
+<span class="qg-diff-remove">-| **Planner** | `huihui-qwen3-4b-instruct-2507` | Análise geral, equilíbrio |</span>
+<span class="qg-diff-remove">-| **Coder** | `qwen2.5-coder-7b-instruct` | Melhor para código |</span>
+<span class="qg-diff-remove">-| **Reviewer** | `qwen2.5-coder-7b-instruct` | Rigor na detecção de bugs |</span>
+<span class="qg-diff-remove">-| **Docs/Commit** | `llama-3.2-3b-instruct` | Rápido para resumos |</span>
+<span class="qg-diff-add">+| Agente | Modelo Ollama | Motivo |</span>
+<span class="qg-diff-add">+|--------|---------------|--------|</span>
+<span class="qg-diff-add">+| **Planner/Architect** | `phi4-mini:3.8b` | Leve, análise geral |</span>
+<span class="qg-diff-add">+| **Coder** | `qwen2.5-coder:7b` | Melhor para código |</span>
+<span class="qg-diff-add">+| **Reviewer/Security** | `qwen2.5-coder:7b` | Rigor na detecção de bugs |</span>
+<span class="qg-diff-add">+| **Tester** | `llama3.2:3b` | Rápido para validação |</span>
+<span class="qg-diff-add">+| **Docs/Summarizer** | `llama3.2:3b` | Rápido para resumos |</span>
+<span class="qg-diff-add">+| **Patch Applier** | `qwen2.5-coder:3b` | Leve e rápido |</span>
+<span class="qg-diff-add">+| **Memory/Orchestrator** | `llama3.2:3b` | Tarefas leves |</span>
+diff --git a/.ai-flow/config.example.json b/.ai-flow/config.example.json
+--- a/.ai-flow/config.example.json
++++ b/.ai-flow/config.example.json
+<span class="qg-diff-hunk">@@ -3,57 +3,96 @@</span>
+<span class="qg-diff-remove">-    &quot;model_for_planning&quot;: &quot;huihui-qwen3-4b-instruct-2507&quot;,</span>
+<span class="qg-diff-remove">-    &quot;model_for_coding&quot;: &quot;qwen2.5-coder-7b-instruct&quot;,</span>
+<span class="qg-diff-remove">-    &quot;model_for_review&quot;: &quot;qwen2.5-coder-7b-instruct&quot;,</span>
+<span class="qg-diff-remove">-    &quot;model_for_summary&quot;: &quot;llama-3.2-3b-instruct&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_planning&quot;: &quot;phi4-mini:3.8b&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_coding&quot;: &quot;qwen2.5-coder:7b&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_review&quot;: &quot;qwen2.5-coder:7b&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_tester&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_docs&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-add">+    &quot;model_for_summary&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;huihui-qwen3-4b-instruct-2507&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;phi4-mini:3.8b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;fallback_model&quot;: &quot;qwen2.5-coder-7b-instruct&quot;</span>
+<span class="qg-diff-add">+        &quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-add">+      &quot;architect&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;phi4-mini:3.8b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.3,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 2048,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.9,</span>
+<span class="qg-diff-add">+        &quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;qwen2.5-coder-7b-instruct&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;qwen2.5-coder:7b&quot;,</span>
+<span class="qg-diff-add">+      &quot;patch-applier&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;qwen2.5-coder:3b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.2,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 2048,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.9</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;qwen2.5-coder-7b-instruct&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;qwen2.5-coder:7b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.1,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 4096,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.85</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-add">+      &quot;security&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;qwen2.5-coder:7b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;llama-3.2-3b-instruct&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;fallback_model&quot;: &quot;qwen2.5-coder-7b-instruct&quot;</span>
+<span class="qg-diff-add">+        &quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;llama-3.2-3b-instruct&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;model&quot;: &quot;llama-3.2-3b-instruct&quot;,</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-remove">-        &quot;fallback_model&quot;: &quot;qwen2.5-coder-7b-instruct&quot;</span>
+<span class="qg-diff-add">+        &quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-add">+      &quot;memory&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.3,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 1024,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.9</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-add">+      &quot;orchestrator&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.3,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 2048,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.9</span>
+<span class="qg-diff-add">+      },</span>
+<span class="qg-diff-add">+      &quot;context-engineer&quot;: {</span>
+<span class="qg-diff-add">+        &quot;model&quot;: &quot;llama3.2:3b&quot;,</span>
+<span class="qg-diff-add">+        &quot;temperature&quot;: 0.3,</span>
+<span class="qg-diff-add">+        &quot;max_tokens&quot;: 2048,</span>
+<span class="qg-diff-add">+        &quot;top_p&quot;: 0.9</span>
+<span class="qg-diff-remove">-    &quot;default_provider&quot;: &quot;lm_studio&quot;,</span>
+<span class="qg-diff-remove">-    &quot;lm_studio_base_url&quot;: &quot;http://127.0.0.1:1234/v1&quot;,</span>
+<span class="qg-diff-add">+    &quot;default_provider&quot;: &quot;ollama&quot;,</span>
+<span class="qg-diff-add">+    &quot;lm_studio_base_url&quot;: &quot;http://127.0.0.1:1234/v1&quot;,</span>
 diff --git a/.ai-flow/dashboard.html b/.ai-flow/dashboard.html
 --- a/.ai-flow/dashboard.html
 +++ b/.ai-flow/dashboard.html
-<span class="qg-diff-hunk">@@ -1685,6 +1685,12 @@ input[type=&quot;range&quot;].form-control::-webkit-slider-thumb:hover {</span>
-<span class="qg-diff-add">+            &lt;button class=&quot;btn-action&quot; onclick=&quot;checkModels()&quot; title=&quot;Verificar conexao com LM Studio/Ollama&quot;&gt;</span>
-<span class="qg-diff-add">+                &lt;i data-lucide=&quot;cpu&quot; style=&quot;width: 11px;&quot;&gt;&lt;/i&gt; Modelos</span>
-<span class="qg-diff-add">+            &lt;/button&gt;</span>
-<span class="qg-diff-add">+            &lt;button class=&quot;btn-action&quot; onclick=&quot;openRunAgentDialog()&quot; title=&quot;Executar agente via LLM local&quot;&gt;</span>
-<span class="qg-diff-add">+                &lt;i data-lucide=&quot;bot&quot; style=&quot;width: 11px;&quot;&gt;&lt;/i&gt; Executar Agente</span>
-<span class="qg-diff-add">+            &lt;/button&gt;</span>
-<span class="qg-diff-hunk">@@ -4286,6 +4292,91 @@ input[type=&quot;range&quot;].form-control::-webkit-slider-thumb:hover {</span>
-<span class="qg-diff-add">+        async function checkModels() {</span>
-<span class="qg-diff-add">+            switchBottomTab(&#x27;tab-console&#x27;);</span>
-<span class="qg-diff-add">+            writeToConsole(&#x27;Verificando provedores de modelo...&#x27;);</span>
-<span class="qg-diff-add">+            try {</span>
-<span class="qg-diff-add">+                const res = await fetch(`${serverUrl}/api/models`);</span>
-<span class="qg-diff-add">+                const r = await res.json();</span>
-<span class="qg-diff-add">+                if (r.ok) {</span>
-<span class="qg-diff-add">+                    writeToConsole(`[OK] Provider: ${r.provider}`);</span>
-<span class="qg-diff-add">+                    writeToConsole(`Modelos (${r.models.length}):`);</span>
-<span class="qg-diff-add">+                    r.models.forEach(m =&gt; writeToConsole(`  - ${m.id}`));</span>
-<span class="qg-diff-add">+                    showToast(`${r.models.length} modelo(s) encontrado(s).`);</span>
-<span class="qg-diff-add">+                } else {</span>
-<span class="qg-diff-add">+                    writeToConsole(`[ERRO] ${r.error}`);</span>
-<span class="qg-diff-add">+                    writeToConsole(&#x27;Verifique se LM Studio ou Ollama esta rodando.&#x27;);</span>
-<span class="qg-diff-add">+                    showToast(&#x27;Provider offline. Veja o console.&#x27;, &#x27;warning&#x27;);</span>
-<span class="qg-diff-add">+                }</span>
-<span class="qg-diff-add">+            } catch(e) {</span>
-<span class="qg-diff-add">+                writeToConsole(`[ERRO] Sem conexao com o servidor: ${e.message}`);</span>
-<span class="qg-diff-add">+                showToast(&#x27;Servidor offline.&#x27;, &#x27;error&#x27;);</span>
-<span class="qg-diff-add">+            }</span>
-<span class="qg-diff-add">+        }</span>
+<span class="qg-diff-hunk">@@ -14,6 +14,9 @@</span>
+<span class="qg-diff-add">+&lt;!-- Highlight.js (Syntax Highlighting) --&gt;</span>
+<span class="qg-diff-add">+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css&quot;&gt;</span>
+<span class="qg-diff-add">+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="qg-diff-hunk">@@ -1132,9 +1135,9 @@ body {</span>
+<span class="qg-diff-remove">-    border-color: rgba(255, 255, 255, 0.12) !important;</span>
+<span class="qg-diff-add">+    border-color: var(--agent-color-glow) !important;</span>
+<span class="qg-diff-remove">-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;</span>
+<span class="qg-diff-add">+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 10px var(--agent-color-glow) !important;</span>
+<span class="qg-diff-hunk">@@ -1657,6 +1660,248 @@ input[type=&quot;range&quot;].form-control::-webkit-slider-thumb:hover {</span>
 <span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+        function openRunAgentDialog() {</span>
-<span class="qg-diff-add">+            const agents = [&#x27;planner&#x27;, &#x27;coder&#x27;, &#x27;reviewer&#x27;, &#x27;tester&#x27;, &#x27;docs&#x27;, &#x27;architect&#x27;, &#x27;security&#x27;];</span>
-<span class="qg-diff-add">+            const agentList = agents.map(a =&gt; `  - ${a}`).join(&#x27;\n&#x27;);</span>
-<span class="qg-diff-add">+            const agentId = prompt(`Agente disponiveis:\n${agentList}\n\nDigite o ID do agente:`, &#x27;planner&#x27;);</span>
-<span class="qg-diff-add">+            if (!agentId) return;</span>
-<span class="qg-diff-add">+            const task = prompt(&#x27;Descricao da tarefa para o agente:&#x27;, &#x27;&#x27;);</span>
-<span class="qg-diff-add">+            if (!task) return;</span>
-<span class="qg-diff-add">+            const useGit = confirm(&#x27;Incluir git diff/status no contexto?&#x27;);</span>
-<span class="qg-diff-add">+            runAgentLive(agentId, task, useGit);</span>
-<span class="qg-diff-add">+        }</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+        async function runAgentLive(agentId, task, useGit) {</span>
-<span class="qg-diff-add">+            if (!activeProject) {</span>
-<span class="qg-diff-add">+                showToast(&#x27;Selecione um projeto.&#x27;, &#x27;warning&#x27;);</span>
-<span class="qg-diff-add">+                return;</span>
-<span class="qg-diff-add">+            }</span>
-<span class="qg-diff-add">+            switchBottomTab(&#x27;tab-console&#x27;);</span>
-<span class="qg-diff-add">+            writeToConsole(`[AGENT] Executando agente: ${agentId}`);</span>
-<span class="qg-diff-add">+            writeToConsole(`[AGENT] Task: ${task}`);</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+            const cmd = `python .ai-flow/scripts/run-agent.py ${agentId} &quot;${task.replace(/&quot;/g, &#x27;\\&quot;&#x27;)}&quot; ${useGit ? &#x27;--git-context &#x27; : &#x27;&#x27;}--save`;</span>
-<span class="qg-diff-add">+            writeToConsole(`$ ${cmd}`);</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+            const screen = document.getElementById(&#x27;composerTerminalScreen&#x27;);</span>
-<span class="qg-diff-add">+            const dot = document.getElementById(&#x27;terminalStatusDot&#x27;);</span>
-<span class="qg-diff-add">+            const badge = document.getElementById(&#x27;terminalTaskBadge&#x27;);</span>
-<span class="qg-diff-add">+            const body = document.getElementById(&#x27;composerTerminalBody&#x27;);</span>
-<span class="qg-diff-add">+            body.style.display = &#x27;flex&#x27;;</span>
-<span class="qg-diff-add">+            document.getElementById(&#x27;terminalToggleIcon&#x27;).setAttribute(&#x27;data-lucide&#x27;, &#x27;chevron-down&#x27;);</span>
-<span class="qg-diff-add">+            lucide.createIcons();</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+            screen.textContent = `$ ${cmd}\nAguardando inicio...\n`;</span>
-<span class="qg-diff-add">+            dot.style.background = &#x27;#f59e0b&#x27;;</span>
-<span class="qg-diff-add">+            badge.style.display = &#x27;inline-block&#x27;;</span>
-<span class="qg-diff-add">+            badge.textContent = agentId.toUpperCase();</span>
-<span class="qg-diff-add">+            badge.className = &#x27;git-badge M&#x27;;</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+            if (terminalPollInterval) clearInterval(terminalPollInterval);</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+            try {</span>
-<span class="qg-diff-add">+                const payload = { command: cmd, cwd: activeProject.path };</span>
-<span class="qg-diff-add">+                const res = await fetch(`${serverUrl}/api/terminal/run`, {</span>
-<span class="qg-diff-add">+                    method: &#x27;POST&#x27;,</span>
-<span class="qg-diff-add">+                    headers: { &#x27;Content-Type&#x27;: &#x27;application/json&#x27; },</span>
-<span class="qg-diff-add">+                    body: JSON.stringify(payload)</span>
-<span class="qg-diff-add">+                });</span>
-<span class="qg-diff-add">+                const r = await res.json();</span>
-<span class="qg-diff-add">+                if (r.ok &amp;&amp; r.data?.task_id) {</span>
-<span class="qg-diff-add">+                    activeTerminalTaskId = r.data.task_id;</span>
-<span class="qg-diff-add">+                    terminalProcessedByTask[activeTerminalTaskId] = 0;</span>
-<span class="qg-diff-add">+                    writeToConsole(`[AGENT] Task iniciada: ${activeTerminalTaskId}`);</span>
-<span class="qg-diff-add">+                    pollTerminalOutput(activeTerminalTaskId);</span>
-<span class="qg-diff-add">+                    showToast(`Agente ${agentId} em execucao.`);</span>
-<span class="qg-diff-add">+                } else {</span>
-<span class="qg-diff-add">+                    writeToConsole(`[AGENT] Erro ao iniciar: ${r.error || &#x27;sem resposta&#x27;}`);</span>
-<span class="qg-diff-add">+                    showToast(&#x27;Falha ao iniciar agente.&#x27;, &#x27;error&#x27;);</span>
-<span class="qg-diff-add">+                }</span>
-<span class="qg-diff-add">+            } catch(e) {</span>
-<span class="qg-diff-add">+                writeToConsole(`[AGENT] Erro de conexao: ${e.message}`);</span>
-<span class="qg-diff-add">+                showToast(&#x27;Erro de rede.&#x27;, &#x27;error&#x27;);</span>
-<span class="qg-diff-add">+            }</span>
-<span class="qg-diff-add">+        }</span>
-<span class="qg-diff-add">+</span>
-diff --git a/.ai-flow/scripts/__pycache__/quality-gate.cpython-313.pyc b/.ai-flow/scripts/__pycache__/quality-gate.cpython-313.pyc
-diff --git a/.ai-flow/scripts/ai-flow.py b/.ai-flow/scripts/ai-flow.py
---- a/.ai-flow/scripts/ai-flow.py
-+++ b/.ai-flow/scripts/ai-flow.py
-<span class="qg-diff-hunk">@@ -6,15 +6,48 @@ AI-Flow CLI orchestrator (v0).</span>
-<span class="qg-diff-add">+import datetime as dt</span>
-<span class="qg-diff-add">+import html</span>
-<span class="qg-diff-add">+import os</span>
-<span class="qg-diff-add">+import re</span>
-<span class="qg-diff-add">+import shutil</span>
-<span class="qg-diff-remove">-from datetime import datetime</span>
-<span class="qg-diff-add">+import unicodedata</span>
-<span class="qg-diff-add">+import urllib.error</span>
-<span class="qg-diff-add">+import urllib.request</span>
-<span class="qg-diff-add">+import webbrowser</span>
-<span class="qg-diff-add">+from typing import Any</span>
-<span class="qg-diff-add">+REPO_ROOT = ROOT.parent</span>
-<span class="qg-diff-add">+REPORTS_DIR = ROOT / &quot;reports&quot;</span>
-<span class="qg-diff-add">+ARTIFACTS_DIR = ROOT / &quot;artifacts&quot;</span>
-<span class="qg-diff-add">+CONFIG_PATH = ROOT / &quot;config.json&quot;</span>
-<span class="qg-diff-add">+CONFIG_EXAMPLE_PATH = ROOT / &quot;config.example.json&quot;</span>
-<span class="qg-diff-add">+QUALITY_REPORT_PATH = REPORTS_DIR / &quot;quality-gate.html&quot;</span>
-<span class="qg-diff-add">+CONTEXT_REPORT_PATH = REPORTS_DIR / &quot;project-context.html&quot;</span>
-<span class="qg-diff-add">+DASHBOARD_PATH = ROOT / &quot;dashboard.html&quot;</span>
-<span class="qg-diff-add">+CURRENT_TASK_REF_PATH = ARTIFACTS_DIR / &quot;current-task.json&quot;</span>
-<span class="qg-diff-add">+CORE_SCRIPT_NAMES = {</span>
-<span class="qg-diff-add">+    &quot;quality-gate.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;generate-context-map.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;generate-dashboard.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;build-context.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;run-checks.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;run-agent.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;apply-patch.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;memory-update.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;llm_client.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;select-model.py&quot;,</span>
-<span class="qg-diff-add">+    &quot;check-models.py&quot;,</span>
+<span class="qg-diff-add">+/* --- AMBIENT GLOW BACKDROP EFFECTS --- */</span>
+<span class="qg-diff-add">+body::before {</span>
+<span class="qg-diff-add">+    content: &#x27;&#x27;;</span>
+<span class="qg-diff-add">+    position: fixed;</span>
+<span class="qg-diff-add">+    top: -10%;</span>
+<span class="qg-diff-add">+    left: 20%;</span>
+<span class="qg-diff-add">+    width: 60vw;</span>
+<span class="qg-diff-add">+    height: 60vh;</span>
+<span class="qg-diff-add">+    background: radial-gradient(circle, rgba(168, 85, 247, 0.05) 0%, transparent 70%);</span>
+<span class="qg-diff-add">+    filter: blur(80px);</span>
+<span class="qg-diff-add">+    z-index: -2;</span>
+<span class="qg-diff-add">+    pointer-events: none;</span>
+<span class="qg-diff-add">+    animation: ambientPulse 8s infinite alternate ease-in-out;</span>
 <span class="qg-diff-add">+}</span>
-<span class="qg-diff-add">+VALID_PROVIDERS = {&quot;lm_studio&quot;, &quot;ollama&quot;, &quot;ollama_cli&quot;}</span>
-<span class="qg-diff-add">+TASK_DIR_PATTERN = re.compile(r&quot;^\d{4}-\d{2}-\d{2}-[a-z0-9-]+(?:-\d+)?$&quot;)</span>
-<span class="qg-diff-hunk">@@ -252,27 +285,917 @@ def command_self_improve(request: str, dry_run: bool) -&gt; int:</span>
-<span class="qg-diff-add">+def load_json(path: Path) -&gt; dict[str, Any]:</span>
-<span class="qg-diff-add">+    if not path.exists():</span>
-<span class="qg-diff-add">+        return {}</span>
-<span class="qg-diff-add">+    try:</span>
-<span class="qg-diff-add">+        return json.loads(path.read_text(encoding=&quot;utf-8&quot;))</span>
-<span class="qg-diff-add">+    except Exception:</span>
-<span class="qg-diff-add">+        return {}</span>
+<span class="qg-diff-add">+body::after {</span>
+<span class="qg-diff-add">+    content: &#x27;&#x27;;</span>
+<span class="qg-diff-add">+    position: fixed;</span>
+<span class="qg-diff-add">+    bottom: -10%;</span>
+<span class="qg-diff-add">+    right: 10%;</span>
+<span class="qg-diff-add">+    width: 50vw;</span>
+<span class="qg-diff-add">+    height: 50vh;</span>
+<span class="qg-diff-add">+    background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);</span>
+<span class="qg-diff-add">+    filter: blur(80px);</span>
+<span class="qg-diff-add">+    z-index: -2;</span>
+<span class="qg-diff-add">+    pointer-events: none;</span>
+<span class="qg-diff-add">+    animation: ambientPulse 12s infinite alternate-reverse ease-in-out;</span>
+<span class="qg-diff-add">+}</span>
+<span class="qg-diff-add">+@keyframes ambientPulse {</span>
+<span class="qg-diff-add">+    0% { transform: translate(0, 0) scale(1); opacity: 0.8; }</span>
+<span class="qg-diff-add">+    100% { transform: translate(50px, 30px) scale(1.15); opacity: 1; }</span>
+<span class="qg-diff-add">+}</span>
 <span class="qg-diff-add">+</span>
+<span class="qg-diff-add">+/* --- SCROLLBAR SYSTEM --- */</span>
+<span class="qg-diff-add">+::-webkit-scrollbar {</span>
+<span class="qg-diff-add">+    width: 6px;</span>
+<span class="qg-diff-add">+    height: 6px;</span>
+<span class="qg-diff-add">+}</span>
+<span class="qg-diff-add">+::-webkit-scrollbar-track {</span>
+<span class="qg-diff-add">+    background: rgba(0, 0, 0, 0.05);</span>
+<span class="qg-diff-add">+}</span>
+<span class="qg-diff-add">+::-webkit-scrollbar-thumb {</span>
+<span class="qg-diff-add">+    background: rgba(255, 255, 255, 0.08);</span>
+<span class="qg-diff-add">+    border-radius: 999px;</span>
+<span class="qg-diff-add">+    transition: background 0.3s;</span>
+<span class="qg-diff-add">+}</span>
+<span class="qg-diff-add">+::-webkit-scrollbar-thumb:hover {</span>
+<span class="qg-diff-add">+    background: rgba(168, 85, 247, 0.4);</span>
+<span class="qg-diff-add">+}</span>
 <span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+def iso_timestamp() -&gt; str:</span>
-<span class="qg-diff-add">+    return dt.datetime.now().replace(microsecond=0).isoformat()</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+def safe_slug(text: str) -&gt; str:</span>
-<span class="qg-diff-add">+    normalized = unicodedata.normalize(&quot;NFKD&quot;, text or &quot;&quot;)</span>
-<span class="qg-diff-add">+    ascii_text = normalized.encode(&quot;ascii&quot;, &quot;ignore&quot;).decode(&quot;ascii&quot;)</span>
-<span class="qg-diff-add">+    slug = re.sub(r&quot;[^a-zA-Z0-9]+&quot;, &quot;-&quot;, ascii_text).strip(&quot;-&quot;).lower()</span>
-<span class="qg-diff-add">+    return slug or &quot;task&quot;</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+def run_command(command: list[str], cwd: Path | None = None, env: dict[str, str] | None = None) -&gt; tuple[int, str]:</span>
-<span class="qg-diff-add">+    try:</span>
-<span class="qg-diff-add">+        completed = subprocess.run(</span>
-<span class="qg-diff-add">+            command,</span>
-<span class="qg-diff-add">+            cwd=str(cwd) if cwd else None,</span>
-<span class="qg-diff-add">+            env=env,</span>
-<span class="qg-diff-add">+            capture_output=True,</span>
-<span class="qg-diff-add">+            text=True,</span>
-<span class="qg-diff-add">+            encoding=&quot;utf-8&quot;,</span>
-<span class="qg-diff-add">+            errors=&quot;replace&quot;,</span>
-<span class="qg-diff-add">+            check=False,</span>
-<span class="qg-diff-add">+        )</span>
-<span class="qg-diff-add">+    except FileNotFoundError as exc:</span>
-<span class="qg-diff-add">+        return 127, str(exc)</span>
-<span class="qg-diff-add">+    return completed.returncode, ((completed.stdout or &quot;&quot;) + (completed.stderr or &quot;&quot;)).strip()</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+def git_state() -&gt; dict[str, Any]:</span>
-<span class="qg-diff-add">+    state: dict[str, Any] = {</span>
-<span class="qg-diff-add">+        &quot;available&quot;: False,</span>
-<span class="qg-diff-add">+        &quot;inside_repo&quot;: False,</span>
-<span class="qg-diff-add">+        &quot;branch&quot;: &quot;unknown&quot;,</span>
-<span class="qg-diff-add">+        &quot;dirty&quot;: False,</span>
-<span class="qg-diff-add">+        &quot;status&quot;: &quot;&quot;,</span>
-<span class="qg-diff-add">+        &quot;changed_files&quot;: [],</span>
-<span class="qg-diff-add">+        &quot;last_commit&quot;: None,</span>
-<span class="qg-diff-add">+        &quot;error&quot;: None,</span>
-<span class="qg-diff-add">+    }</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+    rc, _ = run_command([&quot;git&quot;, &quot;--version&quot;], cwd=REPO_ROOT)</span>
-<span class="qg-diff-add">+    if rc != 0:</span>
-<span class="qg-diff-add">+        state[&quot;error&quot;] = &quot;Git nao encontrado&quot;</span>
-<span class="qg-diff-add">+        return state</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+    state[&quot;available&quot;] = True</span>
-<span class="qg-diff-add">+    rc, output = run_command([&quot;git&quot;, &quot;rev-parse&quot;, &quot;--is-inside-work-tree&quot;], cwd=REPO_ROOT)</span>
-<span class="qg-diff-add">+    if rc != 0 or output.strip().lower() != &quot;true&quot;:</span>
-<span class="qg-diff-add">+        state[&quot;error&quot;] = &quot;Diretorio atual nao e um repositorio Git&quot;</span>
-<span class="qg-diff-add">+        return state</span>
-<span class="qg-diff-add">+</span>
-<span class="qg-diff-add">+    state[&quot;inside_repo&quot;] = True</span>
-<span class="qg-diff-add">+    rc, branch = run_command([&quot;git&quot;, &quot;rev-parse&quot;, &quot;--abbrev-ref&quot;, &quot;HEAD&quot;], cwd=REPO_ROOT)</span>
-<span class="qg-diff-add">+    if rc == 0 and branch.strip():</span>
-<div class="qg-diff-omit">... (+1088 linhas omitidas)</div>
+<span class="qg-diff-add">+/* --- SUPER PREMIUM GLASS SYSTEM --- */</span>
+<span class="qg-diff-add">+.header, .sidebar-panel, .center-pane, .sidebar-right, .bottom-tabs, .modal, .toast {</span>
+<div class="qg-diff-omit">... (+785 linhas omitidas)</div>
             </div>
         </div>
     </div>
@@ -1953,104 +1288,39 @@ Atue como **Coder** (arquivo .ai-flow/agents/coder.md).
 Corrija os problemas apontados pelo Quality Gate e pelo Reviewer:
 
 ## Pontos criticos
-- .ai-flow/scripts/ai-flow.py: Arquivo muito alterado: +931/-8 linhas (total: 939, limite: 300)
-- .ai-flow/scripts/quality-gate.py: Arquivo muito alterado: +295/-43 linhas (total: 338, limite: 300)
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: rm -rf
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: rmdir /s
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: del /s
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: format c:
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: git push --force
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: curl | sh
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: wget | sh
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: Invoke-WebRequest | Invoke-Expression
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: eval()
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: exec()
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: os.system()
-- .ai-flow/scripts/quality-gate.py: Comando potencialmente perigoso detectado: shell=True
+- .ai-flow/dashboard.html: Arquivo muito alterado: +548/-51 linhas (total: 599, limite: 300)
 
 ## Pontos importantes
-- .ai-flow/scripts/ai-flow.py: Arquivo alterado tem 975 linhas no diff (limite: 300). Considere dividir.
-- .ai-flow/scripts/quality-gate.py: Arquivo alterado tem 448 linhas (limite: 300). Considere dividir.
-- .ai-flow/scripts/ai-flow.py: Linha duplicada 6x: &quot;f&quot;- Tarefa: {state.get(&#x27;task_name&#x27;, &#x27;&#x27;)}&quot;,&quot;
-- .ai-flow/scripts/ai-flow.py: Linha duplicada 4x: &quot;state = load_task_state(task_dir)&quot;
-- .ai-flow/scripts/ai-flow.py: Linha duplicada 4x: &quot;if bundle.get(&quot;error&quot;):&quot;
+- .ai-flow/dashboard.html: Arquivo alterado tem 813 linhas no diff (limite: 300). Considere dividir.
+- .ai-flow/model-registry.example.json: Arquivo alterado tem 404 linhas no diff (limite: 300). Considere dividir.
+- .ai-flow/config.example.json: Linha duplicada 4x: &quot;&quot;fallback_model&quot;: &quot;qwen2.5-coder:7b&quot;&quot;
+- .ai-flow/scripts/select-model.py, .ai-flow/config.example.json: Linha duplicada 5x: &quot;&quot;model&quot;: &quot;qwen2.5-coder:7b&quot;,&quot;
+- .ai-flow/scripts/select-model.py, .ai-flow/config.example.json: Linha duplicada 9x: &quot;&quot;model&quot;: &quot;llama3.2:3b&quot;,&quot;
+- .ai-flow/dashboard.html: Linha duplicada 4x: &quot;border: 1px solid rgba(255, 255, 255, 0.08) !important;&quot;
+- .ai-flow/dashboard.html: Linha duplicada 6x: &quot;&lt;div class=&quot;form-group&quot;&gt;&quot;
+- .ai-flow/model-registry.example.json: Linha duplicada 8x: &quot;&quot;provider_hints&quot;: [&quot;ollama&quot;, &quot;lm_studio&quot;],&quot;
+- .ai-flow/model-registry.example.json: Linha duplicada 5x: &quot;&quot;quantization&quot;: &quot;Q4_K_M (padrao)&quot;,&quot;
+- .ai-flow/model-registry.example.json: Linha duplicada 5x: &quot;&quot;recommended_tier&quot;: &quot;light&quot;,&quot;
+- .ai-flow/model-registry.example.json: Linha duplicada 6x: &quot;&quot;default_parameters&quot;: {&quot;
+- .ai-flow/model-registry.example.json: Linha duplicada 6x: &quot;&quot;recommended_model&quot;: &quot;llama3.2:3b&quot;,&quot;
+- .ai-flow/scripts/select-model.py: Linha duplicada 6x: &quot;&quot;provider&quot;: &quot;ollama&quot;,&quot;
 - (multiplos arquivos): Codigo alterado sem testes correspondentes no diff.
 
 ## Melhorias opcionais
-- .ai-flow/scripts/ai-flow.py: bug encontrado: p_bugfix = sub.add_parser(&quot;bugfix&quot;, help=&quot;Fluxo legado de bugfix&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {name}: {value}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;## AI-Flow status&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Configuracao&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Git&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Scripts principais&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Relatorios&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefa atual&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(line)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefa atual&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa ativa encontrada&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefas recentes&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(line)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Tarefas recentes&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa criada ainda&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;## Configuracao efetiva&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Provider e modelos&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Atribuicoes por agente&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Commands&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Comandos por stack&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Limites do quality gate&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Paths&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Como criar config local&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Copie .ai-flow/config.example.json para .ai-flow/config.json&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Ajuste provider, modelos e comandos da sua stack&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;## Validacao de config&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Checagem de provider&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Avisos&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {warning}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Erros&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {error}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Scripts principais&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {item[&#x27;script&#x27;]}: {&#x27;ok&#x27; if item[&#x27;exists&#x27;] else &#x27;ausente&#x27;}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Resultado final&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- config invalida&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- config valida&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;## Tarefa iniciada&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Arquivos criados&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {name}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Proximos passos&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {step}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;## Tarefas&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhuma tarefa encontrada&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;{marker} {task_dir.name}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  tarefa: {state.get(&#x27;task_name&#x27;, task_dir.name)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  status: {state.get(&#x27;status&#x27;, &#x27;unknown&#x27;)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  etapa: {state.get(&#x27;stage&#x27;, &#x27;unknown&#x27;)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  branch: {state.get(&#x27;branch&#x27;, &#x27;unknown&#x27;)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  relatórios: {&#x27;, &#x27;.join(reports) if reports else &#x27;(nenhum)&#x27;}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Runs legados&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- nenhum run legado encontrado&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;- {run_dir.name}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(output)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[WARN] dashboard nao foi gerado com sucesso&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Dashboard gerado em {DASHBOARD_PATH}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[ERRO] dashboard.html nao foi encontrado apos a geracao&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(output)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Artefato salvo em {task_dir / &#x27;01-context.md&#x27;}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Estado atualizado: etapa={state.get(&#x27;stage&#x27;)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[INFO] Nenhuma tarefa ativa encontrada. Use init-task para registrar os a
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(output)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Artefato salvo em {task_dir / &#x27;04-quality-gate.html&#x27;}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[OK] Estado atualizado: etapa={state.get(&#x27;stage&#x27;)}&quot;)
-- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[INFO] Nenhuma tarefa ativa encontrada. Use init-task para registrar os a
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[1/4] Coletando diff atual do working tree...&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[!] Git nao disponivel. O relatorio sera gerado com diff vazio.&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(&quot;[!] Nenhuma alteracao encontrada no working tree ou staged.&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[2/4] Analisando alteracoes ({source_label})...&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Comandos perigosos: {len(dangerous_commands)}&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Dependencias novas: {len(new_dependencies)}&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;   - Ausencia de testes: {len(missing_tests)}&quot;)
-- .ai-flow/scripts/quality-gate.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;     origem: {source_label}&quot;)
+- .ai-flow/README.md: bug encontrado: | **Reviewer/Security** | `qwen2.5-coder:7b` | Rigor na detecção de bugs |
+- .ai-flow/model-registry.example.json: Todo encontrado: &quot;Todos os modelos rodam 100% local. Nenhum dado sai da maquina.&quot;
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;  [!] Usando config.example.json. Copie para config.json para configuraca
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;\n## Sugestoes&quot;)
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Ollama CLI detectado, mas servidor HTTP nao responde.&quot;)
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Execute &#x27;ollama serve&#x27; ou abra o aplicativo Ollama.&quot;)
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Ollama nao encontrado. Instale em https://ollama.ai&quot;)
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Use config.json (copie de config.example.json) para configuracao local.
+- .ai-flow/scripts/ai-flow.py: Possivel debug/log esquecido: print() -&gt; print(&quot;- Revise os avisos acima. Alguns campos de config estao ausentes.&quot;)
+- .ai-flow/scripts/llm_client.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[ERRO] Nenhum config encontrado em {CONFIG_PATH} ou {CONFIG_EXAMPLE_PATH
+- .ai-flow/scripts/run-agent.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;  {agent_id:20s} {status:30s} (mapeia para config: {assignment})&quot;)
+- .ai-flow/scripts/run-agent.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;[ERRO] {error}&quot;)
+- .ai-flow/scripts/run-agent.py: Possivel debug/log esquecido: print() -&gt; print(&quot;Forneca um ID de agente. Use --list-agents para ver os disponiveis.&quot;, fil
+- .ai-flow/scripts/run-agent.py: Possivel debug/log esquecido: print() -&gt; print(f&quot;\n--- Salvo em: {run_subdir}&quot;, file=sys.stderr)
 
 Regras:
 - Mantenha o estilo do projeto
