@@ -98,6 +98,43 @@ def discover_git_repos(root):
     return projects
 
 
+def collect_recent_artifacts(project_path, limit=6):
+    pp = Path(project_path)
+    ai_flow_dir = pp / ".ai-flow"
+    artifact_roots = [ai_flow_dir / "artifacts", ai_flow_dir / "reports"]
+    artifacts = []
+    seen = set()
+
+    for root_dir in artifact_roots:
+        if not root_dir.exists():
+            continue
+        try:
+            for file_path in root_dir.rglob("*"):
+                if not file_path.is_file():
+                    continue
+                resolved = str(file_path.resolve())
+                if resolved in seen:
+                    continue
+                try:
+                    mtime = file_path.stat().st_mtime
+                except OSError:
+                    mtime = 0
+                artifacts.append({
+                    "path": str(file_path.relative_to(pp)).replace("\\", "/"),
+                    "name": file_path.name,
+                    "kind": file_path.suffix.lower().lstrip(".") or "arquivo",
+                    "mtime": mtime,
+                })
+                seen.add(resolved)
+        except Exception:
+            continue
+
+    artifacts = sorted(artifacts, key=lambda item: item.get("mtime", 0), reverse=True)
+    for item in artifacts[:limit]:
+        item.pop("mtime", None)
+    return artifacts[:limit]
+
+
 def get_project_info(project_path):
     name = project_path.name
     rel = str(project_path)
@@ -137,6 +174,9 @@ def get_project_info(project_path):
     has_aiflow = (project_path / ".ai-flow").exists()
     has_context_map = (project_path / ".ai-flow" / "reports" / "project-context.html").exists()
     has_quality_report = (project_path / ".ai-flow" / "reports" / "quality-gate.html").exists()
+    has_diagnosis = (project_path / ".ai-flow" / "reports" / "ai-flow-diagnosis.md").exists()
+    has_manual_checklist = (project_path / ".ai-flow" / "reports" / "manual-test-checklist.md").exists()
+    recent_artifacts = collect_recent_artifacts(project_path)
 
     return {
         "name": name,
@@ -150,6 +190,9 @@ def get_project_info(project_path):
         "has_aiflow": has_aiflow,
         "has_context_map": has_context_map,
         "has_quality_report": has_quality_report,
+        "has_diagnosis": has_diagnosis,
+        "has_manual_checklist": has_manual_checklist,
+        "recent_artifacts": recent_artifacts,
     }
 
 

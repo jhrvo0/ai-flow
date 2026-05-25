@@ -90,9 +90,27 @@
     ]
   },
 
+  "artifacts": {
+    "root": ".ai-flow/artifacts",
+    "current_task": ".ai-flow/artifacts/current-task.json",
+    "task_state": ".ai-flow/artifacts/task-state.json",
+    "task_context": ".ai-flow/artifacts/context.md",
+    "task_quality": ".ai-flow/artifacts/quality.md",
+    "task_notes": ".ai-flow/artifacts/notes.md"
+  },
+
+  "reports": {
+    "dashboard": ".ai-flow/dashboard.html",
+    "context_map": ".ai-flow/reports/project-context.html",
+    "quality_gate": ".ai-flow/reports/quality-gate.html",
+    "diagnosis": ".ai-flow/reports/ai-flow-diagnosis.md",
+    "manual_test_checklist": ".ai-flow/reports/manual-test-checklist.md"
+  },
+
   "paths": {
     "quality_gate_output": ".ai-flow/reports/quality-gate.html",
     "reports_dir": ".ai-flow/reports/",
+    "artifacts_dir": ".ai-flow/artifacts/",
     "agents_dir": ".ai-flow/agents/",
     "workflows_dir": ".ai-flow/workflows/"
   }

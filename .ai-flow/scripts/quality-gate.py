@@ -20,6 +20,7 @@ MAX_LINES_PER_FILE = 300
 MAX_FUNCTION_LINES = 50
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
 
 # Valores padrao case nao haja config
 DEFAULT_SENSITIVE_PATTERNS = [
@@ -65,10 +66,16 @@ def load_config():
         }
 
 
-def run_cmd(cmd):
+def run_cmd(cmd, cwd=None):
     try:
         result = subprocess.run(
-            cmd, capture_output=True, text=True, check=False, encoding="utf-8", errors="replace"
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            encoding="utf-8",
+            errors="replace",
+            cwd=str(cwd) if cwd else str(REPO_ROOT),
         )
         return result.stdout, result.stderr, result.returncode
     except FileNotFoundError:
@@ -290,7 +297,9 @@ def detect_large_files(numstat_files):
     return alerts
 
 
-def detect_sensitive_files(files, sensitive_patterns):
+def detect_sensitive_files(files, sensitive_patterns=None):
+    if sensitive_patterns is None:
+        sensitive_patterns = DEFAULT_SENSITIVE_PATTERNS
     alerts = []
     for f in files:
         path = f["path"]
@@ -306,7 +315,9 @@ def detect_sensitive_files(files, sensitive_patterns):
     return alerts
 
 
-def detect_blocked_extensions(files, block_extensions):
+def detect_blocked_extensions(files, block_extensions=None):
+    if block_extensions is None:
+        block_extensions = DEFAULT_BLOCK_EXTENSIONS
     alerts = []
     for f in files:
         path = f["path"]
@@ -379,9 +390,225 @@ def get_git_diff_context(diff_text):
     return "\n".join(result)
 
 
+def looks_like_code_file(path):
+    suffix = Path(path).suffix.lower()
+    return suffix in {
+        ".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".kt", ".cs", ".go", ".rb",
+        ".php", ".rs", ".c", ".cc", ".cpp", ".h", ".hpp", ".css", ".scss", ".html",
+    }
+
+
+def looks_like_test_file(path):
+    name = Path(path).name.lower()
+    path_lower = path.lower().replace("\\", "/")
+    return (
+        name.startswith("test_")
+        or name.endswith("_test.py")
+        or name.endswith(".test.js")
+        or name.endswith(".test.jsx")
+        or name.endswith(".test.ts")
+        or name.endswith(".test.tsx")
+        or name.endswith(".spec.js")
+        or name.endswith(".spec.jsx")
+        or name.endswith(".spec.ts")
+        or name.endswith(".spec.tsx")
+        or "/tests/" in path_lower
+        or "/__tests__/" in path_lower
+    )
+
+
+def looks_like_manifest_file(path):
+    name = Path(path).name.lower()
+    return name in {
+        "package.json",
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "requirements.txt",
+        "pyproject.toml",
+        "poetry.lock",
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts",
+        "cargo.toml",
+        "go.mod",
+    }
+
+
+def collect_git_diff():
+    inside, _, rc = run_cmd(["git", "rev-parse", "--is-inside-work-tree"], cwd=REPO_ROOT)
+    if rc != 0 or inside.strip().lower() != "true":
+        return {
+            "branch": "?",
+            "last_commit": "?",
+            "diff_text": "",
+            "numstat_text": "",
+            "stat_text": "",
+            "source_label": "git indisponivel",
+            "git_available": False,
+        }
+
+    branch, _, _ = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=REPO_ROOT)
+    last_commit, _, _ = run_cmd(["git", "log", "--oneline", "-1"], cwd=REPO_ROOT)
+
+    staged_diff, _, _ = run_cmd(["git", "diff", "--cached"], cwd=REPO_ROOT)
+    unstaged_diff, _, _ = run_cmd(["git", "diff"], cwd=REPO_ROOT)
+    staged_numstat, _, _ = run_cmd(["git", "diff", "--cached", "--numstat"], cwd=REPO_ROOT)
+    unstaged_numstat, _, _ = run_cmd(["git", "diff", "--numstat"], cwd=REPO_ROOT)
+    staged_stat, _, _ = run_cmd(["git", "diff", "--cached", "--stat"], cwd=REPO_ROOT)
+    unstaged_stat, _, _ = run_cmd(["git", "diff", "--stat"], cwd=REPO_ROOT)
+
+    diff_parts = [part for part in [staged_diff, unstaged_diff] if part.strip()]
+    numstat_parts = [part for part in [staged_numstat, unstaged_numstat] if part.strip()]
+    stat_parts = [part for part in [staged_stat, unstaged_stat] if part.strip()]
+
+    return {
+        "branch": branch.strip() or "?",
+        "last_commit": last_commit.strip() or "?",
+        "diff_text": "\n".join(diff_parts).strip(),
+        "numstat_text": "\n".join(numstat_parts).strip(),
+        "stat_text": "\n".join(stat_parts).strip(),
+        "source_label": "working tree + staged",
+        "git_available": True,
+    }
+
+
+def detect_dangerous_commands(diff_text):
+    alerts = []
+    patterns = [
+        (r"\brm\s+-rf\b", "rm -rf"),
+        (r"\brmdir\s+/s\b", "rmdir /s"),
+        (r"\bdel\s+/s\b", "del /s"),
+        (r"\bformat\s+[a-z]:", "format c:"),
+        (r"git\s+push\s+--force", "git push --force"),
+        (r"curl\s+.*\|\s*sh", "curl | sh"),
+        (r"wget\s+.*\|\s*sh", "wget | sh"),
+        (r"invoke-webrequest.*\|.*invoke-expression", "Invoke-WebRequest | Invoke-Expression"),
+        (r"\beval\s*\(", "eval()"),
+        (r"\bexec\s*\(", "exec()"),
+        (r"os\.system\s*\(", "os.system()"),
+        (r"shell\s*=\s*True", "shell=True"),
+    ]
+    current_file = None
+    for line in diff_text.splitlines():
+        if line.startswith("+++ b/"):
+            current_file = line[6:]
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        content = line[1:].strip()
+        for pattern, label in patterns:
+            if re.search(pattern, content, re.IGNORECASE):
+                alerts.append({
+                    "type": "warning",
+                    "file": current_file or "?",
+                    "msg": f"Comando potencialmente perigoso detectado: {label}",
+                    "lines": 1,
+                })
+                break
+    return alerts
+
+
+def detect_new_dependencies(files, diff_text):
+    alerts = []
+    current_file = None
+    added_lines = {}
+    for line in diff_text.splitlines():
+        if line.startswith("+++ b/"):
+            current_file = line[6:]
+        if line.startswith("+") and not line.startswith("+++"):
+            added_lines.setdefault(current_file or "?", []).append(line[1:].strip())
+
+    for file_data in files:
+        path = file_data["path"]
+        name = Path(path).name.lower()
+        if name == "package.json":
+            deps = []
+            for line in added_lines.get(path, []):
+                match = re.match(r'^"([^"]+)"\s*:\s*"([^"]+)"', line)
+                if match and match.group(1) not in {"name", "version", "scripts", "dependencies", "devDependencies", "peerDependencies", "optionalDependencies", "workspaces"}:
+                    deps.append(f"{match.group(1)}@{match.group(2)}")
+            if deps:
+                alerts.append({
+                    "type": "info",
+                    "file": path,
+                    "msg": f"Dependencias adicionadas ou alteradas: {', '.join(deps[:6])}",
+                    "lines": len(deps),
+                })
+            elif file_data["added"] + file_data["removed"] > 0:
+                alerts.append({
+                    "type": "info",
+                    "file": path,
+                    "msg": "package.json alterado; revise dependencias e scripts",
+                    "lines": file_data["added"] + file_data["removed"],
+                })
+        elif name in {"requirements.txt", "poetry.lock", "go.mod", "pom.xml", "build.gradle", "build.gradle.kts"}:
+            if file_data["added"] + file_data["removed"] > 0:
+                alerts.append({
+                    "type": "info",
+                    "file": path,
+                    "msg": f"Arquivo de dependencia alterado: {name}",
+                    "lines": file_data["added"] + file_data["removed"],
+                })
+    return alerts
+
+
+def detect_missing_tests(files):
+    has_code = any(looks_like_code_file(f["path"]) and not looks_like_test_file(f["path"]) for f in files)
+    has_tests = any(looks_like_test_file(f["path"]) for f in files)
+    if has_code and not has_tests:
+        return [{
+            "type": "warning",
+            "file": "(multiplos arquivos)",
+            "msg": "Codigo alterado sem testes correspondentes no diff.",
+            "lines": 1,
+        }]
+    return []
+
+
+def build_coder_prompt(results):
+    critical = results.get("critical", [])
+    warnings = results.get("warnings", [])
+    info = results.get("info", [])
+    lines = [
+        "Atue como **Coder** (arquivo .ai-flow/agents/coder.md).",
+        "",
+        "Corrija os problemas apontados pelo Quality Gate e pelo Reviewer:",
+        "",
+        "## Pontos criticos",
+    ]
+    if critical:
+        for item in critical:
+            lines.append(f"- {item.get('file', '?')}: {item.get('msg', '')}")
+    else:
+        lines.append("- nenhum")
+    lines.extend(["", "## Pontos importantes"])
+    if warnings:
+        for item in warnings:
+            lines.append(f"- {item.get('file', '?')}: {item.get('msg', '')}")
+    else:
+        lines.append("- nenhum")
+    lines.extend(["", "## Melhorias opcionais"])
+    if info:
+        for item in info:
+            lines.append(f"- {item.get('file', '?')}: {item.get('msg', '')}")
+    else:
+        lines.append("- nenhum")
+    lines.extend([
+        "",
+        "Regras:",
+        "- Mantenha o estilo do projeto",
+        "- Nao refatore alem do necessario",
+        "- Nao altere arquivos fora do escopo",
+        "- Nao faca commit automatico",
+        "- Uma mudanca por vez",
+    ])
+    return "\n".join(lines)
+
+
 def generate_html(results):
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     diff_lines = results.get("diff_preview", "").splitlines()
+    source_label = results.get("source_label", "working tree")
 
     def esc(text):
         return html.escape(text)
@@ -421,23 +648,19 @@ def generate_html(results):
             result += f'\n<div class="qg-diff-omit">... (+{len(lines) - max_lines} linhas omitidas)</div>'
         return result
 
-    prompt = """Atue como **Coder** (arquivo .ai-flow/agents/coder.md).
+    critical_items = list(results.get("critical", [])) + list(results.get("dangerous_commands", []))
+    warning_items = list(results.get("warnings", [])) + list(results.get("missing_tests", []))
+    info_items = list(results.get("info", [])) + list(results.get("new_dependencies", []))
 
-Corrija os problemas apontados pelo Quality Gate e pelo Reviewer:
+    prompt = results.get("coder_prompt") or build_coder_prompt({
+        "critical": critical_items,
+        "warnings": warning_items,
+        "info": info_items,
+    })
 
-[INSIRA AQUI OS PROBLEMAS APONTADOS PELO REVIEWER]
-
-Regras:
-- Mantenha o estilo do projeto
-- Nao refatore alem do necessario
-- Nao altere arquivos fora do escopo
-- Nao faca commit automatico
-- Uma mudanca por vez
-"""
-
-    total_critical = len(results.get("critical", []))
-    total_warnings = len(results.get("warnings", []))
-    total_info = len(results.get("info", []))
+    total_critical = len(critical_items)
+    total_warnings = len(warning_items)
+    total_info = len(info_items)
     total_alerts = total_critical + total_warnings + total_info
 
     files_data = results.get("files", [])
@@ -1006,6 +1229,7 @@ Regras:
             <span>&#128197; {esc(now)}</span>
             <span>&#128279; {esc(results.get("branch", "?"))}</span>
             <span>&#128196; {esc(results.get("last_commit", "?"))[:60]}</span>
+            <span>&#128269; {esc(source_label)}</span>
         </div>
     </div>
 
@@ -1097,7 +1321,7 @@ Regras:
     <div class="qg-section">
         <div class="qg-section-title">Alertas criticos</div>
 """
-    html_content += render_alerts(results.get("critical", []), "critical")
+    html_content += render_alerts(critical_items, "critical")
     html_content += """
     </div>
 
@@ -1105,7 +1329,7 @@ Regras:
     <div class="qg-section">
         <div class="qg-section-title">Alertas importantes</div>
 """
-    html_content += render_alerts(results.get("warnings", []), "warning")
+    html_content += render_alerts(warning_items, "warning")
     html_content += """
     </div>
 
@@ -1113,7 +1337,31 @@ Regras:
     <div class="qg-section">
         <div class="qg-section-title">Melhorias opcionais</div>
 """
-    html_content += render_alerts(results.get("info", []), "info")
+    html_content += render_alerts(info_items, "info")
+    html_content += """
+    </div>
+
+    <!-- ===== DEPENDENCIES ===== -->
+    <div class="qg-section">
+        <div class="qg-section-title">Dependencias novas</div>
+"""
+    html_content += render_alerts(results.get("new_dependencies", []), "info")
+    html_content += """
+    </div>
+
+    <!-- ===== DANGEROUS COMMANDS ===== -->
+    <div class="qg-section">
+        <div class="qg-section-title">Comandos perigosos</div>
+"""
+    html_content += render_alerts(results.get("dangerous_commands", []), "critical")
+    html_content += """
+    </div>
+
+    <!-- ===== TESTS ===== -->
+    <div class="qg-section">
+        <div class="qg-section-title">Ausencia de testes</div>
+"""
+    html_content += render_alerts(results.get("missing_tests", []), "warning")
     html_content += """
     </div>
 
@@ -1176,29 +1424,21 @@ Regras:
 def main():
     print("=== AI-Flow: Quality Gate ===\n")
 
-    # Branch info
-    branch, _, _ = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-    branch = branch.strip() or "?"
-    last_commit, _, _ = run_cmd(["git", "log", "--oneline", "-1"])
-    last_commit = last_commit.strip() or "?" if last_commit.strip() else "?"
+    print(f"[1/4] Coletando diff atual do working tree...")
+    git_ctx = collect_git_diff()
+    branch = git_ctx["branch"]
+    last_commit = git_ctx["last_commit"]
+    diff_text = git_ctx["diff_text"]
+    numstat_text = git_ctx["numstat_text"]
+    stat_text = git_ctx["stat_text"]
+    source_label = git_ctx["source_label"]
 
-    print(f"[1/4] Obtendo diff do ultimo commit...")
-    # Tenta HEAD~1...HEAD (ultimo commit); se falhar (ex: primeiro commit), usa 4b825dc642bb (arvore vazia)
-    diff_text, _, rc = run_cmd(["git", "diff", "HEAD~1", "HEAD"])
-    numstat_text, _, _ = run_cmd(["git", "diff", "--numstat", "HEAD~1", "HEAD"])
-    stat_text, _, _ = run_cmd(["git", "diff", "--stat", "HEAD~1", "HEAD"])
+    if not git_ctx.get("git_available"):
+        print("[!] Git nao disponivel. O relatorio sera gerado com diff vazio.")
+    elif not diff_text.strip():
+        print("[!] Nenhuma alteracao encontrada no working tree ou staged.")
 
-    if rc != 0 or not diff_text.strip():
-        print("[!] HEAD~1 nao existe (primeiro commit). Usando git show HEAD...")
-        diff_text, _, _ = run_cmd(["git", "show", "--format=", "HEAD"])
-        numstat_text, _, _ = run_cmd(["git", "show", "--format=", "--numstat", "HEAD"])
-        stat_text, _, _ = run_cmd(["git", "show", "--format=", "--stat", "HEAD"])
-
-        if not diff_text.strip():
-            print("[!] Nenhum diff encontrado.")
-            print("    O relatorio sera gerado vazio.\n")
-
-    print(f"[2/4] Analisando alteracoes...")
+    print(f"[2/4] Analisando alteracoes ({source_label})...")
     files = parse_numstat(numstat_text)
 
     # Carregar config para regras de seguranca
@@ -1213,21 +1453,27 @@ def main():
     all_alerts["critical"].extend(detect_sensitive_files(files, sensitive_patterns))
     all_alerts["critical"].extend(detect_blocked_extensions(files, block_extensions))
     all_alerts["critical"].extend(detect_possible_secrets(diff_text))
+    dangerous_commands = detect_dangerous_commands(diff_text)
 
     # Warning alerts
     all_alerts["warnings"].extend(detect_long_lines(diff_text))
     all_alerts["warnings"].extend(detect_long_functions(diff_text))
     all_alerts["warnings"].extend(detect_simple_duplication(diff_text))
+    missing_tests = detect_missing_tests(files)
 
     # Info alerts
     all_alerts["info"].extend(detect_todos_fixmes(diff_text))
     all_alerts["info"].extend(detect_prints_logs(diff_text))
     all_alerts["info"].extend(detect_added_comments(diff_text))
+    new_dependencies = detect_new_dependencies(files, diff_text)
 
     print(f"   - Arquivos alterados: {len(files)}")
     print(f"   - Alertas criticos: {len(all_alerts['critical'])}")
     print(f"   - Alertas importantes: {len(all_alerts['warnings'])}")
     print(f"   - Melhorias opcionais: {len(all_alerts['info'])}")
+    print(f"   - Comandos perigosos: {len(dangerous_commands)}")
+    print(f"   - Dependencias novas: {len(new_dependencies)}")
+    print(f"   - Ausencia de testes: {len(missing_tests)}")
     print(f"   - Seguranca: {len(sensitive_patterns)} padroes de arquivos sensiveis, {len(block_extensions)} extensoes bloqueadas, {len(SECRET_PATTERNS)} padroes de secrets")
 
     print(f"[3/4] Montando relatorio HTML...")
@@ -1236,11 +1482,20 @@ def main():
     results = {
         "branch": branch,
         "last_commit": last_commit,
+        "source_label": source_label,
         "files": files,
         "critical": all_alerts["critical"],
         "warnings": all_alerts["warnings"],
         "info": all_alerts["info"],
         "diff_preview": diff_preview[:50000],
+        "dangerous_commands": dangerous_commands,
+        "new_dependencies": new_dependencies,
+        "missing_tests": missing_tests,
+        "coder_prompt": build_coder_prompt({
+            "critical": all_alerts["critical"] + dangerous_commands,
+            "warnings": all_alerts["warnings"] + missing_tests,
+            "info": all_alerts["info"] + new_dependencies,
+        }),
     }
 
     html_output = generate_html(results)
@@ -1252,6 +1507,7 @@ def main():
     abs_path = OUTPUT_FILE.resolve()
     print(f"\n[OK] Relatorio gerado em:")
     print(f"     {abs_path}")
+    print(f"     origem: {source_label}")
     print(f"\nDica: abra o arquivo no navegador ou execute:")
     print(f"  .ai-flow\\scripts\\run-quality-gate.ps1")
 

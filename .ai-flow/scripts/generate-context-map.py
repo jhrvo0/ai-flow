@@ -13,6 +13,7 @@ Saida: .ai-flow/reports/project-context.html
 import subprocess
 import datetime
 import html
+import json
 import os
 import re
 import sys
@@ -20,6 +21,7 @@ from pathlib import Path
 
 REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 OUTPUT_FILE = REPORTS_DIR / "project-context.html"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 IGNORE_DIRS = {"node_modules", ".git", "__pycache__", ".next", "dist", "build",
                ".cache", "coverage", ".nyc_output", "target", "venv", ".venv"}
 IGNORE_EXT = {".pyc", ".pyo", ".exe", ".dll", ".so", ".dylib", ".bin",
@@ -28,10 +30,11 @@ MAX_TREE_DEPTH = 6
 MAX_DIR_ENTRIES = 50
 
 
-def run_cmd(cmd):
+def run_cmd(cmd, cwd=None):
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, check=False,
-                           encoding="utf-8", errors="replace")
+                           encoding="utf-8", errors="replace",
+                           cwd=str(cwd) if cwd else str(REPO_ROOT))
         return r.stdout.strip(), r.stderr.strip(), r.returncode
     except FileNotFoundError:
         return "", "command not found", -1
@@ -39,7 +42,7 @@ def run_cmd(cmd):
 
 def get_project_root():
     o, _, _ = run_cmd(["git", "rev-parse", "--show-toplevel"])
-    return o or os.getcwd()
+    return o or str(REPO_ROOT)
 
 
 def get_git_branch():
@@ -109,7 +112,7 @@ def build_tree(root, depth=0):
         except OSError:
             size = 0
         ext = entry.suffix.lower() if entry.is_file() else "dir"
-        rel = str(entry.relative_to(root_path.parent.parent)) if entry.is_file() else ""
+        rel = str(entry.relative_to(root_path)) if entry.is_file() else ""
         lines.append({"name": entry.name, "path": rel, "type": ext, "size": size, "depth": depth})
         if entry.is_dir():
             lines.extend(build_tree(entry, depth + 1))
@@ -132,6 +135,230 @@ def format_size(size):
     return f"{size / (1024 * 1024):.1f} MB"
 
 
+def should_include_inventory_file(path):
+    parts = [part.lower() for part in Path(path).parts]
+    if any(part in IGNORE_DIRS for part in parts[:-1]):
+        return False
+    suffix = Path(path).suffix.lower()
+    if suffix in IGNORE_EXT:
+        return False
+    return True
+
+
+def collect_repository_files(root):
+    root_path = Path(root)
+    files = []
+    try:
+        for path in root_path.rglob("*"):
+            if path.is_file():
+                rel = path.relative_to(root_path)
+                rel_text = str(rel).replace("\\", "/")
+                if should_include_inventory_file(rel):
+                    files.append(rel_text)
+    except PermissionError:
+        return []
+    return sorted(files)
+
+
+def is_manifest_file(path):
+    name = Path(path).name.lower()
+    suffix = Path(path).suffix.lower()
+    return name in {
+        "package.json",
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "requirements.txt",
+        "pyproject.toml",
+        "poetry.lock",
+        "setup.py",
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts",
+        "cargo.toml",
+        "go.mod",
+    } or suffix in {".csproj", ".fsproj", ".sln"}
+
+
+def is_script_file(path):
+    lowered = path.lower().replace("\\", "/")
+    suffix = Path(path).suffix.lower()
+    return (
+        "/scripts/" in lowered
+        or lowered.startswith("scripts/")
+        or lowered.startswith(".ai-flow/scripts/")
+        or suffix in {".ps1", ".sh", ".bat", ".cmd"}
+    )
+
+
+def is_test_file(path):
+    name = Path(path).name.lower()
+    lowered = path.lower().replace("\\", "/")
+    return (
+        name.startswith("test_")
+        or name.endswith("_test.py")
+        or name.endswith(".test.js")
+        or name.endswith(".test.jsx")
+        or name.endswith(".test.ts")
+        or name.endswith(".test.tsx")
+        or name.endswith(".spec.js")
+        or name.endswith(".spec.jsx")
+        or name.endswith(".spec.ts")
+        or name.endswith(".spec.tsx")
+        or "/tests/" in lowered
+        or "/__tests__/" in lowered
+    )
+
+
+def is_ci_file(path):
+    lowered = path.lower().replace("\\", "/")
+    return (
+        lowered.startswith(".github/workflows/")
+        or lowered.startswith(".gitlab-ci")
+        or lowered.endswith("azure-pipelines.yml")
+        or lowered.endswith(".circleci/config.yml")
+        or lowered.endswith("bitbucket-pipelines.yml")
+        or lowered.endswith(".drone.yml")
+    )
+
+
+def is_docker_file(path):
+    lowered = path.lower().replace("\\", "/")
+    name = Path(path).name.lower()
+    return (
+        name == "dockerfile"
+        or name.startswith("dockerfile.")
+        or "docker-compose" in name
+        or "/docker/" in lowered
+        or lowered.startswith("docker/")
+    )
+
+
+def collect_package_scripts(root):
+    package_json = Path(root) / "package.json"
+    if not package_json.exists():
+        return []
+    try:
+        data = json.loads(package_json.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    scripts = data.get("scripts", {})
+    if not isinstance(scripts, dict):
+        return []
+    return [f"{name}: {cmd}" for name, cmd in sorted(scripts.items())]
+
+
+def detect_probable_stacks(files, root):
+    stacks = []
+
+    def add_stack(name, evidence):
+        if evidence:
+            stacks.append({"name": name, "evidence": evidence[:4], "confidence": "alta" if len(evidence) > 1 else "media"})
+
+    python_evidence = []
+    if any(Path(f).name in {"pyproject.toml", "requirements.txt", "setup.py", "poetry.lock"} for f in files):
+        python_evidence.append("manifesto Python detectado")
+    if any(f.endswith(".py") for f in files):
+        python_evidence.append("arquivos .py encontrados")
+    add_stack("Python", python_evidence)
+
+    node_evidence = []
+    if any(Path(f).name == "package.json" for f in files):
+        node_evidence.append("package.json presente")
+    if any(f.endswith((".ts", ".tsx", ".js", ".jsx")) for f in files):
+        node_evidence.append("arquivos JavaScript/TypeScript encontrados")
+    add_stack("Node.js / TypeScript", node_evidence)
+
+    web_evidence = []
+    if any(f.endswith((".html", ".css", ".scss")) for f in files):
+        web_evidence.append("artefatos HTML/CSS presentes")
+    add_stack("Web / Dashboard", web_evidence)
+
+    java_evidence = []
+    if any(Path(f).name in {"pom.xml", "build.gradle", "build.gradle.kts"} for f in files):
+        java_evidence.append("manifesto Java detectado")
+    if any(f.endswith(".java") for f in files):
+        java_evidence.append("arquivos .java encontrados")
+    add_stack("Java / JVM", java_evidence)
+
+    go_evidence = []
+    if any(Path(f).name == "go.mod" for f in files):
+        go_evidence.append("go.mod presente")
+    if any(f.endswith(".go") for f in files):
+        go_evidence.append("arquivos .go encontrados")
+    add_stack("Go", go_evidence)
+
+    rust_evidence = []
+    if any(Path(f).name == "Cargo.toml" for f in files):
+        rust_evidence.append("Cargo.toml presente")
+    if any(f.endswith(".rs") for f in files):
+        rust_evidence.append("arquivos .rs encontrados")
+    add_stack("Rust", rust_evidence)
+
+    dotnet_evidence = []
+    if any(Path(f).suffix.lower() in {".csproj", ".fsproj", ".sln"} for f in files):
+        dotnet_evidence.append("projeto .NET detectado")
+    if any(f.endswith(".cs") for f in files):
+        dotnet_evidence.append("arquivos .cs encontrados")
+    add_stack(".NET", dotnet_evidence)
+
+    if not stacks:
+        stacks.append({"name": "Nao identificado", "evidence": ["Sem manifestos ou extensoes conclusivas"], "confidence": "baixa"})
+
+    return stacks
+
+
+def collect_inventory_risks(repo_files, modified_files, porcelain, manifests, tests, ci_files, docker_files):
+    risks = []
+    code_files = [f for f in repo_files if Path(f).suffix.lower() in {
+        ".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".go", ".rb", ".php", ".rs", ".c", ".cc", ".cpp", ".cs"
+    }]
+    if code_files and not tests:
+        risks.append({"severity": "warning", "title": "Sem testes detectados", "details": "Existem arquivos de codigo, mas nenhum teste foi identificado no inventario."})
+    if code_files and not ci_files:
+        risks.append({"severity": "info", "title": "CI nao detectada", "details": "Nao foram encontrados arquivos de pipeline em .github/workflows, GitLab ou Azure Pipelines."})
+    if code_files and not docker_files:
+        risks.append({"severity": "info", "title": "Docker nao detectado", "details": "Nenhum Dockerfile ou docker-compose foi encontrado."})
+    if not manifests and code_files:
+        risks.append({"severity": "warning", "title": "Sem manifestos principais", "details": "O inventario nao encontrou manifestos claros para a stack principal."})
+    sensitive_hits = []
+    for path in repo_files:
+        lowered = path.lower()
+        if lowered.endswith(".env") or lowered.startswith(".env") or "/secrets/" in lowered or lowered.startswith("secrets/"):
+            if not lowered.endswith(".example") and not lowered.endswith(".sample"):
+                sensitive_hits.append(path)
+    if sensitive_hits:
+        risks.append({"severity": "critical", "title": "Arquivos sensiveis no repositorio", "details": ", ".join(sensitive_hits[:5])})
+    if len(modified_files) > 20:
+        risks.append({"severity": "info", "title": "Muitas alteracoes em aberto", "details": f"{len(modified_files)} arquivos modificados podem indicar um lote grande demais para revisao rapida."})
+    if porcelain and len(porcelain) > 10:
+        risks.append({"severity": "info", "title": "Working tree movimentado", "details": f"{len(porcelain)} entradas no status Git merecem uma revisao mais cuidadosa."})
+    return risks
+
+
+def build_repository_inventory(root, tree_data, modified_files, porcelain):
+    repo_files = collect_repository_files(root)
+    manifests = [f for f in repo_files if is_manifest_file(f)]
+    scripts = [f for f in repo_files if is_script_file(f)]
+    tests = [f for f in repo_files if is_test_file(f)]
+    ci_files = [f for f in repo_files if is_ci_file(f)]
+    docker_files = [f for f in repo_files if is_docker_file(f)]
+    stacks = detect_probable_stacks(repo_files, root)
+    package_scripts = collect_package_scripts(root)
+    risks = collect_inventory_risks(repo_files, modified_files, porcelain, manifests, tests, ci_files, docker_files)
+    return {
+        "files": repo_files,
+        "manifests": manifests,
+        "scripts": scripts,
+        "tests": tests,
+        "ci_files": ci_files,
+        "docker_files": docker_files,
+        "stacks": stacks,
+        "package_scripts": package_scripts,
+        "risks": risks,
+    }
+
+
 def build_sections(data):
     """Constroi todas as secoes HTML a partir dos dados."""
     stats = data.get("stats", {})
@@ -140,6 +367,87 @@ def build_sections(data):
     porcelain = data.get("porcelain", [])
     commits = data.get("commits", [])
     arch = data.get("architecture", {})
+    inventory = data.get("inventory", {})
+    stacks = inventory.get("stacks", [])
+    manifests = inventory.get("manifests", [])
+    scripts = inventory.get("scripts", [])
+    tests = inventory.get("tests", [])
+    ci_files = inventory.get("ci_files", [])
+    docker_files = inventory.get("docker_files", [])
+    package_scripts = inventory.get("package_scripts", [])
+    risks = inventory.get("risks", [])
+
+    def render_path_list(items, empty_message, limit=12):
+        if not items:
+            return f'<p style="color:#64748b;font-size:12px;font-style:italic;">{html.escape(empty_message)}</p>'
+        rendered = []
+        for item in items[:limit]:
+            rendered.append(
+                f'<div style="padding:6px 0;border-bottom:1px solid var(--af-border, #1e293b);font-size:12px;color:#cbd5e1;">'
+                f'{html.escape(item)}</div>'
+            )
+        if len(items) > limit:
+            rendered.append(
+                f'<div style="padding-top:8px;font-size:11px;color:var(--af-text-muted, #64748b);">'
+                f'+{len(items) - limit} itens adicionais</div>'
+            )
+        return "".join(rendered)
+
+    def render_chip_list(items, empty_message):
+        if not items:
+            return f'<p style="color:#64748b;font-size:12px;font-style:italic;">{html.escape(empty_message)}</p>'
+        chips = []
+        for item in items:
+            chips.append(
+                f'<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;'
+                f'background:rgba(15,23,42,.85);border:1px solid var(--af-border, #1e293b);color:#cbd5e1;'
+                f'font-size:12px;margin:0 8px 8px 0;">{html.escape(item)}</span>'
+            )
+        return f'<div style="display:flex;flex-wrap:wrap;">{"".join(chips)}</div>'
+
+    def render_stack_cards(items):
+        if not items:
+            return '<p style="color:#64748b;font-size:12px;font-style:italic;">Nao foi possivel inferir a stack principal.</p>'
+        cards = []
+        for item in items:
+            evidence = item.get("evidence", [])
+            confidence = item.get("confidence", "media")
+            confidence_color = "#22c55e" if confidence == "alta" else "#eab308" if confidence == "media" else "#94a3b8"
+            evidence_html = ""
+            if evidence:
+                evidence_html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + "".join(
+                    f'<span style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:999px;padding:4px 8px;font-size:11px;color:#bfdbfe;">{html.escape(e)}</span>'
+                    for e in evidence
+                ) + '</div>'
+            cards.append(
+                f'<div style="padding:12px 0;border-bottom:1px solid var(--af-border, #1e293b);">'
+                f'<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">'
+                f'<strong style="color:#e2e8f0;font-size:13px;">{html.escape(item.get("name", "Stack"))}</strong>'
+                f'<span style="font-size:11px;color:{confidence_color};text-transform:uppercase;letter-spacing:.6px;">{html.escape(confidence)}</span>'
+                f'</div>'
+                f'{evidence_html}'
+                f'</div>'
+            )
+        return "".join(cards)
+
+    def render_risk_cards(items):
+        if not items:
+            return '<p style="color:#64748b;font-size:12px;font-style:italic;">Nenhum risco relevante detectado.</p>'
+        cards = []
+        severity_colors = {"critical": "#ef4444", "warning": "#eab308", "info": "#60a5fa"}
+        for item in items:
+            severity = item.get("severity", "info")
+            color = severity_colors.get(severity, "#60a5fa")
+            cards.append(
+                f'<div style="padding:10px 12px;border:1px solid rgba(148,163,184,.15);border-left:3px solid {color};border-radius:8px;margin-bottom:10px;background:rgba(15,23,42,.5);">'
+                f'<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:4px;">'
+                f'<strong style="font-size:13px;color:#e2e8f0;">{html.escape(item.get("title", "Risco"))}</strong>'
+                f'<span style="font-size:11px;color:{color};text-transform:uppercase;letter-spacing:.6px;">{html.escape(severity)}</span>'
+                f'</div>'
+                f'<div style="font-size:12px;color:#cbd5e1;">{html.escape(item.get("details", ""))}</div>'
+                f'</div>'
+            )
+        return "".join(cards)
 
     # --- Tree ---
     tree_lines = []
@@ -253,6 +561,14 @@ def build_sections(data):
         "status_section": status_section,
         "commits_section": commits_section,
         "arch_section": arch_section,
+        "stack_section": render_stack_cards(stacks),
+        "manifest_section": render_path_list(manifests, "Nenhum manifesto detectado."),
+        "scripts_section": render_path_list(scripts, "Nenhum script de automacao detectado."),
+        "package_scripts_section": render_chip_list(package_scripts, "Nenhum script em package.json detectado."),
+        "tests_section": render_path_list(tests, "Nenhum teste detectado."),
+        "ci_section": render_path_list(ci_files, "Nenhum pipeline CI detectado."),
+        "docker_section": render_path_list(docker_files, "Nenhum arquivo Docker detectado."),
+        "risk_section": render_risk_cards(risks),
     }
 
 
@@ -475,6 +791,38 @@ body {{
         {sections['ext_section']}
     </div>
 
+    <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card" style="margin-bottom:0;">
+            <div class="card-title">🧠 Stack provavel e manifestos</div>
+            {sections['stack_section']}
+            <div style="height:14px;"></div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">Manifestos detectados</div>
+            {sections['manifest_section']}
+        </div>
+        <div class="card" style="margin-bottom:0;">
+            <div class="card-title">🧰 Scripts, testes e infraestrutura</div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">Scripts de automacao</div>
+            {sections['scripts_section']}
+            <div style="height:12px;"></div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">Scripts de package.json</div>
+            {sections['package_scripts_section']}
+            <div style="height:12px;"></div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">Testes detectados</div>
+            {sections['tests_section']}
+            <div style="height:12px;"></div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">CI / CD</div>
+            {sections['ci_section']}
+            <div style="height:12px;"></div>
+            <div style="font-size:12px;color:var(--af-text-muted, #64748b);margin-bottom:8px;">Docker / ambiente</div>
+            {sections['docker_section']}
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">⚠ Riscos do contexto atual</div>
+        {sections['risk_section']}
+    </div>
+
     <div class="grid-2">
         <div>
             <div class="card" style="margin-bottom:0;">
@@ -551,20 +899,23 @@ def main():
         print("[!] Projeto nao encontrado. Use este script dentro de um repositorio Git.")
         return 1
 
-    print(f"[1/5] Escaneando projeto em: {root}")
+    print(f"[1/6] Escaneando projeto em: {root}")
     tree_data = build_tree(root)
 
-    print(f"[2/5] Obtendo informacoes Git...")
+    print(f"[2/6] Obtendo informacoes Git...")
     branch = get_git_branch()
     commits = get_git_log()
     modified_files = get_git_diff_files()
     porcelain = get_git_status()
 
-    print(f"[3/5] Calculando estatisticas...")
+    print(f"[3/6] Classificando stack e inventario tecnico...")
+    inventory = build_repository_inventory(root, tree_data, modified_files, porcelain)
+
+    print(f"[4/6] Calculando estatisticas...")
     stats = get_project_stats(tree_data, root)
     arch = get_architecture_overview(tree_data)
 
-    print(f"[4/5] Montando HTML...")
+    print(f"[5/6] Montando HTML...")
     data = {
         "branch": branch,
         "commits": commits,
@@ -573,11 +924,12 @@ def main():
         "stats": stats,
         "architecture": arch,
         "tree": tree_data,
+        "inventory": inventory,
     }
     sections = build_sections(data)
     html_output = generate_html(data, sections)
 
-    print(f"[5/5] Salvando...")
+    print(f"[6/6] Salvando...")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(html_output, encoding="utf-8")
 

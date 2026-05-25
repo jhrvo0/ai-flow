@@ -116,6 +116,43 @@ def load_projects():
     return all_paths
 
 
+def collect_recent_artifacts(project_path, limit=6):
+    pp = Path(project_path)
+    ai_flow_dir = pp / ".ai-flow"
+    artifact_roots = [ai_flow_dir / "artifacts", ai_flow_dir / "reports"]
+    artifacts = []
+    seen = set()
+
+    for root_dir in artifact_roots:
+        if not root_dir.exists():
+            continue
+        try:
+            for file_path in root_dir.rglob("*"):
+                if not file_path.is_file():
+                    continue
+                resolved = str(file_path.resolve())
+                if resolved in seen:
+                    continue
+                try:
+                    mtime = file_path.stat().st_mtime
+                except OSError:
+                    mtime = 0
+                artifacts.append({
+                    "path": str(file_path.relative_to(pp)).replace("\\", "/"),
+                    "name": file_path.name,
+                    "kind": file_path.suffix.lower().lstrip(".") or "arquivo",
+                    "mtime": mtime,
+                })
+                seen.add(resolved)
+        except Exception:
+            continue
+
+    artifacts = sorted(artifacts, key=lambda item: item.get("mtime", 0), reverse=True)
+    for item in artifacts[:limit]:
+        item.pop("mtime", None)
+    return artifacts[:limit]
+
+
 def get_project_info(path):
     pp = Path(path)
     name = pp.name
@@ -149,6 +186,9 @@ def get_project_info(path):
     has_aiflow = (pp / ".ai-flow").exists()
     has_context = (pp / ".ai-flow" / "reports" / "project-context.html").exists()
     has_quality = (pp / ".ai-flow" / "reports" / "quality-gate.html").exists()
+    has_diagnosis = (pp / ".ai-flow" / "reports" / "ai-flow-diagnosis.md").exists()
+    has_manual_checklist = (pp / ".ai-flow" / "reports" / "manual-test-checklist.md").exists()
+    recent_artifacts = collect_recent_artifacts(pp)
 
     return {
         "name": name, "path": str(pp.resolve()),
@@ -157,6 +197,9 @@ def get_project_info(path):
         "file_count": file_count, "last_modified": last_modified,
         "has_aiflow": has_aiflow,
         "has_context_map": has_context, "has_quality_report": has_quality,
+        "has_diagnosis": has_diagnosis,
+        "has_manual_checklist": has_manual_checklist,
+        "recent_artifacts": recent_artifacts,
     }
 
 
@@ -565,34 +608,80 @@ def git_commit(project_path, message, author=None):
 
 # ─── Agent helpers ────────────────────────────────────────
 
-AGENT_FILES = {
-    "planner": "planner.md",
-    "coder": "coder.md",
-    "reviewer": "reviewer-quality-gate.md",
-    "tester": "tester.md",
-    "docs": "docs-commit.md",
+AGENT_FILE_CANDIDATES = {
+    "orchestrator": ["00-orchestrator.md"],
+    "context-engineer": ["01-context-engineer.md"],
+    "planner": ["02-planner.md", "planner.md"],
+    "architect": ["03-architect.md"],
+    "coder": ["04-coder.md", "coder.md"],
+    "patch-applier": ["05-patch-applier.md"],
+    "reviewer": ["06-reviewer.md", "reviewer-quality-gate.md"],
+    "security": ["08-security.md"],
+    "tester": ["07-tester.md", "tester.md"],
+    "docs": ["09-docs-commit.md", "docs-commit.md"],
+    "memory": ["10-memory.md"],
 }
 
-def get_agents_list():
+AGENT_LEGACY_ALIASES = {
+    "reviewer-quality-gate": "reviewer",
+    "docs-commit": "docs",
+}
+
+AGENT_MODEL_KEYS = {
+    "orchestrator": "model_for_planning",
+    "context-engineer": "model_for_planning",
+    "planner": "model_for_planning",
+    "architect": "model_for_planning",
+    "coder": "model_for_coding",
+    "patch-applier": "model_for_coding",
+    "reviewer": "model_for_review",
+    "security": "model_for_review",
+    "tester": "model_for_tester",
+    "docs": "model_for_docs",
+    "memory": "model_for_summary",
+    "summarizer": "model_for_summary",
+}
+
+
+def _agent_label_from_id(agent_id):
+    return agent_id.replace("-", " ").replace("_", " ").title()
+
+
+def _build_agent_catalog():
     agents_dir = AI_FLOW_DIR / "agents"
-    agents = []
-    for key, filename in AGENT_FILES.items():
-        filepath = agents_dir / filename
-        if filepath.exists():
-            agents.append({
-                "id": key,
-                "name": filename.replace(".md", "").replace("-quality-gate", ""),
-                "file": filename,
-                "path": str(filepath),
-            })
-    return agents
+    catalog = []
+    seen_files = set()
+
+    for agent_id, candidates in AGENT_FILE_CANDIDATES.items():
+        for filename in candidates:
+            filepath = agents_dir / filename
+            if filepath.exists():
+                resolved = str(filepath.resolve())
+                if resolved in seen_files:
+                    break
+                catalog.append({
+                    "id": agent_id,
+                    "name": _agent_label_from_id(agent_id),
+                    "file": filename,
+                    "path": resolved,
+                })
+                seen_files.add(resolved)
+                break
+
+    return catalog
+
+def get_agents_list():
+    return _build_agent_catalog()
 
 
 def get_agent_content(agent_id):
-    filename = AGENT_FILES.get(agent_id)
-    if not filename:
+    agents = {agent["id"]: agent for agent in _build_agent_catalog()}
+    if agent_id not in agents:
+        agent_id = AGENT_LEGACY_ALIASES.get(agent_id, agent_id)
+    agent = agents.get(agent_id)
+    if not agent:
         return None, "Agente nao encontrado"
-    filepath = AI_FLOW_DIR / "agents" / filename
+    filepath = Path(agent["path"])
     if not filepath.exists():
         return None, "Arquivo do agente nao encontrado"
     try:
@@ -600,6 +689,28 @@ def get_agent_content(agent_id):
         return content, None
     except Exception as e:
         return None, str(e)
+
+
+def resolve_agent_model(provider, agent_id, explicit_model=""):
+    if explicit_model and explicit_model != "__auto__":
+        return explicit_model
+
+    cfg = load_config()
+    models_cfg = cfg.get("models", {})
+    normalized_agent = AGENT_LEGACY_ALIASES.get(agent_id, agent_id or "")
+    normalized_agent = normalized_agent.strip().lower()
+
+    assignment_cfg = models_cfg.get("assignment", {}).get(normalized_agent, {})
+    assigned_model = assignment_cfg.get("model")
+    if assigned_model:
+        return assigned_model
+
+    model_key = AGENT_MODEL_KEYS.get(normalized_agent)
+    fallback_model = assignment_cfg.get("fallback_model")
+    if model_key:
+        return resolve_model(provider, model_key, fallback_model or "qwen2.5-coder-7b-instruct")
+
+    return resolve_model(provider, "model_for_coding", fallback_model or "qwen2.5-coder-7b-instruct")
 
 
 # ─── Providers ────────────────────────────────────────────
@@ -1095,6 +1206,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
         # ─── Agent ───
         if path == "/api/agent/call":
             model = data.get("model", "qwen2.5-coder-7b-instruct")
+            agent = data.get("agent", "")
             system = data.get("system", "")
             user = data.get("user", "")
             temperature = data.get("temperature", 0.2)
@@ -1112,6 +1224,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
 
             if not provider:
                 provider, _, _ = get_provider_config(None)
+
+            model = resolve_agent_model(provider, agent, model)
 
             result = call_provider(provider, model, messages, temperature)
             return json_response(self, result)

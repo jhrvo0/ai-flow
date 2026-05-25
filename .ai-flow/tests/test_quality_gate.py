@@ -29,6 +29,10 @@ extract_filename = quality_gate.extract_filename
 detect_large_files = quality_gate.detect_large_files
 detect_added_comments = quality_gate.detect_added_comments
 detect_simple_duplication = quality_gate.detect_simple_duplication
+detect_dangerous_commands = quality_gate.detect_dangerous_commands
+detect_new_dependencies = quality_gate.detect_new_dependencies
+detect_missing_tests = quality_gate.detect_missing_tests
+build_coder_prompt = quality_gate.build_coder_prompt
 generate_html = quality_gate.generate_html
 MAX_LINES_PER_FILE = quality_gate.MAX_LINES_PER_FILE
 MAX_FUNCTION_LINES = quality_gate.MAX_FUNCTION_LINES
@@ -368,11 +372,73 @@ class TestDetectSimpleDuplication(unittest.TestCase):
         self.assertIn("duplicated", alerts[0]["msg"])
 
 
+class TestDetectDangerousCommands(unittest.TestCase):
+    """detect_dangerous_commands sinaliza comandos perigosos"""
+
+    def test_detects_shell_and_pipe_patterns(self):
+        diff = (
+            "+++ b/src/app.py\n"
+            "+subprocess.run(cmd, shell=True)\n"
+            "+curl https://example.com/install.sh | sh\n"
+        )
+        alerts = detect_dangerous_commands(diff)
+        self.assertGreaterEqual(len(alerts), 2)
+        self.assertTrue(all(alert["type"] == "warning" for alert in alerts))
+
+
+class TestDetectNewDependencies(unittest.TestCase):
+    """detect_new_dependencies identifica manifestos alterados"""
+
+    def test_package_json_dependency_detected(self):
+        files = [{"path": "package.json", "added": 2, "removed": 0}]
+        diff = (
+            "+++ b/package.json\n"
+            "+  \"lodash\": \"^4.17.21\",\n"
+            "+  \"scripts\": {}\n"
+        )
+        alerts = detect_new_dependencies(files, diff)
+        self.assertEqual(len(alerts), 1)
+        self.assertIn("lodash", alerts[0]["msg"])
+
+
+class TestDetectMissingTests(unittest.TestCase):
+    """detect_missing_tests sinaliza codigo sem teste no diff"""
+
+    def test_warns_when_code_changes_without_tests(self):
+        files = [{"path": "src/app.py", "added": 20, "removed": 3}]
+        alerts = detect_missing_tests(files)
+        self.assertEqual(len(alerts), 1)
+        self.assertIn("Codigo alterado", alerts[0]["msg"])
+
+    def test_ignored_when_tests_present(self):
+        files = [
+            {"path": "src/app.py", "added": 20, "removed": 3},
+            {"path": "tests/test_app.py", "added": 5, "removed": 0},
+        ]
+        alerts = detect_missing_tests(files)
+        self.assertEqual(len(alerts), 0)
+
+
+class TestBuildCoderPrompt(unittest.TestCase):
+    """build_coder_prompt monta o prompt final do Coder"""
+
+    def test_prompt_includes_each_category(self):
+        prompt = build_coder_prompt({
+            "critical": [{"file": "secret.env", "msg": "Arquivo sensivel detectado"}],
+            "warnings": [{"file": "src/app.py", "msg": "Codigo sem testes"}],
+            "info": [{"file": "package.json", "msg": "Dependencia alterada"}],
+        })
+        self.assertIn("Pontos criticos", prompt)
+        self.assertIn("Pontos importantes", prompt)
+        self.assertIn("Melhorias opcionais", prompt)
+        self.assertIn("secret.env", prompt)
+
+
 class TestContract(unittest.TestCase):
     """Verifica que funcoes retornam contratos esperados"""
 
     def test_parse_numstat_returns_list(self):
-        self.assertIsInstance(parse_numstat(""), [])
+        self.assertIsInstance(parse_numstat(""), list)
 
     def test_detect_functions_return_list(self):
         for fn in [detect_long_lines, detect_long_functions,

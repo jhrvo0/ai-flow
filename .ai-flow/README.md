@@ -31,10 +31,28 @@ O dashboard:
 - Escaneia a pasta atual e subpastas procurando repositórios Git
 - Mostra **cards de projetos** com: nome, branch, status, último commit
 - Destaque visual para projetos com **alterações pendentes**
-- **Links diretos** para: abrir projeto, contexto, quality gate, workflows
+- **Links diretos** para: abrir projeto, contexto, quality gate, workflows e relatórios recentes
 - **Botões "Gerar"** para rodar o context map e quality gate de cada projeto
 - **Busca e filtros** (todos / com alterações / com AI-Flow)
 - Projetos com `.ai-flow/` recebem badge **⚡ AI-Flow**
+- O card de cada projeto mostra **artefatos recentes** e sinais de relatórios gerados
+
+## CLI central do AI-Flow
+
+Use o entry point principal para operar o fluxo sem depender apenas de prompts e documentação:
+
+```powershell
+python .ai-flow\scripts\ai-flow.py status
+python .ai-flow\scripts\ai-flow.py context
+python .ai-flow\scripts\ai-flow.py quality
+python .ai-flow\scripts\ai-flow.py dashboard
+python .ai-flow\scripts\ai-flow.py init-task "minha-tarefa"
+python .ai-flow\scripts\ai-flow.py list-tasks
+python .ai-flow\scripts\ai-flow.py show-config
+python .ai-flow\scripts\ai-flow.py validate-config
+```
+
+O comando `init-task` cria a pasta de artefatos da tarefa e os arquivos-base para acompanhar contexto, estado e qualidade.
 
 ## Mapas individuais de cada projeto
 
@@ -54,6 +72,7 @@ python .ai-flow\scripts\generate-context-map.py
 ```
 
 Contém: árvore de diretórios, arquivos modificados destacados, branch, commits, status Git, arquitetura, quadro de tarefas Kanban.
+Também passa a destacar stack provável, manifestos, scripts, testes, CI/CD, Docker e riscos do contexto atual.
 
 ## Estrutura
 
@@ -64,15 +83,29 @@ Contém: árvore de diretórios, arquivos modificados destacados, branch, commit
   dashboard.ps1          # Atalho: abre o dashboard central
   dashboard.html         # Dashboard central (gerado) — ENTRY POINT
   agents/
-    planner.md           # Prompt do agente Planejador
-    coder.md             # Prompt do agente Programador
-    reviewer-quality-gate.md  # Prompt do agente Revisor
-    tester.md            # Prompt do agente Testador
-    docs-commit.md       # Prompt do agente Documentação/Commit
+    00-orchestrator.md    # Orquestração do fluxo
+    01-context-engineer.md  # Coleta e organiza contexto
+    02-planner.md         # Planejamento
+    03-architect.md       # Arquitetura
+    04-coder.md           # Implementação
+    05-patch-applier.md   # Aplicação de patches
+    06-reviewer.md        # Revisão de qualidade
+    07-tester.md          # Validação e testes
+    08-security.md        # Revisão de segurança
+    09-docs-commit.md     # Documentação e commit
+    10-memory.md          # Atualização de memória
+    planner.md            # Alias legado
+    coder.md              # Alias legado
+    reviewer-quality-gate.md  # Alias legado
+    tester.md             # Alias legado
+    docs-commit.md        # Alias legado
   workflows/
     feature-flow.md      # Fluxo completo para nova funcionalidade
     bugfix-flow.md       # Fluxo para correção de bugs
     review-flow.md       # Fluxo apenas para revisão
+  artifacts/
+    current-task.json     # Tarefa ativa e ponteiros de contexto
+    task-state.json       # Estado da tarefa em andamento
   scripts/
     quality-gate.py               # Análise estática do diff (gera HTML)
     run-quality-gate.ps1          # Atalho: quality gate + navegador
@@ -138,6 +171,7 @@ O relatório HTML será gerado em `.ai-flow/reports/quality-gate.html` com:
 - Nota geral de 0 a 10
 - Resumo de arquivos e linhas alteradas
 - Alertas críticos, importantes e melhorias
+- Comandos perigosos, dependências novas e ausência de testes
 - Preview do diff
 - Prompt pronto para copiar e reenviar ao Coder
 

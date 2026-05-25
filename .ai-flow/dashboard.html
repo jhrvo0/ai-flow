@@ -1685,6 +1685,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         </div>
 
         <div class="header-right">
+            <button class="btn-action" onclick="checkModels()" title="Verificar conexao com LM Studio/Ollama">
+                <i data-lucide="cpu" style="width: 11px;"></i> Modelos
+            </button>
+            <button class="btn-action" onclick="openRunAgentDialog()" title="Executar agente via LLM local">
+                <i data-lucide="bot" style="width: 11px;"></i> Executar Agente
+            </button>
             <button class="btn-action" onclick="runScript('quality-gate')">
                 <i data-lucide="shield" style="width: 11px;"></i> Quality Gate
             </button>
@@ -1885,12 +1891,18 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 </div>
 
                 <div class="tab-content" id="tab-reports">
-                    <div style="display:flex; gap:8px;" id="reportLinksContainer">
+                    <div style="display:flex; gap:8px; flex-wrap: wrap;" id="reportLinksContainer">
                         <button class="btn-action" onclick="openReport('quality')">
                             <i data-lucide="external-link" style="width:11px;"></i> Quality Gate HTML
                         </button>
                         <button class="btn-action" onclick="openReport('context')">
                             <i data-lucide="external-link" style="width:11px;"></i> Context Map HTML
+                        </button>
+                        <button class="btn-action" onclick="openReport('diagnosis')">
+                            <i data-lucide="external-link" style="width:11px;"></i> Diagnosis
+                        </button>
+                        <button class="btn-action" onclick="openReport('checklist')">
+                            <i data-lucide="external-link" style="width:11px;"></i> Manual Checklist
                         </button>
                     </div>
                 </div>
@@ -2142,6 +2154,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         let suggestionSelectedIndex = 0;
         let activeTerminalTaskId = null;
         let terminalPollInterval = null;
+        let aiFlowConfig = null;
         const agentOrder = [
             'orchestrator',
             'context-engineer',
@@ -2183,18 +2196,52 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 "path": "C:\\Users\\joaoh\\OneDrive\\Área de Trabalho\\Teste",
                 "branch": "master",
                 "commit": {
-                        "hash": "006e8b2",
+                        "hash": "4003860",
                         "author": "João Henrique",
-                        "date": "4 hours ago",
-                        "message": "feat: estrutura inicial AI-Flow"
+                        "date": "2 days ago",
+                        "message": "Add AI-Flow framework and agent docs"
                 },
                 "has_changes": true,
-                "changes_count": 35,
-                "file_count": 64,
-                "last_modified": "2026-05-23",
+                "changes_count": 14,
+                "file_count": 174,
+                "last_modified": "2026-05-24",
                 "has_aiflow": true,
                 "has_context_map": true,
-                "has_quality_report": true
+                "has_quality_report": true,
+                "has_diagnosis": true,
+                "has_manual_checklist": true,
+                "recent_artifacts": [
+                        {
+                                "path": ".ai-flow/reports/manual-test-checklist.md",
+                                "name": "manual-test-checklist.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/reports/project-context.html",
+                                "name": "project-context.html",
+                                "kind": "html"
+                        },
+                        {
+                                "path": ".ai-flow/reports/quality-gate.html",
+                                "name": "quality-gate.html",
+                                "kind": "html"
+                        },
+                        {
+                                "path": ".ai-flow/reports/ai-flow-diagnosis.md",
+                                "name": "ai-flow-diagnosis.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-24-041950/final-summary.md",
+                                "name": "final-summary.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-24-041950/tests.md",
+                                "name": "tests.md",
+                                "kind": "md"
+                        }
+                ]
         }
 ];
         // END_STATIC_PROJECTS
@@ -2289,6 +2336,17 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     ? `<span class="badge badge-dirty">${p.changes_count} alterações</span>` 
                     : `<span class="badge badge-clean">Limpo</span>`;
                 const aiflowBadge = p.has_aiflow ? `<span class="badge badge-aiflow">.ai-flow</span>` : '';
+                const reportBadges = [
+                    p.has_context_map ? 'Context Map' : '',
+                    p.has_quality_report ? 'Quality Gate' : '',
+                    p.has_diagnosis ? 'Diagnosis' : '',
+                    p.has_manual_checklist ? 'Checklist' : ''
+                ].filter(Boolean).map(label => `<span class="badge badge-commit">${escapeHtml(label)}</span>`).join('');
+                const recentArtifacts = Array.isArray(p.recent_artifacts) ? p.recent_artifacts.slice(0, 4) : [];
+                const artifactBadges = recentArtifacts.length ? recentArtifacts.map(artifact => {
+                    const title = `${artifact.kind || 'arquivo'} · ${artifact.path || artifact.name || ''}`;
+                    return `<span class="badge badge-commit" title="${escapeHtml(title)}">${escapeHtml(artifact.name || artifact.path || 'artifact')}</span>`;
+                }).join('') : '';
                 
                 let commitHtml = '';
                 if (p.commit && p.commit.hash && p.commit.hash !== '?') {
@@ -2319,6 +2377,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         </div>
                         <div class="project-card-body">
                             ${commitHtml}
+                            ${(reportBadges || artifactBadges) ? `<div class="badges-row" style="margin-top: 10px;">${reportBadges}${artifactBadges}</div>` : ''}
                         </div>
                         <div class="project-card-footer">
                             <button class="btn-card btn-card-primary" data-action="open" title="Abrir projeto no workspace">
@@ -3654,7 +3713,8 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (serverOnline) {
                 await refreshProjects();
                 await fetchProviders();
-                await onAgentChanged('planner');
+                await fetchAgentsCatalog();
+                await onAgentChanged(document.getElementById('aiAgent').value || 'planner');
             } else {
                 renderProjectsFallback();
             }
@@ -4286,6 +4346,91 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             closeModal('historyModal');
         }
 
+        async function checkModels() {
+            switchBottomTab('tab-console');
+            writeToConsole('Verificando provedores de modelo...');
+            try {
+                const res = await fetch(`${serverUrl}/api/models`);
+                const r = await res.json();
+                if (r.ok) {
+                    writeToConsole(`[OK] Provider: ${r.provider}`);
+                    writeToConsole(`Modelos (${r.models.length}):`);
+                    r.models.forEach(m => writeToConsole(`  - ${m.id}`));
+                    showToast(`${r.models.length} modelo(s) encontrado(s).`);
+                } else {
+                    writeToConsole(`[ERRO] ${r.error}`);
+                    writeToConsole('Verifique se LM Studio ou Ollama esta rodando.');
+                    showToast('Provider offline. Veja o console.', 'warning');
+                }
+            } catch(e) {
+                writeToConsole(`[ERRO] Sem conexao com o servidor: ${e.message}`);
+                showToast('Servidor offline.', 'error');
+            }
+        }
+
+        function openRunAgentDialog() {
+            const agents = ['planner', 'coder', 'reviewer', 'tester', 'docs', 'architect', 'security'];
+            const agentList = agents.map(a => `  - ${a}`).join('\n');
+            const agentId = prompt(`Agente disponiveis:\n${agentList}\n\nDigite o ID do agente:`, 'planner');
+            if (!agentId) return;
+            const task = prompt('Descricao da tarefa para o agente:', '');
+            if (!task) return;
+            const useGit = confirm('Incluir git diff/status no contexto?');
+            runAgentLive(agentId, task, useGit);
+        }
+
+        async function runAgentLive(agentId, task, useGit) {
+            if (!activeProject) {
+                showToast('Selecione um projeto.', 'warning');
+                return;
+            }
+            switchBottomTab('tab-console');
+            writeToConsole(`[AGENT] Executando agente: ${agentId}`);
+            writeToConsole(`[AGENT] Task: ${task}`);
+
+            const cmd = `python .ai-flow/scripts/run-agent.py ${agentId} "${task.replace(/"/g, '\\"')}" ${useGit ? '--git-context ' : ''}--save`;
+            writeToConsole(`$ ${cmd}`);
+
+            const screen = document.getElementById('composerTerminalScreen');
+            const dot = document.getElementById('terminalStatusDot');
+            const badge = document.getElementById('terminalTaskBadge');
+            const body = document.getElementById('composerTerminalBody');
+            body.style.display = 'flex';
+            document.getElementById('terminalToggleIcon').setAttribute('data-lucide', 'chevron-down');
+            lucide.createIcons();
+
+            screen.textContent = `$ ${cmd}\nAguardando inicio...\n`;
+            dot.style.background = '#f59e0b';
+            badge.style.display = 'inline-block';
+            badge.textContent = agentId.toUpperCase();
+            badge.className = 'git-badge M';
+
+            if (terminalPollInterval) clearInterval(terminalPollInterval);
+
+            try {
+                const payload = { command: cmd, cwd: activeProject.path };
+                const res = await fetch(`${serverUrl}/api/terminal/run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const r = await res.json();
+                if (r.ok && r.data?.task_id) {
+                    activeTerminalTaskId = r.data.task_id;
+                    terminalProcessedByTask[activeTerminalTaskId] = 0;
+                    writeToConsole(`[AGENT] Task iniciada: ${activeTerminalTaskId}`);
+                    pollTerminalOutput(activeTerminalTaskId);
+                    showToast(`Agente ${agentId} em execucao.`);
+                } else {
+                    writeToConsole(`[AGENT] Erro ao iniciar: ${r.error || 'sem resposta'}`);
+                    showToast('Falha ao iniciar agente.', 'error');
+                }
+            } catch(e) {
+                writeToConsole(`[AGENT] Erro de conexao: ${e.message}`);
+                showToast('Erro de rede.', 'error');
+            }
+        }
+
         function openSelfImproveDialog() {
             if (!activeProject) {
                 showToast('Selecione um projeto.', 'warning');
@@ -4405,6 +4550,10 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             let reportUrl = '';
             if (reportType === 'quality') {
                 reportUrl = `file:///${pPath}/.ai-flow/reports/quality-gate.html`;
+            } else if (reportType === 'diagnosis') {
+                reportUrl = `file:///${pPath}/.ai-flow/reports/ai-flow-diagnosis.md`;
+            } else if (reportType === 'checklist') {
+                reportUrl = `file:///${pPath}/.ai-flow/reports/manual-test-checklist.md`;
             } else {
                 reportUrl = `file:///${pPath}/.ai-flow/reports/project-context.html`;
             }
@@ -4461,17 +4610,124 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         opt.disabled = !p.available;
                         sel.appendChild(opt);
                     });
-                    
+
+                    let providerToLoad = sel.value || 'lm_studio';
                     const cfgRes = await fetch(`${serverUrl}/api/config`);
-                    const cfg = await cfgRes.json();
-                    if (cfg.ok && cfg.data?.api?.default_provider) {
-                        sel.value = cfg.data.api.default_provider;
+                    try {
+                        const cfg = await cfgRes.json();
+                        if (cfg.ok && cfg.data) {
+                            aiFlowConfig = cfg.data;
+                        }
+                        if (cfg.ok && cfg.data?.api?.default_provider) {
+                            providerToLoad = cfg.data.api.default_provider;
+                        }
+                    } catch (cfgError) {
+                        console.error(cfgError);
                     }
-                    onProviderChanged(sel.value);
+                    sel.value = providerToLoad;
+                    await onProviderChanged(providerToLoad);
+                    syncAutoModelSelection(document.getElementById('aiAgent').value || 'planner');
                 }
             } catch(e) {
                 console.error(e);
             }
+        }
+
+        async function fetchAgentsCatalog() {
+            const select = document.getElementById('aiAgent');
+            const currentValue = select.value || 'planner';
+            try {
+                const res = await fetch(`${serverUrl}/api/agents`);
+                const r = await res.json();
+                if (r.ok && Array.isArray(r.data) && r.data.length) {
+                    select.innerHTML = '';
+                    r.data.forEach(agent => {
+                        const opt = document.createElement('option');
+                        opt.value = agent.id;
+                        opt.textContent = agent.name || agent.id;
+                        select.appendChild(opt);
+                    });
+                    if ([...select.options].some(opt => opt.value === currentValue)) {
+                        select.value = currentValue;
+                    } else {
+                        select.value = r.data[0].id;
+                    }
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        const AGENT_MODEL_KEYS = {
+            'orchestrator': 'model_for_planning',
+            'context-engineer': 'model_for_planning',
+            'planner': 'model_for_planning',
+            'architect': 'model_for_planning',
+            'coder': 'model_for_coding',
+            'patch-applier': 'model_for_coding',
+            'reviewer': 'model_for_review',
+            'security': 'model_for_review',
+            'tester': 'model_for_tester',
+            'docs': 'model_for_docs',
+            'memory': 'model_for_summary',
+            'summarizer': 'model_for_summary',
+        };
+
+        function getConfiguredModelForAgent(agentId) {
+            const normalized = (agentId || '').toLowerCase();
+            if (!normalized || normalized === 'custom') return '';
+
+            const configModels = aiFlowConfig?.models || {};
+            const assignment = configModels.assignment || {};
+            const assigned = assignment[normalized];
+
+            if (assigned?.model) {
+                return assigned.model;
+            }
+
+            const modelKey = AGENT_MODEL_KEYS[normalized];
+            if (modelKey && configModels[modelKey]) {
+                return configModels[modelKey];
+            }
+
+            if (assigned?.fallback_model) {
+                return assigned.fallback_model;
+            }
+
+            return configModels.model_for_coding || '';
+        }
+
+        function ensureAutoModelOption(modelSel, modelName) {
+            if (!modelSel || !modelName) return;
+
+            const existingActualOption = Array.from(modelSel.options).find(opt => opt.value === modelName && opt.dataset.autoModel !== 'true');
+
+            Array.from(modelSel.options).forEach(opt => {
+                if (opt.dataset && opt.dataset.autoModel === 'true' && (opt.value !== modelName || existingActualOption)) {
+                    opt.remove();
+                }
+            });
+
+            if (!existingActualOption) {
+                const autoOption = document.createElement('option');
+                autoOption.value = modelName;
+                autoOption.textContent = `Auto: ${modelName}`;
+                autoOption.dataset.autoModel = 'true';
+                modelSel.insertBefore(autoOption, modelSel.firstChild);
+            }
+
+            modelSel.value = modelName;
+        }
+
+        function syncAutoModelSelection(agentId) {
+            const modelSel = document.getElementById('aiModel');
+            if (!modelSel) return '';
+
+            const modelName = getConfiguredModelForAgent(agentId);
+            if (!modelName) return modelSel.value || '';
+
+            ensureAutoModelOption(modelSel, modelName);
+            return modelName;
         }
 
         async function onProviderChanged(provider) {
@@ -4504,6 +4760,8 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             } catch(e) {
                 modelSel.innerHTML = '<option value="">Offline</option>';
             }
+
+            syncAutoModelSelection(document.getElementById('aiAgent').value || 'planner');
         }
 
         async function onAgentChanged(agentId) {
@@ -4513,6 +4771,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 if (r.ok && r.data) {
                     activeAgentInstructions = r.data.content;
                 }
+                syncAutoModelSelection(agentId);
             } catch(e) {
                 console.error(e);
             }
@@ -4525,14 +4784,10 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!message) return;
 
             const provider = document.getElementById('aiProvider').value;
-            const model = document.getElementById('aiModel').value;
             const agent = document.getElementById('aiAgent').value;
             const temp = parseFloat(document.getElementById('aiTemp').value);
-            
-            if (!model) {
-                showToast('Selecione um modelo local.', 'warning');
-                return;
-            }
+
+            const model = syncAutoModelSelection(agent) || document.getElementById('aiModel').value || '';
 
             appendMessage('user', message, 'Você');
             inputEl.value = '';
@@ -4559,6 +4814,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             try {
                 const payload = {
                     provider: provider,
+                    agent: agent,
                     model: model,
                     system: activeAgentInstructions,
                     messages: [
