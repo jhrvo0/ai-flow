@@ -221,11 +221,123 @@ body {
     color: var(--color-error);
     border-color: rgba(239, 68, 68, 0.1);
 }
+.server-badge.checking {
+    background: rgba(59, 130, 246, 0.06);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.18);
+}
 .status-dot {
     width: 4px;
     height: 4px;
     border-radius: 50%;
     background: currentColor;
+}
+.header-menu-item:disabled,
+.icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.runtime-status-bar {
+    background: rgba(10, 10, 16, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.runtime-status-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 8px;
+}
+.status-chip {
+    min-width: 0;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.status-chip-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.status-chip-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 11px;
+    color: var(--text-bright);
+    font-weight: 600;
+}
+.status-chip-value span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.status-chip-detail {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    line-height: 1.3;
+    min-height: 12px;
+}
+.status-tone-unknown { border-color: rgba(113, 113, 122, 0.28); }
+.status-tone-unknown .status-chip-value { color: var(--text-muted); }
+.status-tone-checking,
+.status-tone-running { border-color: rgba(59, 130, 246, 0.28); }
+.status-tone-checking .status-chip-value,
+.status-tone-running .status-chip-value { color: #60a5fa; }
+.status-tone-online,
+.status-tone-success { border-color: rgba(16, 185, 129, 0.28); }
+.status-tone-online .status-chip-value,
+.status-tone-success .status-chip-value { color: var(--color-success); }
+.status-tone-warning { border-color: rgba(245, 158, 11, 0.28); }
+.status-tone-warning .status-chip-value { color: var(--color-warning); }
+.status-tone-offline,
+.status-tone-error,
+.status-tone-failed { border-color: rgba(239, 68, 68, 0.28); }
+.status-tone-offline .status-chip-value,
+.status-tone-error .status-chip-value,
+.status-tone-failed .status-chip-value { color: var(--color-error); }
+.runtime-status-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+.runtime-next-step {
+    color: var(--text-main);
+    min-height: 14px;
+}
+.runtime-error-text {
+    color: var(--color-error);
+}
+.inline-hint {
+    padding: 6px 8px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+.inline-hint strong {
+    color: var(--text-bright);
+}
+
+@media (max-width: 1400px) {
+    .runtime-status-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 /* Workspace Panels layout */
@@ -1705,7 +1817,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         </div>
 
         <div class="header-right">
-            <button class="btn-action btn-primary" onclick="openRunAgentDialog()" title="Executar agente via LLM local">
+            <button class="btn-action btn-primary" id="runAgentHeaderBtn" onclick="openRunAgentDialog()" title="Executar agente via LLM local">
                 <i data-lucide="bot" style="width: 11px;"></i> Executar Agente
             </button>
             <div class="header-dropdown" id="headerMoreMenu" style="position: relative;">
@@ -1713,16 +1825,16 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     <i data-lucide="more-horizontal" style="width: 13px;"></i>
                 </button>
                 <div class="header-dropdown-menu" id="headerDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: rgba(10,10,16,0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px; min-width: 180px; z-index: 200; box-shadow: 0 12px 40px rgba(0,0,0,0.6);">
-                    <button class="header-menu-item" onclick="checkModels(); toggleHeaderMenu();">
+                    <button class="header-menu-item" id="checkModelsBtn" onclick="checkModels(); toggleHeaderMenu();">
                         <i data-lucide="cpu" style="width: 12px;"></i> Provedores e Modelos
                     </button>
-                    <button class="header-menu-item" onclick="runScript('quality-gate'); toggleHeaderMenu();">
+                    <button class="header-menu-item" id="menuQualityGateBtn" onclick="runScript('quality-gate'); toggleHeaderMenu();">
                         <i data-lucide="shield" style="width: 12px;"></i> Quality Gate
                     </button>
-                    <button class="header-menu-item" onclick="runScript('context-map'); toggleHeaderMenu();">
+                    <button class="header-menu-item" id="menuContextMapBtn" onclick="runScript('context-map'); toggleHeaderMenu();">
                         <i data-lucide="map" style="width: 12px;"></i> Context Map
                     </button>
-                    <button class="header-menu-item" onclick="openSelfImproveDialog(); toggleHeaderMenu();">
+                    <button class="header-menu-item" id="menuSelfImproveBtn" onclick="openSelfImproveDialog(); toggleHeaderMenu();">
                         <i data-lucide="sparkles" style="width: 12px;"></i> Self-Improve
                     </button>
                 </div>
@@ -1734,6 +1846,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 <span class="status-dot"></span>
                 <span id="serverBadgeText">Online</span>
             </div>
+        </div>
+    </div>
+
+    <div class="runtime-status-bar">
+        <div class="runtime-status-grid" id="runtimeStatusGrid"></div>
+        <div class="runtime-status-footer">
+            <div class="runtime-next-step" id="runtimeNextStep">Próxima ação: verificar status do servidor e selecionar um projeto.</div>
+            <div class="runtime-error-text" id="runtimeErrorText"></div>
         </div>
     </div>
 
@@ -1800,19 +1920,19 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 </div>
                 
                 <div class="editor-controls" id="editorControls" style="display: none;">
-                    <button class="btn-action" onclick="undoEdit()" title="Desfazer">
+                    <button class="btn-action" id="undoFileBtn" onclick="undoEdit()" title="Desfazer">
                         <i data-lucide="undo-2" style="width: 11px;"></i>
                     </button>
-                    <button class="btn-action" onclick="redoEdit()" title="Refazer">
+                    <button class="btn-action" id="redoFileBtn" onclick="redoEdit()" title="Refazer">
                         <i data-lucide="redo-2" style="width: 11px;"></i>
                     </button>
-                    <button class="btn-action" onclick="openHistoryModal()" title="Snapshots">
+                    <button class="btn-action" id="historyFileBtn" onclick="openHistoryModal()" title="Snapshots">
                         <i data-lucide="history" style="width: 11px;"></i>
                     </button>
                     <button class="btn-action" id="toggleWordWrapBtn" onclick="toggleWordWrap()" title="Alternar Quebra de Linha">
                         <i data-lucide="wrap-text" style="width: 11px;"></i>
                     </button>
-                    <button class="btn-action btn-primary" onclick="saveFile()" title="Salvar (Ctrl+S)">
+                    <button class="btn-action btn-primary" id="saveFileBtn" onclick="saveFile()" title="Salvar (Ctrl+S)">
                         <i data-lucide="save" style="width: 11px;"></i> Salvar
                     </button>
                 </div>
@@ -1847,7 +1967,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                             <select id="canvas-flow-select" onchange="loadVisualWorkflow(this.value)" style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-bright); font-size: 11px; padding: 3px 8px; outline: none; cursor: pointer; min-width: 140px;">
                                 <option value="">(Novo Fluxo)</option>
                             </select>
-                            <button class="btn-action" onclick="saveVisualWorkflow()" title="Salvar Fluxo"><i data-lucide="save" style="width:11px;"></i> <span class="btn-text">Salvar</span></button>
+                            <button class="btn-action" id="saveWorkflowBtn" onclick="saveVisualWorkflow()" title="Salvar Fluxo"><i data-lucide="save" style="width:11px;"></i> <span class="btn-text">Salvar</span></button>
                         </div>
                         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                             <!-- Zoom Controls -->
@@ -1902,6 +2022,9 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         <div class="tab-item" onclick="switchBottomTab('tab-reports')">Relatórios</div>
                     </div>
                     <div class="tab-actions">
+                        <button class="icon-btn" onclick="copyConsoleLogs()" title="Copiar logs">
+                            <i data-lucide="copy" style="width: 11px;"></i>
+                        </button>
                         <button class="icon-btn" onclick="clearConsole()" title="Limpar">
                             <i data-lucide="slash" style="width: 11px;"></i>
                         </button>
@@ -1965,7 +2088,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     </div>
                     <div class="ai-field">
                         <label>Modelo Local</label>
-                        <select id="aiModel" onchange="populateAllNodeModelDropdowns()">
+                        <select id="aiModel" onchange="onModelChanged(this.value); populateAllNodeModelDropdowns()">
                             <option value="">Carregando...</option>
                         </select>
                     </div>
@@ -2053,6 +2176,9 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             <div class="ai-input-area" id="composerInputArea" style="display: none;">
                 <div class="composer-attached-files" id="composerAttachedFiles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
                     <!-- Chips inserted dynamically -->
+                </div>
+                <div class="inline-hint" id="composerContextStatus">
+                    <strong>Composer:</strong> selecione um projeto, abra um arquivo ou anexe arquivos para dar contexto explícito à IA.
                 </div>
                 <div class="context-checkboxes">
                     <label class="context-label" title="Salva snapshots e roda quality gate">
@@ -2361,6 +2487,224 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         let projects = [];
         let activeProject = null;
         let activeFile = null;
+        let lastServerBadgeStatus = 'unknown';
+
+        window.aiFlowRuntimeState = {
+            server: 'unknown',
+            serverDetail: '',
+            ollama: 'unknown',
+            ollamaDetail: '',
+            provider: 'unknown',
+            providerStatus: 'unknown',
+            providerDetail: '',
+            availableModels: [],
+            selectedModel: '',
+            activeProject: null,
+            activeFile: null,
+            activeTask: null,
+            activeAgentRun: null,
+            agentStatus: 'idle',
+            lastAction: null,
+            lastError: null,
+            nextRecommendedAction: 'Verifique o servidor e selecione um projeto.',
+            pendingActions: {},
+            lastSaved: null,
+            gitDirty: false,
+            attachedFiles: [],
+        };
+
+        function runtimeState() {
+            return window.aiFlowRuntimeState;
+        }
+
+        function normalizeStatusTone(status) {
+            if (!status) return 'unknown';
+            if (['checking', 'loading'].includes(status)) return 'checking';
+            if (['running'].includes(status)) return 'running';
+            if (['online', 'success'].includes(status)) return status;
+            if (['warning'].includes(status)) return 'warning';
+            if (['offline', 'error', 'failed'].includes(status)) return status;
+            return 'unknown';
+        }
+
+        function mergeRuntimeState(patch = {}) {
+            Object.assign(runtimeState(), patch);
+            renderRuntimeStatusBar();
+            updateActionButtons();
+            updateComposerContextStatus();
+        }
+
+        function formatRuntimeValue(value, fallback = 'nenhum') {
+            if (value === null || value === undefined || value === '') return fallback;
+            return String(value);
+        }
+
+        function setControlAvailability(id, enabled, reason) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.disabled = !enabled;
+            const baseTitle = el.getAttribute('data-base-title') || el.getAttribute('title') || '';
+            if (!el.getAttribute('data-base-title')) {
+                el.setAttribute('data-base-title', baseTitle);
+            }
+            if (!enabled && reason) {
+                el.setAttribute('title', reason);
+                el.setAttribute('data-disabled-reason', reason);
+            } else {
+                el.setAttribute('title', baseTitle);
+                el.removeAttribute('data-disabled-reason');
+            }
+        }
+
+        function appendStructuredLog(actionKey, status, meta = {}) {
+            const target = meta.target ? ` - ${meta.target}` : '';
+            const detail = meta.detail ? ` | ${meta.detail}` : '';
+            const next = meta.nextStep ? `\nPróxima ação: ${meta.nextStep}` : '';
+            writeToConsole(`[${actionKey.toUpperCase()}] ${status.toUpperCase()}${target}${detail}${next}`);
+        }
+
+        function setActionState(actionKey, status, options = {}) {
+            const state = runtimeState();
+            const nextStep = options.nextStep || state.nextRecommendedAction;
+            const entry = {
+                key: actionKey,
+                status: status,
+                label: options.label || actionKey,
+                message: options.message || '',
+                target: options.target || '',
+                nextStep: nextStep,
+                at: new Date().toISOString()
+            };
+
+            if (status === 'loading' || status === 'running' || status === 'checking') {
+                state.pendingActions[actionKey] = entry;
+            } else {
+                delete state.pendingActions[actionKey];
+            }
+
+            state.lastAction = entry;
+            if (status === 'error' || status === 'failed') {
+                state.lastError = options.message || options.detail || entry.label;
+            } else if (options.clearLastError) {
+                state.lastError = null;
+            }
+            if (options.lastSaved) {
+                state.lastSaved = options.lastSaved;
+            }
+            if (options.agentStatus) {
+                state.agentStatus = options.agentStatus;
+            }
+            if (options.activeAgentRun !== undefined) {
+                state.activeAgentRun = options.activeAgentRun;
+            }
+            if (options.nextStep) {
+                state.nextRecommendedAction = options.nextStep;
+            }
+
+            renderRuntimeStatusBar();
+            updateActionButtons();
+            updateComposerContextStatus();
+            appendStructuredLog(actionKey, status, {
+                target: options.target || options.message || '',
+                detail: options.detail || '',
+                nextStep: options.nextStep || ''
+            });
+        }
+
+        function renderStatusChip(label, value, status, detail = '') {
+            const tone = normalizeStatusTone(status);
+            return `
+                <div class="status-chip status-tone-${tone}">
+                    <div class="status-chip-label">${label}</div>
+                    <div class="status-chip-value">
+                        <span class="status-dot"></span>
+                        <span>${escapeHtml(formatRuntimeValue(value))}</span>
+                    </div>
+                    <div class="status-chip-detail">${escapeHtml(detail || ' ')}</div>
+                </div>
+            `;
+        }
+
+        function renderRuntimeStatusBar() {
+            const state = runtimeState();
+            const grid = document.getElementById('runtimeStatusGrid');
+            const nextStep = document.getElementById('runtimeNextStep');
+            const errorText = document.getElementById('runtimeErrorText');
+            if (!grid || !nextStep || !errorText) return;
+
+            const projectName = state.activeProject ? (state.activeProject.name || state.activeProject.path) : 'nenhum';
+            const fileName = state.activeFile ? (state.activeFile.name || state.activeFile.path) : 'nenhum';
+            const taskName = state.activeTask ? (state.activeTask.name || state.activeTask) : 'nenhuma';
+            const lastActionValue = state.lastAction ? `${state.lastAction.label}: ${state.lastAction.status}` : 'idle';
+            const agentValue = state.activeAgentRun || state.agentStatus || 'idle';
+            const lastSavedValue = state.lastSaved ? new Date(state.lastSaved).toLocaleTimeString() : 'n/a';
+
+            grid.innerHTML = [
+                renderStatusChip('Server', state.server, state.server, state.serverDetail || 'API local'),
+                renderStatusChip('Ollama', state.ollama, state.ollama, state.ollamaDetail || 'Provider principal'),
+                renderStatusChip('Provider', state.provider, state.providerStatus, state.providerDetail || ''),
+                renderStatusChip('Project', projectName, state.activeProject ? 'success' : 'unknown', state.activeProject ? state.activeProject.path : 'Selecione um projeto'),
+                renderStatusChip('File', fileName, state.activeFile ? 'success' : 'unknown', state.activeFile ? state.activeFile.path : 'Abra um arquivo'),
+                renderStatusChip('Task', taskName, state.activeTask ? 'success' : 'unknown', state.activeTask ? formatRuntimeValue(state.activeTask.stage, '') : 'Sem task ativa'),
+                renderStatusChip('Agent', agentValue, state.agentStatus || 'idle', state.selectedModel ? `Modelo: ${state.selectedModel}` : 'Sem modelo selecionado'),
+                renderStatusChip('Last action', lastActionValue, state.lastAction ? state.lastAction.status : 'unknown', state.lastAction ? (state.lastAction.message || state.lastAction.target || '') : 'Aguardando ação'),
+            ].join('');
+
+            nextStep.textContent = `Próxima ação: ${state.nextRecommendedAction || 'Aguardando.'}`;
+            errorText.textContent = state.lastError ? `Erro: ${state.lastError}` : '';
+        }
+
+        function updateComposerContextStatus() {
+            const state = runtimeState();
+            const el = document.getElementById('composerContextStatus');
+            if (!el) return;
+            const attached = state.attachedFiles || [];
+            const attachedLabel = attached.length ? attached.join(', ') : 'nenhum arquivo anexado';
+            const fileLabel = state.activeFile ? state.activeFile.name : 'nenhum arquivo aberto';
+            el.innerHTML = `<strong>Composer:</strong> projeto ${state.activeProject ? state.activeProject.name : 'nenhum'} | arquivo ${fileLabel} | anexos ${escapeHtml(attachedLabel)}`;
+        }
+
+        function updateActionButtons() {
+            const state = runtimeState();
+            const serverReady = state.server === 'online';
+            const projectReady = !!state.activeProject;
+            const fileReady = !!state.activeFile;
+            const providerReady = state.providerStatus === 'online';
+            const modelReady = !!(document.getElementById('aiModel') && document.getElementById('aiModel').value);
+            const gitReady = !!state.gitDirty;
+            const hasCanvasNodes = Array.isArray(canvasNodes) && canvasNodes.length > 0;
+
+            setControlAvailability('runAgentHeaderBtn', serverReady && projectReady && providerReady && modelReady, !serverReady ? 'Servidor offline.' : !projectReady ? 'Selecione um projeto.' : !providerReady ? 'Provider local indisponível.' : 'Selecione um modelo local.');
+            setControlAvailability('menuQualityGateBtn', serverReady && projectReady, !serverReady ? 'Servidor offline.' : 'Selecione um projeto para rodar o Quality Gate.');
+            setControlAvailability('menuContextMapBtn', serverReady && projectReady, !serverReady ? 'Servidor offline.' : 'Selecione um projeto para gerar o Context Map.');
+            setControlAvailability('menuSelfImproveBtn', serverReady && projectReady, !serverReady ? 'Servidor offline.' : 'Selecione um projeto antes de rodar Self-Improve.');
+            setControlAvailability('saveFileBtn', serverReady && fileReady, !serverReady ? 'Servidor offline.' : 'Abra um arquivo antes de salvar.');
+            setControlAvailability('undoFileBtn', serverReady && fileReady, !serverReady ? 'Servidor offline.' : 'Abra um arquivo antes de desfazer.');
+            setControlAvailability('redoFileBtn', serverReady && fileReady, !serverReady ? 'Servidor offline.' : 'Abra um arquivo antes de refazer.');
+            setControlAvailability('historyFileBtn', serverReady && fileReady, !serverReady ? 'Servidor offline.' : 'Abra um arquivo antes de ver snapshots.');
+            setControlAvailability('commitBtn', serverReady && projectReady && gitReady, !serverReady ? 'Servidor offline.' : !projectReady ? 'Selecione um projeto.' : 'Não há mudanças Git para commitar.');
+            setControlAvailability('sendComposerBtn', serverReady && projectReady && providerReady && modelReady, !serverReady ? 'Servidor offline.' : !projectReady ? 'Selecione um projeto.' : !providerReady ? 'Provider local indisponível.' : 'Selecione um modelo local.');
+            setControlAvailability('run-flow-btn', serverReady && providerReady && hasCanvasNodes, !serverReady ? 'Servidor offline.' : !providerReady ? 'Provider local indisponível.' : 'Adicione agentes ao canvas.');
+            setControlAvailability('saveWorkflowBtn', serverReady, 'Servidor offline.');
+            setControlAvailability('checkModelsBtn', serverReady, 'Servidor offline.');
+        }
+
+        function copyConsoleLogs() {
+            const consoleEl = document.getElementById('consoleOutput');
+            const text = consoleEl ? consoleEl.innerText : '';
+            navigator.clipboard.writeText(text || '').then(() => {
+                showToast('Logs copiados.', 'success');
+            }).catch(() => {
+                showToast('Não foi possível copiar os logs.', 'error');
+            });
+        }
+
+        function highlightCodeBlocks(container) {
+            if (!container || !window.hljs) return;
+            container.querySelectorAll('pre code').forEach((block) => {
+                window.hljs.highlightElement(block);
+            });
+        }
 
         function showCustomConfirm(title, message, onConfirm) {
             document.getElementById('customConfirmTitle').textContent = title;
@@ -3564,9 +3908,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             `;
             
             lucide.createIcons();
-            inspector.querySelectorAll('#inspector-output-box pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
+            highlightCodeBlocks(inspector);
         }
 
         function closeNodeInspector() {
@@ -3889,30 +4231,108 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         }
 
         // Server Status Probing
+        async function fetchRuntimeSnapshot(timeoutMs = 4500) {
+            const res = await fetch(`${serverUrl}/api/runtime/status`, { signal: AbortSignal.timeout(timeoutMs) });
+            const data = await res.json();
+            if (!data || !data.ok || !data.data) {
+                throw new Error(data && data.error ? data.error : 'Runtime status invÃ¡lido');
+            }
+            return data.data;
+        }
+
         async function checkServerStatus() {
+            setServerBadgeState('checking');
             try {
                 const res = await fetch(`${serverUrl}/api/server/check`, { signal: AbortSignal.timeout(1500) });
                 const d = await res.json();
-                if (d && d.ok) {
-                    setServerState(true);
+                if (d && d.ok && d.data && d.data.status === 'online') {
+                    setServerBadgeState('online');
+                    mergeRuntimeState({
+                        server: 'online',
+                        serverDetail: `Endpoint ${serverUrl}`,
+                    });
                     return true;
                 }
-            } catch(e) {}
-            setServerState(false);
+            } catch(e) {
+                console.warn('[runtime] Falha no ping do servidor', e);
+            }
+            setServerBadgeState('offline');
+            mergeRuntimeState({
+                server: 'offline',
+                serverDetail: 'Servidor indisponível',
+                providerStatus: 'offline',
+                providerDetail: 'Sem resposta do backend',
+                ollama: 'offline',
+                ollamaDetail: 'Não foi possível verificar',
+                nextRecommendedAction: 'Inicie o server local com python .ai-flow\\server.py e tente novamente.',
+            });
             return false;
         }
 
-        function setServerState(online) {
+        function setServerBadgeState(status) {
             const badge = document.getElementById('serverBadge');
             const text = document.getElementById('serverBadgeText');
-            if (online) {
+            if (status === 'online') {
                 badge.className = 'server-badge';
                 text.textContent = 'Servidor Online';
+            } else if (status === 'checking') {
+                badge.className = 'server-badge checking';
+                text.textContent = 'Verificando servidor';
             } else {
                 badge.className = 'server-badge offline';
                 text.textContent = 'Servidor Offline';
-                showToast('Servidor desconectado.', 'warning');
+                if (lastServerBadgeStatus !== 'offline') {
+                    showToast('Servidor desconectado.', 'warning');
+                }
             }
+            lastServerBadgeStatus = status;
+        }
+
+        function applyRuntimeStatusPayload(data) {
+            const provider = data.provider || {};
+            const ollama = data.ollama || {};
+            const task = data.active_task || null;
+            setServerBadgeState(data.server?.status || 'online');
+            mergeRuntimeState({
+                server: data.server?.status || 'online',
+                serverDetail: `Porta ${data.server?.port || 8899}`,
+                provider: provider.label || data.default_provider || 'desconhecido',
+                providerStatus: provider.status || 'unknown',
+                providerDetail: provider.detail || '',
+                ollama: ollama.status || 'unknown',
+                ollamaDetail: ollama.detail || '',
+                activeTask: task,
+                availableModels: provider.models || [],
+                nextRecommendedAction: provider.available
+                    ? (runtimeState().activeProject ? 'Abra um arquivo ou use o Composer.' : 'Selecione um projeto para começar.')
+                    : 'Verifique o provider local e carregue um modelo antes de executar agentes.',
+            });
+        }
+
+        async function refreshRuntimeStatus(options = {}) {
+            const online = await checkServerStatus();
+            if (!online) return false;
+            try {
+                const payload = await fetchRuntimeSnapshot(options.timeoutMs || 4500);
+                applyRuntimeStatusPayload(payload);
+            } catch (e) {
+                console.warn('[runtime] Falha ao buscar detalhes do runtime', e);
+                setActionState('runtime_status', 'warning', {
+                    label: 'runtime',
+                    message: 'Servidor online, mas o status detalhado demorou ou falhou.',
+                    detail: e.message || 'Sem detalhe',
+                    clearLastError: false,
+                    nextStep: 'Confira se o provider local está respondendo e tente recarregar os modelos.',
+                });
+                mergeRuntimeState({
+                    providerStatus: runtimeState().providerStatus === 'online' ? 'online' : 'warning',
+                    providerDetail: runtimeState().providerDetail || 'Status detalhado indisponível no momento',
+                    ollama: runtimeState().ollama === 'online' ? 'online' : 'warning',
+                    ollamaDetail: runtimeState().ollamaDetail || 'Verificação pendente',
+                    nextRecommendedAction: 'Servidor online. Aguarde a próxima coleta ou recarregue os modelos.',
+                });
+            }
+            return online;
         }
 
         // Toast
@@ -4011,7 +4431,10 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         window.addEventListener('load', async () => {
             initMonaco();
             resetAgentTimeline();
-            const serverOnline = await checkServerStatus();
+            renderRuntimeStatusBar();
+            updateActionButtons();
+            updateComposerContextStatus();
+            const serverOnline = await refreshRuntimeStatus({ silent: true });
             if (serverOnline) {
                 await refreshProjects();
                 await fetchProviders();
@@ -4020,6 +4443,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             } else {
                 renderProjectsFallback();
             }
+            setInterval(() => refreshRuntimeStatus({ silent: true }), 12000);
             // Default to dashboard view after projects load
             setTimeout(() => switchView('dashboard'), 100);
         });
@@ -4202,11 +4626,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
         async function refreshProjects() {
             try {
+                const previouslySelectedPath = activeProject ? activeProject.path : '';
                 const res = await fetch(`${serverUrl}/api/projects`);
                 const r = await res.json();
                 if (r.ok && Array.isArray(r.data)) {
                     projects = r.data;
-                    populateProjectsSelector();
+                    populateProjectsSelector(previouslySelectedPath);
                     if (currentView === 'dashboard') renderDashboard();
                 }
             } catch (e) {
@@ -4220,12 +4645,17 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (currentView === 'dashboard') renderDashboard();
         }
 
-        function populateProjectsSelector() {
+        function populateProjectsSelector(preferredPath) {
             const sel = document.getElementById('projectSelect');
             sel.innerHTML = '';
             
             if (projects.length === 0) {
                 sel.innerHTML = '<option value="">Sem projetos</option>';
+                activeProject = null;
+                mergeRuntimeState({
+                    activeProject: null,
+                    nextRecommendedAction: 'Adicione ou selecione um projeto para continuar.',
+                });
                 return;
             }
 
@@ -4236,9 +4666,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 sel.appendChild(opt);
             });
 
-            if (projects.length > 0) {
-                onProjectChanged(projects[0].path);
-            }
+            const selectedPath = preferredPath && projects.some(p => p.path === preferredPath)
+                ? preferredPath
+                : (sel.value && projects.some(p => p.path === sel.value) ? sel.value : projects[0].path);
+
+            sel.value = selectedPath;
+            onProjectChanged(selectedPath);
         }
 
         function onProjectChanged(path) {
@@ -4246,6 +4679,18 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!activeProject) return;
 
             writeToConsole(`Projeto: ${activeProject.name}`);
+            mergeRuntimeState({
+                activeProject: activeProject,
+                activeFile: null,
+                nextRecommendedAction: 'Abra um arquivo ou rode um diagnóstico do projeto.',
+            });
+            setActionState('project', 'success', {
+                label: 'Projeto',
+                message: activeProject.name,
+                target: activeProject.path,
+                nextStep: 'Abra um arquivo ou use o Composer com este projeto ativo.',
+                clearLastError: true,
+            });
             fetchFileTree();
             fetchGitStatus();
             fetchGitDiff();
@@ -4308,6 +4753,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!activeProject) return;
             const container = document.getElementById('fileTreeContainer');
             container.innerHTML = '<div style="padding:12px; color:var(--text-muted); font-size:11px; text-align:center;">Carregando arquivos...</div>';
+            setActionState('files', 'loading', {
+                label: 'Arquivos',
+                message: 'Carregando árvore de arquivos',
+                target: activeProject.name,
+                nextStep: 'Aguarde a lista de arquivos ficar disponível.',
+            });
             
             try {
                 const res = await fetch(`${serverUrl}/api/files?path=${encodeURIComponent(activeProject.path)}`);
@@ -4316,11 +4767,30 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     fileTreeRaw = r.data;
                     renderFileTree(fileTreeRaw, container);
                     updateFileSuggestionsList();
+                    setActionState('files', 'success', {
+                        label: 'Arquivos',
+                        message: 'Árvore de arquivos atualizada',
+                        target: activeProject.name,
+                        nextStep: 'Abra um arquivo ou anexe arquivos no Composer.',
+                        clearLastError: true,
+                    });
                 } else {
                     container.innerHTML = `<div style="padding:12px; color:var(--color-error); font-size:11px; text-align:center;">${r.error}</div>`;
+                    setActionState('files', 'error', {
+                        label: 'Arquivos',
+                        message: r.error || 'Falha ao carregar arquivos',
+                        target: activeProject.name,
+                        nextStep: 'Verifique o servidor e recarregue os arquivos.',
+                    });
                 }
             } catch(e) {
                 container.innerHTML = '<div style="padding:12px; color:var(--color-error); font-size:11px; text-align:center;">Offline.</div>';
+                setActionState('files', 'error', {
+                    label: 'Arquivos',
+                    message: 'Erro de conexão ao carregar arquivos',
+                    target: activeProject.name,
+                    nextStep: 'Confirme se o server está online e tente novamente.',
+                });
             }
         }
 
@@ -4407,6 +4877,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const res = await fetch(`${serverUrl}/api/git/status?path=${encodeURIComponent(activeProject.path)}`);
                 const r = await res.json();
                 if (r.ok && Array.isArray(r.data)) {
+                    mergeRuntimeState({ gitDirty: r.data.length > 0 });
                     container.innerHTML = '';
                     if (r.data.length === 0) {
                         container.innerHTML = '<div style="padding:16px; color:var(--text-muted); font-size:11px; text-align:center;">Sem modificações</div>';
@@ -4438,6 +4909,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     });
                 }
             } catch(e) {
+                mergeRuntimeState({ gitDirty: false });
                 container.innerHTML = '<div style="padding:16px; color:var(--color-error); font-size:11px; text-align:center;">Erro ao ler status Git.</div>';
             }
         }
@@ -4483,8 +4955,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
         async function openFile(filePath) {
             if (!activeProject) return;
+            const cleanFilePath = filePath.replace(/\\/g, '/');
+            setActionState('file-open', 'loading', {
+                label: 'Arquivo',
+                message: 'Abrindo arquivo',
+                target: cleanFilePath,
+                nextStep: 'Aguarde a leitura do arquivo.',
+            });
             try {
-                const cleanFilePath = filePath.replace(/\\/g, '/');
                 const res = await fetch(`${serverUrl}/api/file?path=${encodeURIComponent(activeProject.path)}&file=${encodeURIComponent(cleanFilePath)}`);
                 const r = await res.json();
                 
@@ -4515,14 +4993,37 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     document.getElementById('activeFileTitle').querySelector('span').textContent = r.data.name;
                     document.getElementById('editorControls').style.display = 'flex';
                     writeToConsole(`Aberto: ${r.data.name}`);
+                    mergeRuntimeState({
+                        activeFile: activeFile,
+                        nextRecommendedAction: 'Edite o arquivo, use o Composer ou salve quando estiver pronto.',
+                    });
+                    setActionState('file-open', 'success', {
+                        label: 'Arquivo',
+                        message: `Arquivo aberto: ${r.data.name}`,
+                        target: cleanFilePath,
+                        nextStep: 'Edite o conteúdo ou peça uma alteração no Composer.',
+                        clearLastError: true,
+                    });
                     
                     // switch tab to code if not already
                     switchCenterTab('code');
                 } else {
                     showToast(r.error || 'Erro ao carregar arquivo', 'error');
+                    setActionState('file-open', 'error', {
+                        label: 'Arquivo',
+                        message: r.error || 'Erro ao carregar arquivo',
+                        target: cleanFilePath,
+                        nextStep: 'Confirme se o arquivo existe e tente novamente.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro ao carregar.', 'error');
+                setActionState('file-open', 'error', {
+                    label: 'Arquivo',
+                    message: 'Erro de conexão ao abrir arquivo',
+                    target: cleanFilePath,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
@@ -4530,6 +5031,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!activeProject || !activeFile) return;
             const content = monacoEditor ? monacoEditor.getValue() : document.getElementById('textarea-fallback').value;
             writeToConsole(`Salvando: ${activeFile.name}...`);
+            setActionState('file-save', 'loading', {
+                label: 'Salvar arquivo',
+                message: `Salvando ${activeFile.name}`,
+                target: activeFile.path,
+                nextStep: 'Aguarde a confirmação de gravação.',
+            });
             
             try {
                 const res = await fetch(`${serverUrl}/api/file/edit`, {
@@ -4549,19 +5056,50 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     showToast(`Salvo!`);
                     fileContentOriginal = content;
                     writeToConsole(`Quality Gate rodando em background...`);
+                    const savedAt = new Date().toISOString();
+                    mergeRuntimeState({
+                        lastSaved: savedAt,
+                        nextRecommendedAction: 'Revise o diff ou rode o Quality Gate.',
+                    });
+                    setActionState('file-save', 'success', {
+                        label: 'Salvar arquivo',
+                        message: `${activeFile.name} salvo com snapshot`,
+                        target: activeFile.path,
+                        nextStep: 'Revise o diff ou rode o Quality Gate para validar a mudança.',
+                        lastSaved: savedAt,
+                        clearLastError: true,
+                    });
                     fetchGitStatus();
                     fetchGitDiff();
                 } else {
                     showToast(r.error || 'Erro ao salvar.', 'error');
+                    setActionState('file-save', 'error', {
+                        label: 'Salvar arquivo',
+                        message: r.error || 'Erro ao salvar arquivo',
+                        target: activeFile.path,
+                        nextStep: 'Corrija o erro informado e tente salvar novamente.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro de conexão.', 'error');
+                setActionState('file-save', 'error', {
+                    label: 'Salvar arquivo',
+                    message: 'Erro de conexão ao salvar',
+                    target: activeFile.path,
+                    nextStep: 'Verifique o servidor e tente salvar novamente.',
+                });
             }
         }
 
         async function undoEdit() {
             if (!activeProject || !activeFile) return;
             writeToConsole(`Desfazendo em ${activeFile.name}...`);
+            setActionState('undo', 'loading', {
+                label: 'Desfazer',
+                message: `Desfazendo ${activeFile.name}`,
+                target: activeFile.path,
+                nextStep: 'Aguarde a restauração do snapshot anterior.',
+            });
             
             try {
                 const res = await fetch(`${serverUrl}/api/file/undo`, {
@@ -4575,20 +5113,45 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const r = await res.json();
                 if (r.ok) {
                     showToast('Desfeito!');
+                    setActionState('undo', 'success', {
+                        label: 'Desfazer',
+                        message: `Snapshot anterior restaurado em ${activeFile.name}`,
+                        target: activeFile.path,
+                        nextStep: 'Revise o arquivo restaurado ou refaça a alteração.',
+                        clearLastError: true,
+                    });
                     openFile(activeFile.path);
                     fetchGitStatus();
                     fetchGitDiff();
                 } else {
                     showToast(r.error || 'Não foi possível desfazer.', 'warning');
+                    setActionState('undo', 'warning', {
+                        label: 'Desfazer',
+                        message: r.error || 'Não foi possível desfazer',
+                        target: activeFile.path,
+                        nextStep: 'Abra o histórico e escolha um snapshot válido.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro de conexão.', 'error');
+                setActionState('undo', 'error', {
+                    label: 'Desfazer',
+                    message: 'Erro de conexão ao desfazer',
+                    target: activeFile.path,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
         async function redoEdit() {
             if (!activeProject || !activeFile) return;
             writeToConsole(`Refazendo em ${activeFile.name}...`);
+            setActionState('redo', 'loading', {
+                label: 'Refazer',
+                message: `Refazendo ${activeFile.name}`,
+                target: activeFile.path,
+                nextStep: 'Aguarde a restauração do próximo snapshot.',
+            });
             
             try {
                 const res = await fetch(`${serverUrl}/api/file/redo`, {
@@ -4602,14 +5165,33 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const r = await res.json();
                 if (r.ok) {
                     showToast('Refeito!');
+                    setActionState('redo', 'success', {
+                        label: 'Refazer',
+                        message: `Próxima versão restaurada em ${activeFile.name}`,
+                        target: activeFile.path,
+                        nextStep: 'Revise o arquivo refeito ou salve novas mudanças.',
+                        clearLastError: true,
+                    });
                     openFile(activeFile.path);
                     fetchGitStatus();
                     fetchGitDiff();
                 } else {
                     showToast(r.error || 'Não foi possível refazer.', 'warning');
+                    setActionState('redo', 'warning', {
+                        label: 'Refazer',
+                        message: r.error || 'Não foi possível refazer',
+                        target: activeFile.path,
+                        nextStep: 'Abra o histórico para ver as versões disponíveis.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro de conexão.', 'error');
+                setActionState('redo', 'error', {
+                    label: 'Refazer',
+                    message: 'Erro de conexão ao refazer',
+                    target: activeFile.path,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
@@ -4617,6 +5199,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!activeProject || !activeFile) return;
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:11px;">Buscando histórico...</div>';
+            setActionState('history', 'loading', {
+                label: 'Snapshots',
+                message: `Buscando histórico de ${activeFile.name}`,
+                target: activeFile.path,
+                nextStep: 'Aguarde a listagem dos snapshots.',
+            });
             
             openModal('historyModal');
 
@@ -4625,6 +5213,13 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const r = await res.json();
                 if (r.ok && r.data && Array.isArray(r.data.history)) {
                     container.innerHTML = '';
+                    setActionState('history', 'success', {
+                        label: 'Snapshots',
+                        message: `${r.data.history.length} snapshot(s) carregado(s)`,
+                        target: activeFile.path,
+                        nextStep: 'Escolha um snapshot para restaurar ou feche o histórico.',
+                        clearLastError: true,
+                    });
                     const list = r.data.history;
                     if (list.length === 0) {
                         container.innerHTML = '<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:11px;">Nenhum snapshot registrado ainda.</div>';
@@ -4657,8 +5252,22 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         });
                         container.appendChild(item);
                     });
+                } else {
+                    setActionState('history', 'error', {
+                        label: 'Snapshots',
+                        message: r.error || 'Erro ao ler histórico',
+                        target: activeFile.path,
+                        nextStep: 'Tente novamente ou verifique se o servidor está online.',
+                    });
+                    container.innerHTML = '<div style="padding:12px; text-align:center; color:var(--color-error); font-size:11px;">Erro ao ler histórico.</div>';
                 }
             } catch(e) {
+                setActionState('history', 'error', {
+                    label: 'Snapshots',
+                    message: 'Erro de conexão ao buscar histórico',
+                    target: activeFile.path,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
                 container.innerHTML = '<div style="padding:12px; text-align:center; color:var(--color-error); font-size:11px;">Erro ao ler histórico.</div>';
             }
         }
@@ -4666,6 +5275,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         async function restoreSnapshotById(snapshotId) {
             if (!activeProject || !activeFile) return;
             writeToConsole(`Restaurando snapshot ${snapshotId} em ${activeFile.name}...`);
+            setActionState('restore-snapshot', 'loading', {
+                label: 'Restaurar snapshot',
+                message: `Restaurando ${snapshotId}`,
+                target: activeFile.path,
+                nextStep: 'Aguarde a restauração do conteúdo salvo.',
+            });
             try {
                 const res = await fetch(`${serverUrl}/api/file/restore`, {
                     method: 'POST',
@@ -4679,15 +5294,34 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const r = await res.json();
                 if (r.ok) {
                     showToast('Snapshot restaurado com sucesso!');
+                    setActionState('restore-snapshot', 'success', {
+                        label: 'Restaurar snapshot',
+                        message: `Snapshot ${snapshotId} restaurado`,
+                        target: activeFile.path,
+                        nextStep: 'Revise o arquivo restaurado ou salve novas mudanças.',
+                        clearLastError: true,
+                    });
                     closeModal('historyModal');
                     openFile(activeFile.path);
                     fetchGitStatus();
                     fetchGitDiff();
                 } else {
                     showToast(r.error || 'Erro ao restaurar snapshot.', 'error');
+                    setActionState('restore-snapshot', 'error', {
+                        label: 'Restaurar snapshot',
+                        message: r.error || 'Erro ao restaurar snapshot',
+                        target: activeFile.path,
+                        nextStep: 'Escolha outro snapshot ou verifique o histórico do arquivo.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro de conexão ao restaurar.', 'error');
+                setActionState('restore-snapshot', 'error', {
+                    label: 'Restaurar snapshot',
+                    message: 'Erro de conexão ao restaurar snapshot',
+                    target: activeFile.path,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
@@ -4844,6 +5478,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             switchBottomTab('tab-console');
             writeToConsole(`[AGENT] Executando agente: ${agentId}`);
             writeToConsole(`[AGENT] Task: ${task}`);
+            setActionState('agent-run', 'running', {
+                label: 'Agente',
+                message: `${agentId}: ${task}`,
+                target: activeProject.name,
+                nextStep: 'Acompanhe a execução no terminal ao vivo.',
+                agentStatus: 'running',
+                activeAgentRun: agentId,
+            });
 
             const cmd = `python .ai-flow/scripts/run-agent.py ${agentId} "${task.replace(/"/g, '\\"')}" ${useGit ? '--git-context ' : ''}--save`;
             writeToConsole(`$ ${cmd}`);
@@ -4881,10 +5523,26 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 } else {
                     writeToConsole(`[AGENT] Erro ao iniciar: ${r.error || 'sem resposta'}`);
                     showToast('Falha ao iniciar agente.', 'error');
+                    setActionState('agent-run', 'error', {
+                        label: 'Agente',
+                        message: r.error || `Falha ao iniciar ${agentId}`,
+                        target: activeProject.name,
+                        nextStep: 'Verifique provider, modelo e projeto ativo antes de tentar novamente.',
+                        agentStatus: 'error',
+                        activeAgentRun: null,
+                    });
                 }
             } catch(e) {
                 writeToConsole(`[AGENT] Erro de conexao: ${e.message}`);
                 showToast('Erro de rede.', 'error');
+                setActionState('agent-run', 'error', {
+                    label: 'Agente',
+                    message: `Erro de rede ao iniciar ${agentId}`,
+                    target: activeProject.name,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                    agentStatus: 'error',
+                    activeAgentRun: null,
+                });
             }
         }
 
@@ -4921,6 +5579,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             switchRightTab('agents');
             writeToConsole(`[SELF-IMPROVE] Iniciando fluxo ao vivo...`);
             writeToConsole(`[SELF-IMPROVE] Objetivo: ${request}`);
+            setActionState('self-improve', 'running', {
+                label: 'Self-Improve',
+                message: request,
+                target: activeProject.name,
+                nextStep: 'Acompanhe o terminal ao vivo e a timeline dos agentes.',
+                agentStatus: 'running',
+                activeAgentRun: 'self-improve',
+            });
 
             const screen = document.getElementById('composerTerminalScreen');
             const dot = document.getElementById('terminalStatusDot');
@@ -4957,10 +5623,26 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 } else {
                     writeToConsole(`[SELF-IMPROVE] Erro ao iniciar: ${r.error || 'sem resposta'}`);
                     showToast('Falha ao iniciar self-improve.', 'error');
+                    setActionState('self-improve', 'error', {
+                        label: 'Self-Improve',
+                        message: r.error || 'Falha ao iniciar self-improve',
+                        target: activeProject.name,
+                        nextStep: 'Revise o provider/modelo local e tente novamente.',
+                        agentStatus: 'error',
+                        activeAgentRun: null,
+                    });
                 }
             } catch (e) {
                 writeToConsole('[SELF-IMPROVE] Erro de rede ao iniciar.');
                 showToast('Erro de rede.', 'error');
+                setActionState('self-improve', 'error', {
+                    label: 'Self-Improve',
+                    message: 'Erro de rede ao iniciar',
+                    target: activeProject.name,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                    agentStatus: 'error',
+                    activeAgentRun: null,
+                });
             }
         }
 
@@ -4972,6 +5654,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             
             switchBottomTab('tab-console');
             writeToConsole(`Rodando ${type}...`);
+            setActionState(type, 'loading', {
+                label: type,
+                message: `Executando ${type}`,
+                target: activeProject.name,
+                nextStep: `Aguarde a conclusão de ${type}.`,
+            });
             
             try {
                 const endpointMap = {
@@ -4999,15 +5687,34 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     writeToConsole(`[SUCESSO] ${type} executado.`);
                     writeToConsole(r.output);
                     showToast(`${type} finalizado!`);
+                    setActionState(type, 'success', {
+                        label: type,
+                        message: `${type} finalizado`,
+                        target: activeProject.name,
+                        nextStep: type === 'quality-gate' ? 'Abra o report e revise os alertas.' : 'Abra o report gerado e continue o fluxo.',
+                        clearLastError: true,
+                    });
                     fetchGitStatus();
                 } else {
                     writeToConsole(`[ERRO] ${r.error}`);
                     writeToConsole(r.output || '');
                     showToast(`Falha ao rodar ${type}.`, 'error');
+                    setActionState(type, 'error', {
+                        label: type,
+                        message: r.error || `Falha ao rodar ${type}`,
+                        target: activeProject.name,
+                        nextStep: 'Leia o erro completo no console e corrija o pré-requisito antes de tentar de novo.',
+                    });
                 }
             } catch(e) {
                 writeToConsole(`[ERRO] Sem conexão.`);
                 showToast('Erro de rede.', 'error');
+                setActionState(type, 'error', {
+                    label: type,
+                    message: 'Erro de rede',
+                    target: activeProject.name,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
@@ -5067,6 +5774,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             const message = document.getElementById('confirmCommitMessage').value;
             closeModal('confirmCommitModal');
             writeToConsole(`Commitando: "${message}"...`);
+            setActionState('commit', 'loading', {
+                label: 'Commit',
+                message: message,
+                target: activeProject.name,
+                nextStep: 'Aguarde a confirmação do commit local.',
+            });
             try {
                 const res = await fetch(`${serverUrl}/api/git/commit`, {
                     method: 'POST',
@@ -5081,20 +5794,44 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     showToast('Commit realizado!');
                     document.getElementById('commitMsgInput').value = '';
                     writeToConsole(`Commit realizado: ${r.output}`);
+                    setActionState('commit', 'success', {
+                        label: 'Commit',
+                        message: 'Commit local realizado',
+                        target: activeProject.name,
+                        nextStep: 'Revise o histórico Git ou continue trabalhando.',
+                        clearLastError: true,
+                    });
                     fetchGitStatus();
                     fetchGitDiff();
                 } else {
                     writeToConsole(`[ERRO] Commit falhou: ${r.error}`);
                     showToast(r.error || 'Erro no commit.', 'error');
+                    setActionState('commit', 'error', {
+                        label: 'Commit',
+                        message: r.error || 'Erro no commit',
+                        target: activeProject.name,
+                        nextStep: 'Verifique se há mudanças Git e ajuste a mensagem se necessário.',
+                    });
                 }
             } catch(e) {
                 showToast('Erro de rede.', 'error');
+                setActionState('commit', 'error', {
+                    label: 'Commit',
+                    message: 'Erro de rede ao commitar',
+                    target: activeProject.name,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                });
             }
         }
 
         // Providers
         async function fetchProviders() {
             try {
+                setActionState('providers', 'loading', {
+                    label: 'Providers',
+                    message: 'Verificando providers locais',
+                    nextStep: 'Aguarde a checagem de disponibilidade.',
+                });
                 const res = await fetch(`${serverUrl}/api/providers`);
                 const r = await res.json();
                 if (r.ok && Array.isArray(r.data)) {
@@ -5121,12 +5858,27 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     } catch (cfgError) {
                         console.error(cfgError);
                     }
+                    if (![...sel.options].some(opt => opt.value === providerToLoad && !opt.disabled)) {
+                        providerToLoad = ([...sel.options].find(opt => !opt.disabled) || {}).value || providerToLoad;
+                    }
                     sel.value = providerToLoad;
                     await onProviderChanged(providerToLoad);
                     syncAutoModelSelection(document.getElementById('aiAgent').value || 'planner');
+                    setActionState('providers', 'success', {
+                        label: 'Providers',
+                        message: 'Lista de providers atualizada',
+                        target: providerToLoad,
+                        nextStep: 'Selecione um modelo local para executar agentes.',
+                        clearLastError: true,
+                    });
                 }
             } catch(e) {
                 console.error(e);
+                setActionState('providers', 'error', {
+                    label: 'Providers',
+                    message: 'Erro ao verificar providers locais',
+                    nextStep: 'Verifique o servidor e abra o modal de modelos novamente.',
+                });
             }
         }
 
@@ -5224,12 +5976,28 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             if (!modelName) return modelSel.value || '';
 
             ensureAutoModelOption(modelSel, modelName);
+            mergeRuntimeState({ selectedModel: modelName });
             return modelName;
+        }
+
+        function onModelChanged(modelName) {
+            mergeRuntimeState({
+                selectedModel: modelName || '',
+                nextRecommendedAction: modelName
+                    ? (activeProject ? 'Execute um agente ou use o Composer com o modelo selecionado.' : 'Selecione um projeto para começar.')
+                    : 'Selecione um modelo local para continuar.',
+            });
         }
 
         async function onProviderChanged(provider) {
             const modelSel = document.getElementById('aiModel');
             modelSel.innerHTML = '<option value="">Carregando...</option>';
+            mergeRuntimeState({
+                provider: provider,
+                providerStatus: 'checking',
+                providerDetail: 'Carregando modelos do provider selecionado',
+                selectedModel: '',
+            });
             
             try {
                 const res = await fetch(`${serverUrl}/api/models?provider=${provider}`);
@@ -5238,6 +6006,13 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     modelSel.innerHTML = '';
                     if (r.models.length === 0) {
                         modelSel.innerHTML = '<option value="">Nenhum modelo ativo</option>';
+                        mergeRuntimeState({
+                            providerStatus: 'warning',
+                            providerDetail: 'Provider online, mas sem modelos ativos',
+                            availableModels: [],
+                            selectedModel: '',
+                            nextRecommendedAction: 'Carregue um modelo no provider antes de executar agentes.',
+                        });
                         return;
                     }
                     r.models.forEach(m => {
@@ -5246,6 +6021,13 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         opt.textContent = m.name;
                         modelSel.appendChild(opt);
                     });
+                    mergeRuntimeState({
+                        providerStatus: 'online',
+                        providerDetail: `${r.models.length} modelo(s) disponível(is)`,
+                        availableModels: r.models,
+                        selectedModel: r.models[0]?.id || '',
+                        nextRecommendedAction: activeProject ? 'Abra um arquivo ou execute um agente com o modelo selecionado.' : 'Selecione um projeto para começar.',
+                    });
                     
                     // Trigger nodes updates
                     setTimeout(() => {
@@ -5253,9 +6035,23 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     }, 200);
                 } else {
                     modelSel.innerHTML = '<option value="">Sem resposta</option>';
+                    mergeRuntimeState({
+                        providerStatus: 'offline',
+                        providerDetail: r.error || 'Sem resposta do provider',
+                        availableModels: [],
+                        selectedModel: '',
+                        nextRecommendedAction: 'Verifique se o provider local está online e tente novamente.',
+                    });
                 }
             } catch(e) {
                 modelSel.innerHTML = '<option value="">Offline</option>';
+                mergeRuntimeState({
+                    providerStatus: 'offline',
+                    providerDetail: 'Erro de conexão ao buscar modelos',
+                    availableModels: [],
+                    selectedModel: '',
+                    nextRecommendedAction: 'Verifique o provider local e tente novamente.',
+                });
             }
 
             syncAutoModelSelection(document.getElementById('aiAgent').value || 'planner');
@@ -5366,9 +6162,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             
             if (role === 'assistant') {
                 content.innerHTML = marked.parse(text);
-                content.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
+                highlightCodeBlocks(content);
             } else {
                 content.textContent = text;
             }
@@ -5525,6 +6319,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                                 screen.textContent += `\n\n[Execução finalizada com erro (Exit Code ${r.data.exit_code})]\n`;
                             }
                             updateAgentTimelineFromOutput(delta, true, r.data.exit_code);
+                            setActionState('terminal', r.data.exit_code === 0 ? 'success' : 'error', {
+                                label: 'Terminal',
+                                message: r.data.exit_code === 0 ? 'Execução concluída com sucesso' : `Execução finalizada com erro (${r.data.exit_code})`,
+                                target: r.data.command || taskId,
+                                nextStep: r.data.exit_code === 0 ? 'Revise os artefatos gerados ou prossiga para o próximo passo.' : 'Copie os logs, corrija o erro e tente novamente.',
+                                agentStatus: r.data.exit_code === 0 ? 'success' : 'error',
+                                activeAgentRun: null,
+                            });
                             screen.scrollTop = screen.scrollHeight;
                         }
                     } else {
@@ -5601,11 +6403,34 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             const badge = document.createElement('span');
             badge.className = 'git-badge U';
             badge.id = `${cardId}_badge`;
-            badge.textContent = patch.search ? 'EDIÇÃO PROPOSTA' : 'NOVO ARQUIVO';
+            badge.textContent = 'PENDENTE';
             badge.style.fontSize = '8px';
             
             header.appendChild(title);
             header.appendChild(badge);
+
+            const patchMeta = document.createElement('div');
+            patchMeta.style.display = 'grid';
+            patchMeta.style.gridTemplateColumns = '1fr 1fr';
+            patchMeta.style.gap = '6px';
+            patchMeta.innerHTML = `
+                <div style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(255,255,255,0.02); font-size:10px;">
+                    <div style="color:var(--text-muted); text-transform:uppercase; font-size:8px; font-weight:700; margin-bottom:4px;">Arquivo alvo</div>
+                    <div style="color:var(--text-bright); font-weight:600; word-break:break-word;">${escapeHtml(patch.file)}</div>
+                </div>
+                <div style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(255,255,255,0.02); font-size:10px;">
+                    <div style="color:var(--text-muted); text-transform:uppercase; font-size:8px; font-weight:700; margin-bottom:4px;">Leitura antes do patch</div>
+                    <div style="color:var(--text-bright); font-weight:600;">${activeFile && (activeFile.path === patch.file || activeFile.path.endsWith(`/${patch.file}`)) ? 'arquivo aberto confirmado' : 'depende do contexto enviado'}</div>
+                </div>
+                <div style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(255,255,255,0.02); font-size:10px;">
+                    <div style="color:var(--text-muted); text-transform:uppercase; font-size:8px; font-weight:700; margin-bottom:4px;">Search preview</div>
+                    <div style="color:var(--text-main); white-space:pre-wrap; max-height:48px; overflow:auto;">${escapeHtml((patch.search || '').slice(0, 180) || '(novo arquivo)')}</div>
+                </div>
+                <div style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; background:rgba(255,255,255,0.02); font-size:10px;">
+                    <div style="color:var(--text-muted); text-transform:uppercase; font-size:8px; font-weight:700; margin-bottom:4px;">Replace preview</div>
+                    <div style="color:var(--text-main); white-space:pre-wrap; max-height:48px; overflow:auto;">${escapeHtml((patch.replace || '').slice(0, 180))}</div>
+                </div>
+            `;
             
             // Diff Box
             const diffContainer = document.createElement('div');
@@ -5623,16 +6448,29 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             btnReject.style.color = 'var(--color-error)';
             btnReject.innerHTML = `<i data-lucide="x" style="width:11px;"></i> Rejeitar`;
             btnReject.onclick = () => rejectProposedPatch(cardId);
+
+            const btnOpenFile = document.createElement('button');
+            btnOpenFile.className = 'btn-action';
+            btnOpenFile.innerHTML = `<i data-lucide="external-link" style="width:11px;"></i> Abrir arquivo`;
+            btnOpenFile.onclick = () => openComposerPatchFile(patch.file);
+
+            const btnRegenerate = document.createElement('button');
+            btnRegenerate.className = 'btn-action';
+            btnRegenerate.innerHTML = `<i data-lucide="refresh-cw" style="width:11px;"></i> Regenerar`;
+            btnRegenerate.onclick = () => regeneratePatchWithContext(cardId);
             
             const btnAccept = document.createElement('button');
             btnAccept.className = 'btn-action btn-primary';
-            btnAccept.innerHTML = `<i data-lucide="check" style="width:11px;"></i> Aceitar`;
+            btnAccept.innerHTML = `<i data-lucide="check" style="width:11px;"></i> Aplicar`;
             btnAccept.onclick = () => acceptProposedPatch(cardId, patch);
             
             footer.appendChild(btnReject);
+            footer.appendChild(btnOpenFile);
+            footer.appendChild(btnRegenerate);
             footer.appendChild(btnAccept);
             
             card.appendChild(header);
+            card.appendChild(patchMeta);
             card.appendChild(diffContainer);
             card.appendChild(footer);
             
@@ -5658,6 +6496,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             
             badge.textContent = 'APLICANDO...';
             badge.className = 'git-badge M';
+            setActionState('patch', 'loading', {
+                label: 'Patch',
+                message: 'Aplicando patch do Composer',
+                target: patch.file,
+                nextStep: 'Aguarde a validação do patch e a escrita do arquivo.',
+                agentStatus: 'running',
+                activeAgentRun: 'patch-applier',
+            });
             
             try {
                 const payload = {
@@ -5682,10 +6528,20 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     badge.className = 'git-badge A';
                     actions.innerHTML = `<span style="font-size:10px; color:var(--color-success); display:flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px;"></i> Alteração aplicada com sucesso</span>`;
                     showToast('Alteração aplicada!', 'success');
+                    setActionState('patch', 'success', {
+                        label: 'Patch',
+                        message: `Patch aplicado em ${patch.file}`,
+                        target: patch.file,
+                        nextStep: r.next_action || 'Revise o arquivo alterado e rode o Quality Gate.',
+                        agentStatus: 'success',
+                        activeAgentRun: null,
+                        clearLastError: true,
+                    });
                     
                     fetchFileTree();
                     fetchGitStatus();
                     fetchGitDiff();
+                    openComposerPatchFile(patch.file);
                     
                     if (document.getElementById('composerAutoTest').checked) {
                         runComposerTerminalCommand();
@@ -5694,6 +6550,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     badge.textContent = 'FALHA';
                     badge.className = 'git-badge D';
                     showToast(r.error || 'Erro ao aplicar alteração.', 'error');
+                    setActionState('patch', 'error', {
+                        label: 'Patch',
+                        message: r.error || 'Erro ao aplicar patch',
+                        target: patch.file,
+                        nextStep: r.next_action || 'Use “Regenerar com contexto atual” ou revise o arquivo alvo.',
+                        agentStatus: 'error',
+                        activeAgentRun: null,
+                    });
                     
                     // Build detailed error UI
                     const details = r.details || {};
@@ -5791,6 +6655,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 badge.textContent = 'ERRO';
                 badge.className = 'git-badge D';
                 showToast('Erro de rede.', 'error');
+                setActionState('patch', 'error', {
+                    label: 'Patch',
+                    message: 'Erro de rede ao aplicar patch',
+                    target: patch.file,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                    agentStatus: 'error',
+                    activeAgentRun: null,
+                });
             }
             
             lucide.createIcons();
@@ -5817,9 +6689,28 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             }
             
             showToast(`Direcionando patch para: ${candidateFile}`, 'info');
+            setActionState('patch', 'warning', {
+                label: 'Patch',
+                message: `Patch redirecionado para ${candidateFile}`,
+                target: candidateFile,
+                nextStep: 'Revise o arquivo alvo e aplique novamente se estiver correto.',
+            });
             
             // Retry applying with the new file
             acceptProposedPatch(cardId, patch);
+        }
+
+        function openComposerPatchFile(filePath) {
+            if (!activeProject) {
+                showToast('Selecione um projeto antes de abrir o arquivo.', 'warning');
+                return;
+            }
+            const normalized = filePath.replace(/\\/g, '/');
+            const projectPath = activeProject.path.replace(/\\/g, '/');
+            const fullPath = normalized.toLowerCase().startsWith(projectPath.toLowerCase())
+                ? normalized
+                : `${projectPath}/${normalized}`.replace(/\/+/g, '/');
+            openFile(fullPath);
         }
 
         async function regeneratePatchWithContext(cardId) {
@@ -5869,6 +6760,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 sendComposerMessage();
                 
                 showToast('Reenviando com contexto atualizado...', 'info');
+                setActionState('composer', 'warning', {
+                    label: 'Composer',
+                    message: `Regenerando patch com contexto atualizado de ${relPath}`,
+                    target: relPath,
+                    nextStep: 'Aguarde a nova proposta de patch.',
+                    agentStatus: 'running',
+                    activeAgentRun: 'composer',
+                });
             } catch (e) {
                 showToast('Erro de rede ao ler arquivo.', 'error');
             }
@@ -5877,10 +6776,19 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         function rejectProposedPatch(cardId) {
             const badge = document.getElementById(`${cardId}_badge`);
             const actions = document.getElementById(`${cardId}_actions`);
+            const patch = window.activePatchesMap ? window.activePatchesMap[cardId] : null;
             
             badge.textContent = 'REJEITADO';
             badge.className = 'git-badge D';
             actions.innerHTML = `<span style="font-size:10px; color:var(--text-muted); display:flex; align-items:center; gap:4px;"><i data-lucide="slash" style="width:12px;"></i> Alteração rejeitada</span>`;
+            setActionState('patch', 'warning', {
+                label: 'Patch',
+                message: `Patch rejeitado${patch ? `: ${patch.file}` : ''}`,
+                target: patch ? patch.file : '',
+                nextStep: 'Peça uma nova versão no Composer ou regenere com contexto atual.',
+                agentStatus: 'warning',
+                activeAgentRun: null,
+            });
             
             lucide.createIcons();
         }
@@ -5991,6 +6899,12 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         function renderAttachedFilesChips() {
             const container = document.getElementById('composerAttachedFiles');
             container.innerHTML = '';
+            mergeRuntimeState({
+                attachedFiles: Array.from(composerAttachedFilesList).map(path => {
+                    const fileObj = allProjectFilesFlat.find(f => f.path === path);
+                    return fileObj ? fileObj.relPath : path.split('/').pop().split('\\').pop();
+                })
+            });
             
             composerAttachedFilesList.forEach(path => {
                 const filename = path.split('/').pop().split('\\').pop();
@@ -6065,6 +6979,15 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             const inputEl = document.getElementById('composerInput');
             const message = inputEl.value.trim();
             if (!message) return;
+            if (!activeProject) {
+                showToast('Selecione um projeto antes de usar o Composer.', 'warning');
+                setActionState('composer', 'warning', {
+                    label: 'Composer',
+                    message: 'Nenhum projeto ativo',
+                    nextStep: 'Selecione um projeto para enviar contexto ao Composer.',
+                });
+                return;
+            }
 
             const provider = document.getElementById('aiProvider').value;
             const model = document.getElementById('aiModel').value;
@@ -6072,14 +6995,32 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             
             if (!model) {
                 showToast('Selecione um modelo local.', 'warning');
+                setActionState('composer', 'warning', {
+                    label: 'Composer',
+                    message: 'Nenhum modelo selecionado',
+                    target: activeProject.name,
+                    nextStep: 'Selecione um modelo local antes de pedir alterações.',
+                });
                 return;
             }
+
+            setActionState('composer', 'running', {
+                label: 'Composer',
+                message: 'Enviando contexto para a IA',
+                target: activeProject.name,
+                nextStep: 'Aguarde o plano e o patch proposto.',
+                agentStatus: 'running',
+                activeAgentRun: 'composer',
+            });
 
             appendComposerMessage('user', message, 'Você');
             inputEl.value = '';
             inputEl.style.height = '32px';
 
-            const attachedPaths = Array.from(composerAttachedFilesList);
+            const attachedPaths = Array.from(new Set([
+                ...composerAttachedFilesList,
+                activeFile ? activeFile.path : null
+            ].filter(Boolean)));
             const fileContentsPromises = attachedPaths.map(async (filePath) => {
                 try {
                     const res = await fetch(`${serverUrl}/api/file?path=${encodeURIComponent(activeProject.path)}&file=${encodeURIComponent(filePath)}`);
@@ -6101,6 +7042,11 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             try {
                 const contexts = await Promise.all(fileContentsPromises);
                 const contextText = contexts.join('\n');
+                appendComposerMessage(
+                    'assistant',
+                    `Contexto confirmado:\n- Projeto: ${activeProject.name}\n- Arquivo aberto: ${activeFile ? activeFile.name : 'nenhum'}\n- Arquivos anexados: ${attachedPaths.length ? attachedPaths.join(', ') : 'nenhum'}`,
+                    'Sistema'
+                );
                 
                 composerHistory.push({ role: 'user', content: message + '\n' + contextText });
                 
@@ -6123,6 +7069,15 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 if (r.ok && r.response) {
                     appendComposerMessage('assistant', r.response, 'Composer AI');
                     composerHistory.push({ role: 'assistant', content: r.response });
+                    setActionState('composer', 'success', {
+                        label: 'Composer',
+                        message: Array.isArray(r.patches) && r.patches.length > 0 ? `${r.patches.length} patch(es) proposto(s)` : 'Resposta recebida sem patch',
+                        target: activeProject.name,
+                        nextStep: Array.isArray(r.patches) && r.patches.length > 0 ? 'Revise o patch, aplique ou regenere com contexto atual.' : 'Refine o pedido ou anexe mais contexto.',
+                        agentStatus: 'success',
+                        activeAgentRun: null,
+                        clearLastError: true,
+                    });
                     
                     composerAttachedFilesList.clear();
                     renderAttachedFilesChips();
@@ -6134,10 +7089,26 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     }
                 } else {
                     appendComposerMessage('assistant', `Erro: ${r.error || 'Sem resposta.'}`, 'Composer AI');
+                    setActionState('composer', 'error', {
+                        label: 'Composer',
+                        message: r.error || 'Sem resposta do Composer',
+                        target: activeProject.name,
+                        nextStep: 'Verifique o provider/modelo local ou regenere com mais contexto.',
+                        agentStatus: 'error',
+                        activeAgentRun: null,
+                    });
                 }
             } catch(e) {
                 loadingBubble.remove();
                 appendComposerMessage('assistant', 'Erro de rede.', 'Sistema');
+                setActionState('composer', 'error', {
+                    label: 'Composer',
+                    message: 'Erro de rede',
+                    target: activeProject.name,
+                    nextStep: 'Verifique o servidor e tente novamente.',
+                    agentStatus: 'error',
+                    activeAgentRun: null,
+                });
             }
         }
 
@@ -6165,9 +7136,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             
             if (role === 'assistant') {
                 content.innerHTML = marked.parse(text);
-                content.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
+                highlightCodeBlocks(content);
             } else {
                 content.textContent = text;
             }

@@ -45,6 +45,23 @@ python .ai-flow\server.py
 python .ai-flow\scripts\ai-flow.py dashboard
 ```
 
+## Fluxo mínimo recomendado
+
+```powershell
+python .ai-flow\server.py
+python .ai-flow\scripts\ai-flow.py dashboard
+```
+
+Depois:
+
+1. verificar o status de Server e Ollama na barra superior;
+2. selecionar o projeto ativo;
+3. checar providers e modelos locais;
+4. abrir um arquivo do projeto;
+5. usar o Composer com contexto explícito;
+6. revisar e aplicar o patch proposto;
+7. rodar o Quality Gate e abrir o report.
+
 ## Pré-requisitos
 
 - **Git** — para rastrear alterações via `git diff`

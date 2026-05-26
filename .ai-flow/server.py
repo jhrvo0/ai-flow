@@ -49,6 +49,10 @@ def run_cmd(cmd, cwd=None):
         return r.stdout.strip(), r.stderr.strip(), r.returncode
     except FileNotFoundError:
         return "", "command not found", -1
+    except PermissionError as exc:
+        return "", str(exc), -2
+    except OSError as exc:
+        return "", str(exc), -3
 
 
 def json_response(handler, data, status=200):
@@ -1054,7 +1058,7 @@ def resolve_model(provider, model_type_key, default_fallback):
     return default_fallback
 
 
-def list_provider_models(provider=None):
+def list_provider_models(provider=None, timeout_seconds=5):
     provider, base_url, ptype = get_provider_config(provider)
 
     if ptype == "cli":
@@ -1072,7 +1076,7 @@ def list_provider_models(provider=None):
     for url in urls_to_try:
         try:
             req = urllib.request.Request(url, method="GET")
-            with urllib.request.urlopen(req, timeout=5) as resp:
+            with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 models = []
 
@@ -1101,6 +1105,95 @@ def list_provider_models(provider=None):
             continue
 
     return {"ok": False, "provider": provider, "error": last_error or "Provider nao respondeu", "models": []}
+
+
+def _provider_endpoint(provider, base_url, ptype):
+    if ptype == "cli":
+        return "ollama --version"
+    if provider == "ollama":
+        return base_url.replace("/v1", "").rstrip("/") + "/api/tags"
+    return f"{base_url}/models"
+
+
+def probe_provider_status(provider_id):
+    provider, base_url, ptype = get_provider_config(provider_id)
+    result = list_provider_models(provider_id, timeout_seconds=1.0)
+    models = result.get("models", []) if isinstance(result, dict) else []
+    available = bool(result.get("ok")) if isinstance(result, dict) else False
+    status = "online" if available else "offline"
+
+    if available:
+        detail = f"{len(models)} modelo(s) disponivel(is)"
+    else:
+        detail = (result or {}).get("error") or "Provider nao respondeu"
+
+    return {
+        "provider": provider_id,
+        "label": PROVIDER_HELP.get(provider_id, {}).get("label", provider_id),
+        "type": ptype,
+        "available": available,
+        "status": status,
+        "endpoint": _provider_endpoint(provider, base_url, ptype),
+        "detail": detail,
+        "models": models,
+    }
+
+
+def get_active_task_summary():
+    current_task_path = AI_FLOW_DIR / "artifacts" / "current-task.json"
+    if not current_task_path.exists():
+        return None
+    try:
+        data = json.loads(current_task_path.read_text(encoding="utf-8"))
+        task_path = data.get("path")
+        if not task_path:
+            return None
+        task_dir = Path(task_path)
+        state_path = task_dir / "task-state.json"
+        state = {}
+        if state_path.exists():
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+        return {
+            "name": state.get("task_name") or task_dir.name,
+            "path": str(task_dir),
+            "stage": state.get("stage", "unknown"),
+            "status": state.get("status", "unknown"),
+            "updated_at": state.get("updated_at") or data.get("updated_at"),
+        }
+    except Exception:
+        return None
+
+
+def build_runtime_status():
+    cfg = load_config()
+    default_provider = cfg.get("api", {}).get("default_provider", "ollama")
+    providers = {}
+    for provider_id in PROVIDER_HELP.keys():
+        providers[provider_id] = probe_provider_status(provider_id)
+
+    default_provider_status = providers.get(default_provider) or {}
+    ollama_status = providers.get("ollama") or {}
+    task_summary = get_active_task_summary()
+
+    return {
+        "server": {
+            "status": "online",
+            "label": "Server",
+            "port": SERVER_PORT,
+        },
+        "default_provider": default_provider,
+        "provider": default_provider_status,
+        "providers": providers,
+        "ollama": {
+            "status": ollama_status.get("status", "unknown"),
+            "available": ollama_status.get("available", False),
+            "endpoint": ollama_status.get("endpoint"),
+            "detail": ollama_status.get("detail"),
+            "models": ollama_status.get("models", []),
+        },
+        "active_task": task_summary,
+        "checked_at": datetime.datetime.now().isoformat(),
+    }
 
 
 def call_provider(provider, model, messages, temperature=0.2):
@@ -1292,6 +1385,9 @@ class AIFlowHandler(BaseHTTPRequestHandler):
         if path == "/api/server/check":
             return ok_response(self, {"status": "online", "version": "1.0"})
 
+        if path == "/api/runtime/status":
+            return ok_response(self, build_runtime_status())
+
         if path == "/api/agents":
             return ok_response(self, get_agents_list())
 
@@ -1333,11 +1429,17 @@ class AIFlowHandler(BaseHTTPRequestHandler):
         if path == "/api/providers":
             available = []
             for pid, info in PROVIDER_HELP.items():
-                entry = {"id": pid, "label": info["label"], "type": info.get("type", "http")}
-                if pid == "ollama_cli":
-                    entry["available"] = check_ollama_cli()
-                else:
-                    entry["available"] = True
+                probe = probe_provider_status(pid)
+                entry = {
+                    "id": pid,
+                    "label": info["label"],
+                    "type": info.get("type", "http"),
+                    "available": probe.get("available", False),
+                    "status": probe.get("status", "unknown"),
+                    "endpoint": probe.get("endpoint"),
+                    "detail": probe.get("detail"),
+                    "models_count": len(probe.get("models", [])),
+                }
                 if pid == "ollama":
                     entry["recommended"] = True
                 available.append(entry)
@@ -1704,6 +1806,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                         "search_preview": search_text[:300],
                         "suggestions": patch_info,
                     }
+                ,
+                    "next_action": "Clique em 'Regenerar com contexto atual' ou revise o arquivo alvo antes de aplicar novamente."
                 }, 422)
                 
             # Snapshot old content
@@ -1728,6 +1832,15 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 "undo_snapshot_id": s1["id"],
                 "file": resolved_file_path,
                 "match_type": patch_info.get("match") if patch_info else "exact",
+                "details": {
+                    "file": resolved_file_path,
+                    "search_provided": bool(search_text),
+                    "search_found": True,
+                    "match_type": patch_info.get("match") if patch_info else "exact",
+                    "force_applied": bool(force),
+                    "normalized_matches": patch_info.get("info", {}).get("normalized_matches", []) if isinstance(patch_info, dict) else [],
+                },
+                "next_action": "Revise o diff e rode o quality gate para confirmar a alteracao.",
             })
 
         # ─── File undo ───

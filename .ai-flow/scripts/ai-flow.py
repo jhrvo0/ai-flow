@@ -579,6 +579,10 @@ def run_command(command: list[str], cwd: Path | None = None, env: dict[str, str]
         )
     except FileNotFoundError as exc:
         return 127, str(exc)
+    except PermissionError as exc:
+        return 126, str(exc)
+    except OSError as exc:
+        return 125, str(exc)
     return completed.returncode, ((completed.stdout or "") + (completed.stderr or "")).strip()
 
 
