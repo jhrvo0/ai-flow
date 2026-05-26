@@ -1062,7 +1062,7 @@ def list_provider_models(provider=None, timeout_seconds=5):
     provider, base_url, ptype = get_provider_config(provider)
 
     if ptype == "cli":
-        return list_ollama_cli_models()
+        return list_provider_models("ollama", timeout_seconds=timeout_seconds)
 
     import urllib.request
     urls_to_try = [f"{base_url}/models"]
@@ -1386,7 +1386,10 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             return ok_response(self, {"status": "online", "version": "1.0"})
 
         if path == "/api/runtime/status":
-            return ok_response(self, build_runtime_status())
+            try:
+                return ok_response(self, build_runtime_status())
+            except Exception as e:
+                return error_response(self, f"Erro ao montar runtime status: {str(e)}")
 
         if path == "/api/agents":
             return ok_response(self, get_agents_list())
@@ -1427,23 +1430,26 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 return error_response(self, str(e))
 
         if path == "/api/providers":
-            available = []
-            for pid, info in PROVIDER_HELP.items():
-                probe = probe_provider_status(pid)
-                entry = {
-                    "id": pid,
-                    "label": info["label"],
-                    "type": info.get("type", "http"),
-                    "available": probe.get("available", False),
-                    "status": probe.get("status", "unknown"),
-                    "endpoint": probe.get("endpoint"),
-                    "detail": probe.get("detail"),
-                    "models_count": len(probe.get("models", [])),
-                }
-                if pid == "ollama":
-                    entry["recommended"] = True
-                available.append(entry)
-            return ok_response(self, available)
+            try:
+                available = []
+                for pid, info in PROVIDER_HELP.items():
+                    probe = probe_provider_status(pid)
+                    entry = {
+                        "id": pid,
+                        "label": info["label"],
+                        "type": info.get("type", "http"),
+                        "available": probe.get("available", False),
+                        "status": probe.get("status", "unknown"),
+                        "endpoint": probe.get("endpoint"),
+                        "detail": probe.get("detail"),
+                        "models_count": len(probe.get("models", [])),
+                    }
+                    if pid == "ollama":
+                        entry["recommended"] = True
+                    available.append(entry)
+                return ok_response(self, available)
+            except Exception as e:
+                return error_response(self, f"Erro ao listar providers: {str(e)}")
 
         if path == "/api/models":
             prov = params.get("provider", [None])[0]
