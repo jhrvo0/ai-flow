@@ -2130,6 +2130,191 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         </div>
     </div>
 
+    <!-- MODAL: Executar Agente -->
+    <div class="modal-overlay" id="runAgentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Executar Agente</h3>
+                <button class="icon-btn" onclick="closeModal('runAgentModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <div class="form-group">
+                    <label>Agente</label>
+                    <select class="form-control" id="runAgentSelect">
+                        <option value="planner">Planejador (planner)</option>
+                        <option value="coder">Coder (coder)</option>
+                        <option value="reviewer">Reviewer (reviewer)</option>
+                        <option value="tester">Tester (tester)</option>
+                        <option value="docs">Docs (docs)</option>
+                        <option value="architect">Architect (architect)</option>
+                        <option value="security">Security (security)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição da Tarefa</label>
+                    <textarea class="form-control" id="runAgentTask" style="height: 100px; resize: none;" placeholder="Descreva a tarefa que o agente deve realizar..."></textarea>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="runAgentGitContext" checked style="cursor: pointer;">
+                    <label style="margin-bottom: 0; cursor: pointer;" for="runAgentGitContext">Incluir contexto do Git (diff e status)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('runAgentModal')">Cancelar</button>
+                <button class="btn-action btn-primary" onclick="submitRunAgent()">Executar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Self-Improve -->
+    <div class="modal-overlay" id="selfImproveModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Auto Aprimoramento (Self-Improve)</h3>
+                <button class="icon-btn" onclick="closeModal('selfImproveModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <div class="form-group">
+                    <label>Objetivo do Aprimoramento</label>
+                    <textarea class="form-control" id="selfImproveGoal" style="height: 80px; resize: none;" placeholder="Descreva o que deve ser aprimorado..."></textarea>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="selfImproveDryRun" checked style="cursor: pointer;">
+                    <label style="margin-bottom: 0; cursor: pointer;" for="selfImproveDryRun">Rodar em DRY-RUN (Sem alterar código diretamente)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('selfImproveModal')">Cancelar</button>
+                <button class="btn-action btn-primary" onclick="submitSelfImprove()">Iniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Confirmar Commit -->
+    <div class="modal-overlay" id="confirmCommitModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Confirmar Commit Git</h3>
+                <button class="icon-btn" onclick="closeModal('confirmCommitModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-main);">Deseja confirmar o commit das seguintes alterações?</p>
+                <div id="confirmCommitFileList" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 10px; color: var(--text-bright); margin-bottom: 12px; white-space: pre-wrap; line-height: 1.4; text-align: left;">
+                    Nenhuma alteração detectada.
+                </div>
+                <div class="form-group">
+                    <label>Mensagem de Commit</label>
+                    <input type="text" class="form-control" id="confirmCommitMessage" readonly style="background: rgba(255,255,255,0.05); color: var(--text-bright);">
+                </div>
+                <p style="font-size: 10px; color: var(--color-warning); font-weight: 500;"><i data-lucide="alert-triangle" style="width: 10px; display: inline-block; vertical-align: middle; margin-right: 2px;"></i> Esta ação realizará um commit local na branch atual.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('confirmCommitModal')">Cancelar</button>
+                <button class="btn-action btn-primary" onclick="submitCommit()">Confirmar Commit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Objetivo do Fluxo Canvas -->
+    <div class="modal-overlay" id="canvasFlowGoalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Executar Fluxo do Canvas</h3>
+                <button class="icon-btn" onclick="closeModal('canvasFlowGoalModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <div class="form-group">
+                    <label>Objetivo Geral do Fluxo</label>
+                    <textarea class="form-control" id="canvasFlowGoalText" style="height: 100px; resize: none;" placeholder="Ex: Adicionar tratamento de erros no validador..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('canvasFlowGoalModal')">Cancelar</button>
+                <button class="btn-action btn-primary" onclick="submitCanvasFlow()">Iniciar Fluxo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Status de Provedores e Modelos -->
+    <div class="modal-overlay" id="modelsStatusModal">
+        <div class="modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3>Provedores e Modelos locais</h3>
+                <button class="icon-btn" onclick="closeModal('modelsStatusModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px; max-height: 450px; overflow-y: auto; text-align: left;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: rgba(255,255,255,0.01);">
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Ollama HTTP</div>
+                        <div id="statusOllamaHttp" style="font-size: 11px; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px;">Verificando...</div>
+                    </div>
+                    <div style="flex: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: rgba(255,255,255,0.01);">
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Ollama CLI</div>
+                        <div id="statusOllamaCli" style="font-size: 11px; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px;">Verificando...</div>
+                    </div>
+                    <div style="flex: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: rgba(255,255,255,0.01);">
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">LM Studio</div>
+                        <div id="statusLmStudio" style="font-size: 11px; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px;">Verificando...</div>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px; text-align: left;">
+                    <label style="font-size: 10px; font-weight: 700; color: var(--text-muted);">MODELOS DETECTADOS</label>
+                    <div id="detectedModelsList" style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; max-height: 120px; overflow-y: auto; text-align: left; white-space: pre-wrap; line-height: 1.4;">
+                        Sem modelos.
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px; text-align: left;">
+                    <label style="font-size: 10px; font-weight: 700; color: var(--text-muted);">MODELOS RECOMENDADOS (OLLAMA-FIRST)</label>
+                    <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;" id="recommendedModelsList">
+                        <!-- Recommended models listed here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action btn-primary" onclick="closeModal('modelsStatusModal')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Confirmação Reutilizável -->
+    <div class="modal-overlay" id="customConfirmModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="customConfirmTitle">Confirmação</h3>
+                <button class="icon-btn" onclick="closeModal('customConfirmModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <p id="customConfirmMessage" style="font-size: 12px; line-height: 1.5; color: var(--text-main);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('customConfirmModal')">Cancelar</button>
+                <button class="btn-action btn-primary" id="customConfirmBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Prompt Reutilizável -->
+    <div class="modal-overlay" id="customPromptModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="customPromptTitle">Entrada</h3>
+                <button class="icon-btn" onclick="closeModal('customPromptModal')"><i data-lucide="x" style="width: 14px;"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <p id="customPromptMessage" style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);"></p>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="customPromptInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" onclick="closeModal('customPromptModal')">Cancelar</button>
+                <button class="btn-action btn-primary" id="customPromptBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast" id="globalToast">
         <span id="toastIcon"></span>
@@ -2146,6 +2331,37 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         let projects = [];
         let activeProject = null;
         let activeFile = null;
+
+        function showCustomConfirm(title, message, onConfirm) {
+            document.getElementById('customConfirmTitle').textContent = title;
+            document.getElementById('customConfirmMessage').textContent = message;
+            const btn = document.getElementById('customConfirmBtn');
+            btn.onclick = () => {
+                closeModal('customConfirmModal');
+                onConfirm();
+            };
+            openModal('customConfirmModal');
+            lucide.createIcons();
+        }
+
+        function showCustomPrompt(title, message, defaultValue, onOk) {
+            document.getElementById('customPromptTitle').textContent = title;
+            document.getElementById('customPromptMessage').textContent = message;
+            const input = document.getElementById('customPromptInput');
+            input.value = defaultValue || '';
+            const btn = document.getElementById('customPromptBtn');
+            btn.onclick = () => {
+                const val = input.value.trim();
+                if (val) {
+                    closeModal('customPromptModal');
+                    onOk(val);
+                } else {
+                    showToast('Por favor, preencha o campo.', 'warning');
+                }
+            };
+            openModal('customPromptModal');
+            lucide.createIcons();
+        }
         let fileContentOriginal = '';
         let fileTreeRaw = [];
         let monacoEditor = null;
@@ -3126,12 +3342,16 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         }
 
         function clearCanvas() {
-            if (confirm('Deseja limpar todos os agentes?')) {
-                canvasNodes = [];
-                closeNodeInspector();
-                renderCanvasNodes();
-                drawCanvasConnections();
-            }
+            showCustomConfirm(
+                'Limpar Canvas',
+                'Deseja limpar todos os agentes do canvas?',
+                () => {
+                    canvasNodes = [];
+                    closeNodeInspector();
+                    renderCanvasNodes();
+                    drawCanvasConnections();
+                }
+            );
         }
 
         async function checkAndLoadVisualWorkflowsList() {
@@ -3158,11 +3378,25 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         async function saveVisualWorkflow() {
             let name = document.getElementById('canvas-flow-select').value;
             if (!name) {
-                name = prompt("Digite o nome do novo fluxo (ex: refatoracao, testes):");
-                if (!name) return;
-                name = name.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+                showCustomPrompt(
+                    'Salvar Novo Fluxo',
+                    'Digite o nome do novo fluxo (ex: refatoracao, testes):',
+                    '',
+                    (inputName) => {
+                        const sanitizedName = inputName.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+                        if (sanitizedName) {
+                            executeSaveVisualWorkflow(sanitizedName);
+                        } else {
+                            showToast('Nome inválido.', 'error');
+                        }
+                    }
+                );
+            } else {
+                executeSaveVisualWorkflow(name);
             }
-            
+        }
+
+        async function executeSaveVisualWorkflow(name) {
             const payload = {
                 name: name,
                 flow: {
@@ -3382,15 +3616,30 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             }
         }
 
-        async function startCanvasFlow() {
+        function startCanvasFlow() {
             if (isFlowRunning) {
                 showToast('Um fluxo já está em execução.', 'warning');
                 return;
             }
-            
-            const goal = prompt("Descreva o objetivo geral do fluxo de agentes:");
-            if (!goal) return;
-            
+            if (canvasNodes.length === 0) {
+                showToast('Adicione pelo menos um agente no canvas.', 'warning');
+                return;
+            }
+            openModal('canvasFlowGoalModal');
+            document.getElementById('canvasFlowGoalText').value = '';
+        }
+
+        async function submitCanvasFlow() {
+            const goal = document.getElementById('canvasFlowGoalText').value.trim();
+            if (!goal) {
+                showToast('Escreva o objetivo do fluxo.', 'warning');
+                return;
+            }
+            closeModal('canvasFlowGoalModal');
+            executeCanvasFlow(goal);
+        }
+
+        async function executeCanvasFlow(goal) {
             canvasNodes.forEach(n => {
                 n.status = 'idle';
                 n.lastOutput = '';
@@ -3496,7 +3745,9 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                             { role: 'system', content: instructions },
                             { role: 'user', content: promptText }
                         ],
-                        temperature: currentNode.temp || 0.2
+                        temperature: currentNode.temp || 0.2,
+                        agent: currentNode.type,
+                        save_run: true
                     };
                     
                     const res = await fetch(`${serverUrl}/api/agent/call`, {
@@ -3996,25 +4247,28 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
         async function removeActiveProject() {
             if (!activeProject) return;
-            if (!confirm(`Remover "${activeProject.name}" da lista?`)) {
-                return;
-            }
-            try {
-                const res = await fetch(`${serverUrl}/api/projects/remove`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ path: activeProject.path })
-                });
-                const r = await res.json();
-                if (r.ok) {
-                    showToast('Projeto removido.');
-                    await refreshProjects();
-                } else {
-                    showToast(r.error || 'Erro ao remover.', 'error');
+            showCustomConfirm(
+                'Remover Projeto',
+                `Deseja remover o projeto "${activeProject.name}" da lista?`,
+                async () => {
+                    try {
+                        const res = await fetch(`${serverUrl}/api/projects/remove`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: activeProject.path })
+                        });
+                        const r = await res.json();
+                        if (r.ok) {
+                            showToast('Projeto removido.');
+                            await refreshProjects();
+                        } else {
+                            showToast(r.error || 'Erro ao remover.', 'error');
+                        }
+                    } catch(e) {
+                        showToast('Erro de comunicação.', 'error');
+                    }
                 }
-            } catch(e) {
-                showToast('Erro ao comunicar com o servidor.', 'error');
-            }
+            );
         }
 
         async function fetchFileTree() {
@@ -4362,9 +4616,11 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         item.appendChild(desc);
 
                         item.addEventListener('click', () => {
-                            if (confirm(`Deseja restaurar esta versão (${snap.id})?`)) {
-                                restoreSnapshotById(snap.id);
-                            }
+                            showCustomConfirm(
+                                'Restaurar Snapshot',
+                                `Deseja restaurar esta versão (${snap.id})? Suas modificações não salvas serão perdidas.`,
+                                () => restoreSnapshotById(snap.id)
+                            );
                         });
                         container.appendChild(item);
                     });
@@ -4375,40 +4631,170 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         }
 
         async function restoreSnapshotById(snapshotId) {
-            showToast('Snapshot restaurado.');
-            closeModal('historyModal');
-        }
-
-        async function checkModels() {
-            switchBottomTab('tab-console');
-            writeToConsole('Verificando provedores de modelo...');
+            if (!activeProject || !activeFile) return;
+            writeToConsole(`Restaurando snapshot ${snapshotId} em ${activeFile.name}...`);
             try {
-                const res = await fetch(`${serverUrl}/api/models`);
+                const res = await fetch(`${serverUrl}/api/file/restore`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: activeProject.path,
+                        file: activeFile.path,
+                        snapshot_id: snapshotId
+                    })
+                });
                 const r = await res.json();
                 if (r.ok) {
-                    writeToConsole(`[OK] Provider: ${r.provider}`);
-                    writeToConsole(`Modelos (${r.models.length}):`);
-                    r.models.forEach(m => writeToConsole(`  - ${m.id}`));
-                    showToast(`${r.models.length} modelo(s) encontrado(s).`);
+                    showToast('Snapshot restaurado com sucesso!');
+                    closeModal('historyModal');
+                    openFile(activeFile.path);
+                    fetchGitStatus();
+                    fetchGitDiff();
                 } else {
-                    writeToConsole(`[ERRO] ${r.error}`);
-                    writeToConsole('Verifique se LM Studio ou Ollama esta rodando.');
-                    showToast('Provider offline. Veja o console.', 'warning');
+                    showToast(r.error || 'Erro ao restaurar snapshot.', 'error');
                 }
             } catch(e) {
-                writeToConsole(`[ERRO] Sem conexao com o servidor: ${e.message}`);
-                showToast('Servidor offline.', 'error');
+                showToast('Erro de conexão ao restaurar.', 'error');
             }
         }
 
+        function toggleWordWrap() {
+            wordWrapEnabled = !wordWrapEnabled;
+            const btn = document.getElementById('toggleWordWrapBtn');
+            if (monacoEditor) {
+                monacoEditor.updateOptions({ wordWrap: wordWrapEnabled ? 'on' : 'off' });
+            }
+            const textarea = document.getElementById('textarea-fallback');
+            if (textarea) {
+                textarea.style.whiteSpace = wordWrapEnabled ? 'pre-wrap' : 'pre';
+            }
+            if (btn) {
+                if (wordWrapEnabled) {
+                    btn.classList.add('btn-primary');
+                } else {
+                    btn.classList.remove('btn-primary');
+                }
+            }
+            showToast(wordWrapEnabled ? 'Quebra de linha ativada.' : 'Quebra de linha desativada.');
+        }
+
+        async function checkModels() {
+            openModal('modelsStatusModal');
+            document.getElementById('statusOllamaHttp').innerHTML = '<span style="color:var(--text-muted);">Verificando...</span>';
+            document.getElementById('statusOllamaCli').innerHTML = '<span style="color:var(--text-muted);">Verificando...</span>';
+            document.getElementById('statusLmStudio').innerHTML = '<span style="color:var(--text-muted);">Verificando...</span>';
+            document.getElementById('detectedModelsList').innerHTML = '<span style="color:var(--text-muted);">Buscando modelos...</span>';
+            document.getElementById('recommendedModelsList').innerHTML = '';
+
+            const recs = [
+                { id: 'llama3.2:3b', tag: 'Llama 3.2 3B', desc: 'Recomendado para Testing, Docs e Resumos (RAM: ~4 GB)' },
+                { id: 'phi4-mini:3.8b', tag: 'Phi-4 Mini 3.8B', desc: 'Recomendado para Planejamento e Arquitetura (RAM: ~4 GB)' },
+                { id: 'qwen2.5-coder:3b', tag: 'Qwen 2.5 Coder 3B', desc: 'Recomendado para Codificação e Review (RAM: ~4 GB)' },
+                { id: 'qwen2.5-coder:7b', tag: 'Qwen 2.5 Coder 7B', desc: 'Codificador avançado recomendado (RAM: ~8 GB)' }
+            ];
+
+            let activeModels = new Set();
+
+            // Probe Ollama HTTP
+            try {
+                const res = await fetch(`${serverUrl}/api/models?provider=ollama`);
+                const r = await res.json();
+                if (r.ok && r.models) {
+                    document.getElementById('statusOllamaHttp').innerHTML = '<span style="color:var(--color-success); display:flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Online</span>';
+                    r.models.forEach(m => activeModels.add(m.id));
+                } else {
+                    document.getElementById('statusOllamaHttp').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Offline</span>';
+                }
+            } catch(e) {
+                document.getElementById('statusOllamaHttp').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Offline</span>';
+            }
+
+            // Probe Ollama CLI
+            try {
+                const res = await fetch(`${serverUrl}/api/models?provider=ollama_cli`);
+                const r = await res.json();
+                if (r.ok && r.models) {
+                    document.getElementById('statusOllamaCli').innerHTML = '<span style="color:var(--color-success); display:flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Disponível</span>';
+                    r.models.forEach(m => activeModels.add(m.id));
+                } else {
+                    document.getElementById('statusOllamaCli').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Indisponível</span>';
+                }
+            } catch(e) {
+                document.getElementById('statusOllamaCli').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Indisponível</span>';
+            }
+
+            // Probe LM Studio
+            try {
+                const res = await fetch(`${serverUrl}/api/models?provider=lm_studio`);
+                const r = await res.json();
+                if (r.ok && r.models) {
+                    document.getElementById('statusLmStudio').innerHTML = '<span style="color:var(--color-success); display:flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Online</span>';
+                    r.models.forEach(m => activeModels.add(m.id));
+                } else {
+                    document.getElementById('statusLmStudio').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Offline</span>';
+                }
+            } catch(e) {
+                document.getElementById('statusLmStudio').innerHTML = '<span style="color:var(--color-error); display:flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Offline</span>';
+            }
+
+            // Render Detected Models
+            const detectedList = document.getElementById('detectedModelsList');
+            if (activeModels.size > 0) {
+                detectedList.innerHTML = Array.from(activeModels).map(m => `<div>• ${m}</div>`).join('');
+            } else {
+                detectedList.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Nenhum modelo detectado. Certifique-se de que o provedor está rodando.</span>';
+            }
+
+            // Render Recommended Models Status
+            const recsContainer = document.getElementById('recommendedModelsList');
+            recsContainer.innerHTML = recs.map(rec => {
+                const hasModel = activeModels.has(rec.id);
+                const statusBadge = hasModel 
+                    ? '<span class="git-badge A" style="font-size:8px;">INSTALADO</span>' 
+                    : '<span class="git-badge D" style="font-size:8px;">AUSENTE</span>';
+                const actionBtn = hasModel 
+                    ? '' 
+                    : `<button class="btn-action" style="height:18px; font-size:8px; padding:0 6px; margin-left:auto;" onclick="navigator.clipboard.writeText('ollama pull ${rec.id}'); showToast('Comando copiado!');"><i data-lucide="copy" style="width:8px; height:8px;"></i> Copiar Pull</button>`;
+                
+                return `
+                    <div style="display:flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,0.05); padding:6px 10px; border-radius:6px; background:rgba(0,0,0,0.1);">
+                        <div style="display:flex; flex-direction:column; gap:2px; text-align:left;">
+                            <div style="font-size:11px; font-weight:600; color:var(--text-bright); display:flex; align-items:center; gap:6px;">
+                                ${rec.tag} <span style="font-family:monospace; opacity:0.8; font-size:10px;">(${rec.id})</span>
+                            </div>
+                            <div style="font-size:9px; color:var(--text-muted);">${rec.desc}</div>
+                        </div>
+                        <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+                            ${statusBadge}
+                            ${actionBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
         function openRunAgentDialog() {
-            const agents = ['planner', 'coder', 'reviewer', 'tester', 'docs', 'architect', 'security'];
-            const agentList = agents.map(a => `  - ${a}`).join('\n');
-            const agentId = prompt(`Agente disponiveis:\n${agentList}\n\nDigite o ID do agente:`, 'planner');
-            if (!agentId) return;
-            const task = prompt('Descricao da tarefa para o agente:', '');
-            if (!task) return;
-            const useGit = confirm('Incluir git diff/status no contexto?');
+            if (!activeProject) {
+                showToast('Selecione um projeto primeiro.', 'warning');
+                return;
+            }
+            openModal('runAgentModal');
+            document.getElementById('runAgentTask').value = '';
+        }
+
+        function submitRunAgent() {
+            const agentId = document.getElementById('runAgentSelect').value;
+            const task = document.getElementById('runAgentTask').value.trim();
+            const useGit = document.getElementById('runAgentGitContext').checked;
+            
+            if (!task) {
+                showToast('Escreva a tarefa para o agente.', 'warning');
+                return;
+            }
+            
+            closeModal('runAgentModal');
             runAgentLive(agentId, task, useGit);
         }
 
@@ -4466,14 +4852,24 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
         function openSelfImproveDialog() {
             if (!activeProject) {
-                showToast('Selecione um projeto.', 'warning');
+                showToast('Selecione um projeto primeiro.', 'warning');
                 return;
             }
-            const defaultGoal = 'Fortalecer run-checks com fallback de comandos e deteccao de ambiente';
-            const request = prompt('Objetivo de auto aprimoramento:', defaultGoal);
-            if (!request) return;
-            const dryRun = confirm('Rodar em DRY-RUN primeiro? (Recomendado)');
-            runSelfImproveLive(request, dryRun);
+            openModal('selfImproveModal');
+            document.getElementById('selfImproveGoal').value = 'Fortalecer run-checks com fallback de comandos e deteccao de ambiente';
+        }
+
+        function submitSelfImprove() {
+            const goal = document.getElementById('selfImproveGoal').value.trim();
+            const dryRun = document.getElementById('selfImproveDryRun').checked;
+            
+            if (!goal) {
+                showToast('Escreva o objetivo de aprimoramento.', 'warning');
+                return;
+            }
+            
+            closeModal('selfImproveModal');
+            runSelfImproveLive(goal, dryRun);
         }
 
         async function runSelfImproveLive(request, dryRun = true) {
@@ -4594,14 +4990,44 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         }
 
         async function commitChanges() {
-            if (!activeProject) return;
+            if (!activeProject) {
+                showToast('Selecione um projeto primeiro.', 'warning');
+                return;
+            }
             const msgInput = document.getElementById('commitMsgInput');
             const message = msgInput.value.trim();
             if (!message) {
                 showToast('Escreva a mensagem.', 'warning');
                 return;
             }
-            
+
+            // Show modal and fetch git status to verify files
+            const fileListContainer = document.getElementById('confirmCommitFileList');
+            fileListContainer.innerHTML = 'Carregando status Git...';
+            document.getElementById('confirmCommitMessage').value = message;
+            openModal('confirmCommitModal');
+
+            try {
+                const res = await fetch(`${serverUrl}/api/git/status?path=${encodeURIComponent(activeProject.path)}`);
+                const r = await res.json();
+                if (r.ok && Array.isArray(r.data)) {
+                    if (r.data.length === 0) {
+                        fileListContainer.innerHTML = 'Nenhuma alteração detectada.';
+                    } else {
+                        fileListContainer.innerHTML = r.data.map(item => `${item.code}  ${item.path}`).join('\n');
+                    }
+                } else {
+                    fileListContainer.innerHTML = 'Erro ao ler status Git.';
+                }
+            } catch(e) {
+                fileListContainer.innerHTML = 'Erro ao conectar ao servidor.';
+            }
+        }
+
+        async function submitCommit() {
+            if (!activeProject) return;
+            const message = document.getElementById('confirmCommitMessage').value;
+            closeModal('confirmCommitModal');
             writeToConsole(`Commitando: "${message}"...`);
             try {
                 const res = await fetch(`${serverUrl}/api/git/commit`, {
@@ -4615,7 +5041,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 const r = await res.json();
                 if (r.ok) {
                     showToast('Commit realizado!');
-                    msgInput.value = '';
+                    document.getElementById('commitMsgInput').value = '';
                     writeToConsole(`Commit realizado: ${r.output}`);
                     fetchGitStatus();
                     fetchGitDiff();

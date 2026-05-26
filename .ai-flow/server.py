@@ -120,6 +120,81 @@ def load_projects():
     return all_paths
 
 
+def is_safe_project_path(proj_path_str):
+    if not proj_path_str:
+        return False
+    try:
+        resolved = str(Path(proj_path_str).resolve()).lower()
+        valid_projects = [str(Path(p).resolve()).lower() for p in load_projects()]
+        return resolved in valid_projects
+    except Exception:
+        return False
+
+
+def is_safe_file_path(proj_path_str, file_path_str):
+    if not is_safe_project_path(proj_path_str):
+        return False
+    try:
+        resolved_proj = Path(proj_path_str).resolve()
+        if not os.path.isabs(file_path_str):
+            resolved_file = (resolved_proj / file_path_str).resolve()
+        else:
+            resolved_file = Path(file_path_str).resolve()
+        
+        proj_str = str(resolved_proj).lower()
+        file_str = str(resolved_file).lower()
+        
+        sep = os.sep.lower()
+        if not proj_str.endswith(sep):
+            proj_str_sep = proj_str + sep
+        else:
+            proj_str_sep = proj_str
+            
+        return file_str == proj_str or file_str.startswith(proj_str_sep)
+    except Exception:
+        return False
+
+
+def _update_active_task_state(project_path, report_name, stage=None):
+    try:
+        current_task_path = AI_FLOW_DIR / "artifacts" / "current-task.json"
+        if current_task_path.exists():
+            data = json.loads(current_task_path.read_text(encoding="utf-8"))
+            path_str = data.get("path")
+            if path_str:
+                task_dir = Path(path_str)
+                state_file = task_dir / "task-state.json"
+                if state_file.exists():
+                    state = json.loads(state_file.read_text(encoding="utf-8"))
+                    
+                    # Update reports list
+                    reports = state.get("generated_reports", [])
+                    if report_name not in reports:
+                        reports.append(report_name)
+                    state["generated_reports"] = reports
+                    
+                    # Update stage if provided
+                    if stage:
+                        state["stage"] = stage
+                        
+                    # Also update last modified files from git state if possible
+                    try:
+                        status_out, _, _ = run_cmd(["git", "status", "--porcelain"], cwd=project_path)
+                        if status_out:
+                            changed = []
+                            for line in status_out.splitlines():
+                                if len(line) > 3:
+                                    changed.append(line[3:].strip())
+                            state["last_modified_files"] = list(set(state.get("last_modified_files", []) + changed))
+                    except Exception:
+                        pass
+                        
+                    state["updated_at"] = datetime.datetime.now().isoformat()
+                    state_file.write_text(json.dumps(state, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception as e:
+        print(f"Erro ao atualizar o estado da tarefa: {e}")
+
+
 def collect_recent_artifacts(project_path, limit=6):
     pp = Path(project_path)
     ai_flow_dir = pp / ".ai-flow"
@@ -256,6 +331,8 @@ def run_quality_gate(project_path):
         return {"ok": False, "error": "quality-gate.py nao encontrado"}
     out, err, code = run_cmd(["python", str(script)], cwd=project_path)
     report_path = Path(project_path) / ".ai-flow" / "reports" / "quality-gate.html"
+    if report_path.exists():
+        _update_active_task_state(project_path, "quality-gate.html", "quality")
     return {
         "ok": code == 0,
         "output": out or err,
@@ -270,6 +347,8 @@ def run_context_map(project_path):
         return {"ok": False, "error": "generate-context-map.py nao encontrado"}
     out, err, code = run_cmd(["python", str(script)], cwd=project_path)
     report_path = Path(project_path) / ".ai-flow" / "reports" / "project-context.html"
+    if report_path.exists():
+        _update_active_task_state(project_path, "project-context.html", "context")
     return {
         "ok": code == 0,
         "output": out or err,
@@ -933,6 +1012,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             info = get_project_info(proj_path)
             return ok_response(self, info)
 
@@ -940,18 +1021,24 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             return ok_response(self, git_status(proj_path))
 
         if path == "/api/git/diff":
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             return ok_response(self, {"diff": git_diff(proj_path)})
 
         if path == "/api/git/log":
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             return ok_response(self, git_log(proj_path))
 
         if path == "/api/code/search":
@@ -962,6 +1049,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 return error_response(self, "parametro 'query' obrigatorio")
             if not proj_path:
                 proj_path = str(AI_FLOW_DIR.parent.resolve())
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             print(f"  /api/code/search query={query!r} path={proj_path!r}")
             try:
                 import importlib.util
@@ -980,6 +1069,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             files = list_files(proj_path)
             print(f"  /api/files path={proj_path!r} -> {len(files)} entries")
             return ok_response(self, files)
@@ -989,6 +1080,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             file_path = params.get("file", [None])[0]
             if not proj_path or not file_path:
                 return error_response(self, "parametros 'path' e 'file' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             content, err = read_file_content(file_path)
             if err:
                 return error_response(self, err)
@@ -1006,6 +1099,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             file_path = params.get("file", [None])[0]
             if not proj_path or not file_path:
                 return error_response(self, "parametros 'path' e 'file' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             return json_response(self, get_history(proj_path, file_path))
 
         if path == "/api/file/diff-between":
@@ -1015,6 +1110,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             to_id = params.get("to", [None])[0]
             if not proj_path or not file_path or not from_id or not to_id:
                 return error_response(self, "parametros 'path','file','from','to' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             diff, err = get_diff_between(proj_path, file_path, from_id, to_id)
             if err:
                 return error_response(self, err)
@@ -1050,7 +1147,9 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 return error_response(self, "parametro 'name' obrigatorio")
             # Sanitize name
             name = "".join(c for c in name if c.isalnum() or c in "-_")
-            filepath = AI_FLOW_DIR / "workflows" / f"{name}.flow.json"
+            filepath = (AI_FLOW_DIR / "workflows" / f"{name}.flow.json").resolve()
+            if not filepath.parent == (AI_FLOW_DIR / "workflows").resolve():
+                return error_response(self, "Acesso negado", 403)
             if not filepath.exists():
                 return error_response(self, "fluxo nao encontrado")
             try:
@@ -1081,6 +1180,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = params.get("path", [None])[0]
             if not proj_path:
                 return error_response(self, "parametro 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             diff = git_diff(proj_path)
             status = git_status(proj_path)
             branch, _, _ = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=proj_path)
@@ -1167,7 +1268,10 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = data.get("path", "")
             if not proj_path:
                 return error_response(self, "campo 'path' obrigatorio")
-            resolved = str(Path(proj_path).resolve())
+            p = Path(proj_path)
+            if not p.exists() or not p.is_dir():
+                return error_response(self, f"O diretorio '{proj_path}' nao existe ou nao e uma pasta valida.", 400)
+            resolved = str(p.resolve())
             paths = load_projects()  # loads and syncs
             if resolved not in paths:
                 paths.append(resolved)
@@ -1199,6 +1303,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = data.get("path", "")
             if not proj_path:
                 return error_response(self, "campo 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             result = run_quality_gate(proj_path)
             return json_response(self, result)
 
@@ -1206,6 +1312,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = data.get("path", "")
             if not proj_path:
                 return error_response(self, "campo 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             result = run_context_map(proj_path)
             return json_response(self, result)
 
@@ -1213,6 +1321,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             proj_path = data.get("path", "")
             if not proj_path:
                 return error_response(self, "campo 'path' obrigatorio")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             request = data.get("request", "Melhorar AI-Flow com pequenas melhorias locais")
             dry_run = bool(data.get("dry_run", True))
             result = run_self_improve(proj_path, request, dry_run)
@@ -1227,6 +1337,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             temperature = data.get("temperature", 0.2)
             provider = data.get("provider", "")
             messages = data.get("messages", None)
+            save_run = data.get("save_run", False)
 
             if not messages and not user:
                 return error_response(self, "campo 'user' ou 'messages' obrigatorio")
@@ -1254,6 +1365,45 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                         result["error"] = f"Ollama nao esta rodando. Execute 'ollama serve' ou abra o aplicativo Ollama."
                     elif "command not found" in error_msg.lower():
                         result["error"] = "Ollama CLI nao encontrado. Instale o Ollama em https://ollama.ai"
+            else:
+                if save_run and agent:
+                    try:
+                        current_task_path = AI_FLOW_DIR / "artifacts" / "current-task.json"
+                        task_dir = None
+                        if current_task_path.exists():
+                            task_data = json.loads(current_task_path.read_text(encoding="utf-8"))
+                            path_str = task_data.get("path")
+                            if path_str:
+                                p = Path(path_str)
+                                if p.exists() and p.is_dir():
+                                    task_dir = p
+                        
+                        run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        if task_dir:
+                            run_subdir = task_dir / "runs" / f"{run_id}-{agent}"
+                        else:
+                            run_subdir = (AI_FLOW_DIR / "artifacts" / "runs" / f"{run_id}-{agent}")
+                            
+                        run_subdir.mkdir(parents=True, exist_ok=True)
+                        
+                        # Write files
+                        (run_subdir / "response.md").write_text(result.get("response", ""), encoding="utf-8")
+                        (run_subdir / "prompt.md").write_text(
+                            f"# Agent: {agent}\n\n## Messages\n\n" + json.dumps(messages, indent=2, ensure_ascii=False),
+                            encoding="utf-8"
+                        )
+                        
+                        # Save metadata
+                        meta = {
+                            "agent_id": agent,
+                            "model": model,
+                            "provider": provider,
+                            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "git_context_used": False,
+                        }
+                        (run_subdir / "metadata.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+                    except Exception as e:
+                        print(f"Erro ao salvar run do canvas: {e}")
 
             return json_response(self, result)
 
@@ -1263,6 +1413,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             message = data.get("message", "")
             if not proj_path or not message:
                 return error_response(self, "campos 'path' e 'message' obrigatorios")
+            if not is_safe_project_path(proj_path):
+                return error_response(self, "Caminho do projeto nao registrado ou invalido", 403)
             result = git_commit(proj_path, message)
             return json_response(self, result)
 
@@ -1272,6 +1424,9 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             content = data.get("content", "")
             if not file_path:
                 return error_response(self, "campo 'file' obrigatorio")
+            proj_path = find_project_path(file_path)
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo nao pertence a um projeto registrado", 403)
             ok, err = write_file_content(file_path, content)
             if err:
                 return error_response(self, err)
@@ -1286,6 +1441,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             agent = data.get("agent", "manual")
             if not proj_path or not file_path:
                 return error_response(self, "campos 'path' e 'file' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             # Read current content before edit
             old_content, err = read_file_content(file_path)
             if err:
@@ -1331,6 +1488,9 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             if not os.path.isabs(file_path):
                 resolved_file_path = str(Path(proj_path) / file_path)
                 
+            if not is_safe_file_path(proj_path, resolved_file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
+
             # Read current content before edit
             old_content, err = read_file_content(resolved_file_path)
             if err:
@@ -1373,6 +1533,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             file_path = data.get("file", "")
             if not proj_path or not file_path:
                 return error_response(self, "campos 'path' e 'file' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             history = _load_history(proj_path, file_path)
             if not history or not history.get("current"):
                 return error_response(self, "Nenhum historico para desfazer")
@@ -1400,6 +1562,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             file_path = data.get("file", "")
             if not proj_path or not file_path:
                 return error_response(self, "campos 'path' e 'file' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
             history = _load_history(proj_path, file_path)
             if not history or not history.get("current"):
                 return error_response(self, "Nenhum historico para refazer")
@@ -1421,6 +1585,24 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 "description": restored["description"], "timestamp": restored["timestamp"],
             })
 
+        # ─── File restore ───
+        if path == "/api/file/restore":
+            proj_path = data.get("path", "")
+            file_path = data.get("file", "")
+            snapshot_id = data.get("snapshot_id", "")
+            if not proj_path or not file_path or not snapshot_id:
+                return error_response(self, "campos 'path', 'file' e 'snapshot_id' obrigatorios")
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
+            restored, err = restore_snapshot(proj_path, file_path, snapshot_id)
+            if err:
+                return error_response(self, err)
+            return ok_response(self, {
+                "snapshot_id": snapshot_id,
+                "description": restored["description"],
+                "timestamp": restored["timestamp"],
+            })
+
         # ─── Workflows ───
         if path == "/api/workflows/save":
             name = data.get("name", "")
@@ -1429,9 +1611,10 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 return error_response(self, "campo 'name' obrigatorio")
             # Sanitize name
             name = "".join(c for c in name if c.isalnum() or c in "-_")
-            workflows_dir = AI_FLOW_DIR / "workflows"
-            workflows_dir.mkdir(parents=True, exist_ok=True)
-            filepath = workflows_dir / f"{name}.flow.json"
+            workflows_dir = (AI_FLOW_DIR / "workflows").resolve()
+            filepath = (workflows_dir / f"{name}.flow.json").resolve()
+            if not filepath.parent == workflows_dir:
+                return error_response(self, "Acesso negado", 403)
             try:
                 filepath.write_text(json.dumps(flow, indent=2, ensure_ascii=False), encoding="utf-8")
                 return ok_response(self, {"name": name})
@@ -1454,14 +1637,16 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             if not file_path:
                 return error_response(self, "campo 'path' obrigatorio")
 
+            proj_path = find_project_path(file_path)
+            if not is_safe_file_path(proj_path, file_path):
+                return error_response(self, "Acesso negado: arquivo nao pertence a um projeto registrado", 403)
+
             old_content, err = read_file_content(file_path)
             if err:
                 return error_response(self, f"Erro ao ler arquivo: {err}")
 
             if target_content not in old_content:
                 return error_response(self, "Conteudo original (target_content) nao encontrado no arquivo para correspondencia exata.")
-
-            proj_path = find_project_path(file_path)
 
             s1, err = take_snapshot(proj_path, file_path, old_content, agent, f"Antes: {description}")
             if err:
@@ -1759,6 +1944,15 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                     continue
 
                 proj_path = find_project_path(file_path)
+                if not is_safe_file_path(proj_path, file_path):
+                    results.append({
+                        "index": idx,
+                        "file": file_path,
+                        "ok": False,
+                        "error": "Acesso negado: arquivo nao pertence a um projeto registrado"
+                    })
+                    continue
+
                 proj_paths_to_qg.add(proj_path)
 
                 s1, err = take_snapshot(proj_path, file_path, old_content, agent, f"Antes: {description}")

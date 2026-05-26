@@ -33,7 +33,13 @@ ollama pull qwen2.5-coder:7b
 python .ai-flow\scripts\ai-flow.py validate-config
 ```
 
-### 4. Abrir o dashboard
+### 4. Iniciar o servidor local da API
+
+```powershell
+python .ai-flow\server.py
+```
+
+### 5. Abrir o dashboard
 
 ```powershell
 python .ai-flow\scripts\ai-flow.py dashboard
