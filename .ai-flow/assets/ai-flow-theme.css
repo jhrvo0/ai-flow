@@ -17,18 +17,18 @@
   /* Border */
   --af-border: rgba(255, 255, 255, 0.06);
   --af-border-hover: rgba(255, 255, 255, 0.12);
-  --af-border-active: #a855f7;
+  --af-border-active: #06b6d4;
 
   /* Text */
   --af-text: #9f9fb0;
   --af-text-muted: #828299;
   --af-text-bright: #f4f4f9;
-  --af-text-link: #a855f7;
+  --af-text-link: #06b6d4;
 
   /* Semantic colors */
-  --af-primary: #a855f7;
-  --af-primary-hover: #b566ff;
-  --af-primary-glow: rgba(168, 85, 247, 0.25);
+  --af-primary: #06b6d4;
+  --af-primary-hover: #22d3ee;
+  --af-primary-glow: rgba(6, 182, 212, 0.25);
   --af-success: #10b981;
   --af-success-bg: rgba(16, 185, 129, 0.1);
   --af-warning: #f59e0b;

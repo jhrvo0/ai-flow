@@ -29,7 +29,7 @@ import difflib
 import hashlib
 import uuid
 from pathlib import Path
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 AI_FLOW_DIR = Path(__file__).resolve().parent
@@ -511,24 +511,196 @@ def normalize_newlines(text):
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
-def apply_search_replace_patch(original_content, search_text, replace_text):
-    if not search_text:
-        return replace_text, None
+def find_candidate_files(project_path, target_file_path):
+    """
+    Search the project for files with names similar to target_file_path.
+    Returns a list of relative paths of candidate files.
+    """
+    target_name = Path(target_file_path).name.lower()
+    candidates = []
+    proj_path = Path(project_path).resolve()
+    
+    for root, dirs, files in os.walk(proj_path):
+        # Ignore git, pycache, history directories
+        dirs[:] = [d for d in dirs if d not in ('.git', '__pycache__', 'history', 'memory', 'agent-work', 'artifacts')]
+        for f in files:
+            full_path = Path(root) / f
+            rel_name = f.lower()
+            if target_name in rel_name or rel_name in target_name:
+                candidates.append(str(full_path.resolve()))
+            elif len(target_name.split('.')) > 1 and len(rel_name.split('.')) > 1 and target_name.split('.')[-1] == rel_name.split('.')[-1]:
+                candidates.append(str(full_path.resolve()))
+                
+    target_rel = target_file_path.replace("\\", "/").lower()
+    def similarity(path):
+        try:
+            rel = str(Path(path).relative_to(proj_path)).replace("\\", "/").lower()
+            r1 = difflib.SequenceMatcher(None, target_rel, rel).ratio()
+            r2 = difflib.SequenceMatcher(None, target_name, Path(path).name.lower()).ratio()
+            return max(r1, r2)
+        except Exception:
+            return 0.0
         
+    candidates = sorted(candidates, key=similarity, reverse=True)
+    return [str(Path(c).relative_to(proj_path)).replace("\\", "/") for c in candidates[:5]]
+
+
+def apply_search_replace_patch(original_content, search_text, replace_text, force=False):
+    """
+    Aplica patch search/replace com fallback seguro.
+
+    Returns (new_content, error, info).
+    - new_content: string patcheada ou None se falhar
+    - error: mensagem de erro ou None
+    - info: dict com detalhes sobre o tipo de match, sugestoes, alternativas
+    """
+    if not search_text:
+        return replace_text, None, {"match": "new_file"}
+
     norm_orig = normalize_newlines(original_content)
     norm_search = normalize_newlines(search_text)
     norm_replace = normalize_newlines(replace_text)
-    
-    if norm_search not in norm_orig:
-        return None, "Texto original (search) nao encontrado no arquivo. Verifique se o arquivo nao foi alterado."
+
+    # 1) Direct exact match (fast path)
+    if norm_search in norm_orig:
+        norm_new = norm_orig.replace(norm_search, norm_replace, 1)
+        if "\r\n" in original_content and "\r\n" not in norm_new:
+            norm_new = norm_new.replace("\n", "\r\n")
+        return norm_new, None, {"match": "exact"}
+
+    info = {
+        "match": None,
+        "normalized_matches": [],
+        "alternatives": [],
+        "can_force": False,
+    }
+
+    orig_lines = norm_orig.split("\n")
+    search_lines = norm_search.split("\n")
+    search_len_lines = len(search_lines)
+
+    # 2) Try trailing whitespace normalization
+    orig_stripped = [l.rstrip() for l in orig_lines]
+    search_stripped = [l.rstrip() for l in search_lines]
+
+    for i in range(len(orig_lines) - search_len_lines + 1):
+        segment = orig_stripped[i:i + search_len_lines]
+        if segment == search_stripped:
+            info["normalized_matches"].append({
+                "type": "trailing_whitespace",
+                "message": "Diferenca de espacos em branco no final das linhas",
+                "line_start": i + 1,
+            })
+            if force:
+                new_lines = (orig_lines[:i] +
+                             norm_replace.split("\n") +
+                             orig_lines[i + search_len_lines:])
+                norm_new = "\n".join(new_lines)
+                if "\r\n" in original_content and "\r\n" not in norm_new:
+                    norm_new = norm_new.replace("\n", "\r\n")
+                return norm_new, None, {"match": "whitespace_normalized", "info": info}
+            break
+
+    # 3) Try indentation normalization (lstrip)
+    orig_lstripped = [l.lstrip() for l in orig_lines]
+    search_lstripped = [l.lstrip() for l in search_lines]
+
+    if not info["normalized_matches"]:
+        for i in range(len(orig_lines) - search_len_lines + 1):
+            segment = orig_lstripped[i:i + search_len_lines]
+            if segment == search_lstripped:
+                info["normalized_matches"].append({
+                    "type": "indentation",
+                    "message": "Diferenca de indentacao",
+                    "line_start": i + 1,
+                })
+                if force:
+                    new_lines = (orig_lines[:i] +
+                                 norm_replace.split("\n") +
+                                 orig_lines[i + search_len_lines:])
+                    norm_new = "\n".join(new_lines)
+                    if "\r\n" in original_content and "\r\n" not in norm_new:
+                        norm_new = norm_new.replace("\n", "\r\n")
+                    return norm_new, None, {"match": "indentation_normalized", "info": info}
+                break
+
+    # 4) Try consecutive spaces collapse normalization
+    if not info["normalized_matches"]:
+        orig_collapsed = [re.sub(r'\s+', ' ', l.strip()) for l in orig_lines]
+        search_collapsed = [re.sub(r'\s+', ' ', l.strip()) for l in search_lines]
+
+        for i in range(len(orig_lines) - search_len_lines + 1):
+            segment = orig_collapsed[i:i + search_len_lines]
+            if segment == search_collapsed:
+                info["normalized_matches"].append({
+                    "type": "consecutive_spaces",
+                    "message": "Diferenca de espacos consecutivos ou internos",
+                    "line_start": i + 1,
+                })
+                if force:
+                    new_lines = (orig_lines[:i] +
+                                 norm_replace.split("\n") +
+                                 orig_lines[i + search_len_lines:])
+                    norm_new = "\n".join(new_lines)
+                    if "\r\n" in original_content and "\r\n" not in norm_new:
+                        norm_new = norm_new.replace("\n", "\r\n")
+                    return norm_new, None, {"match": "consecutive_spaces_normalized", "info": info}
+                break
+
+    # 5) Use difflib to find similar blocks (optimized with word filter)
+    best_ratio = 0.0
+    best_block = None
+    best_start = 0
+
+    if search_len_lines <= len(orig_lines) and search_len_lines > 0:
+        # Tokenize lines for fast word overlap check
+        orig_words_sets = [set(w for w in re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*', l) if len(w) > 2) for l in orig_lines]
+        search_words = set(w for w in re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*', norm_search) if len(w) > 2)
         
-    norm_new = norm_orig.replace(norm_search, norm_replace, 1)
-    
-    # Restore original line endings style if possible
-    if "\r\n" in original_content and "\r\n" not in norm_new:
-        norm_new = norm_new.replace("\n", "\r\n")
-        
-    return norm_new, None
+        KEYWORDS = {
+            'def', 'class', 'import', 'from', 'return', 'print', 'function', 'const', 'let', 'var', 
+            'if', 'else', 'for', 'while', 'in', 'and', 'or', 'not', 'true', 'false', 'null', 'undefined', 
+            'self', 'this', 'div', 'span', 'template', 'script', 'style', 'export', 'default'
+        }
+        search_words = {w for w in search_words if w not in KEYWORDS}
+        if not search_words:
+            search_words = set(re.findall(r'\w+', norm_search))
+
+        for i in range(len(orig_lines) - search_len_lines + 1):
+            segment_words = set().union(*orig_words_sets[i:i + search_len_lines])
+            if search_words and not (segment_words & search_words):
+                continue
+
+            segment = "\n".join(orig_lines[i:i + search_len_lines])
+            ratio = difflib.SequenceMatcher(None, norm_search, segment).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_block = segment
+                best_start = i
+
+    if best_block and best_ratio > 0.5:
+        info["alternatives"].append({
+            "similarity": round(best_ratio, 3),
+            "line_start": best_start + 1,
+            "line_end": best_start + search_len_lines,
+            "content": best_block[:1000],
+        })
+
+    # Build error message
+    error_msg = "Texto original (search) nao encontrado no arquivo."
+
+    if info["normalized_matches"]:
+        types = [m["type"] for m in info["normalized_matches"]]
+        error_msg += " Normalizando ({}) o trecho foi encontrado.".format(", ".join(types))
+
+    if info["alternatives"]:
+        best = info["alternatives"][0]
+        error_msg += " Bloco mais proximo encontrado na linha {} com {:.0f}% de similaridade.".format(
+            best["line_start"], best["similarity"] * 100)
+
+    info["can_force"] = len(info["normalized_matches"]) > 0
+
+    return None, error_msg.strip(), info
 
 
 # ─── Snapshot / Undo System ──────────────────────────────
@@ -968,7 +1140,7 @@ def call_provider(provider, model, messages, temperature=0.2):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=600) as resp:
             result = json.loads(resp.read().decode("utf-8"))
             content = result["choices"][0]["message"]["content"]
             return {"ok": True, "response": content}
@@ -1480,6 +1652,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             replace_text = data.get("replace", "")
             description = data.get("description", "Patch via dashboard")
             agent = data.get("agent", "composer")
+            force = data.get("force", False)
             if not proj_path or not file_path:
                 return error_response(self, "campos 'path' e 'file' obrigatorios")
             
@@ -1492,17 +1665,46 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 return error_response(self, "Acesso negado: arquivo fora do projeto ou projeto nao registrado", 403)
 
             # Read current content before edit
-            old_content, err = read_file_content(resolved_file_path)
-            if err:
-                if "Arquivo nao encontrado" in err:
-                    old_content = ""
-                else:
+            old_content = ""
+            if os.path.exists(resolved_file_path):
+                old_content, err = read_file_content(resolved_file_path)
+                if err:
                     return error_response(self, f"Erro ao ler arquivo: {err}")
+            elif search_text:
+                # Target file does not exist, and search_text is not empty (so it's not a new file)
+                candidates = find_candidate_files(proj_path, file_path)
+                return json_response(self, {
+                    "ok": False,
+                    "error": f"Erro ao aplicar patch: Arquivo nao encontrado: {file_path}. Ele nao existe no projeto.",
+                    "details": {
+                        "file": resolved_file_path,
+                        "search": search_text,
+                        "replace": replace_text,
+                        "search_preview": search_text[:300],
+                        "suggestions": {
+                            "match": "file_not_found",
+                            "candidates": candidates,
+                            "can_force": False,
+                            "normalized_matches": [],
+                            "alternatives": []
+                        },
+                    }
+                }, 422)
             
             # Apply search and replace patch
-            new_content, err = apply_search_replace_patch(old_content, search_text, replace_text)
-            if err:
-                return error_response(self, f"Erro ao aplicar patch: {err}")
+            new_content, patch_err, patch_info = apply_search_replace_patch(old_content, search_text, replace_text, force=force)
+            if patch_err:
+                return json_response(self, {
+                    "ok": False,
+                    "error": f"Erro ao aplicar patch: {patch_err}",
+                    "details": {
+                        "file": resolved_file_path,
+                        "search": search_text,
+                        "replace": replace_text,
+                        "search_preview": search_text[:300],
+                        "suggestions": patch_info,
+                    }
+                }, 422)
                 
             # Snapshot old content
             s1, err = take_snapshot(proj_path, resolved_file_path, old_content, agent, f"Antes: {description}")
@@ -1525,6 +1727,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 "diff": diff,
                 "undo_snapshot_id": s1["id"],
                 "file": resolved_file_path,
+                "match_type": patch_info.get("match") if patch_info else "exact",
             })
 
         # ─── File undo ───
@@ -1645,14 +1848,15 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             if err:
                 return error_response(self, f"Erro ao ler arquivo: {err}")
 
-            if target_content not in old_content:
-                return error_response(self, "Conteudo original (target_content) nao encontrado no arquivo para correspondencia exata.")
+            new_content, patch_err, _ = apply_search_replace_patch(
+                old_content, target_content, replacement_content, force=False
+            )
+            if patch_err:
+                return error_response(self, f"Erro ao aplicar patch: {patch_err}")
 
             s1, err = take_snapshot(proj_path, file_path, old_content, agent, f"Antes: {description}")
             if err:
                 return error_response(self, f"Erro ao salvar snapshot anterior: {err}")
-
-            new_content = old_content.replace(target_content, replacement_content, 1)
 
             ok, err = write_file_content(file_path, new_content)
             if err:
@@ -1828,8 +2032,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
 
             provider, base_url, ptype = get_provider_config(provider if provider else None)
 
-            model_planning = model if model else resolve_model(provider, "model_for_planning", "phi4-mini:3.8b")
-            model_coding = model if model else resolve_model(provider, "model_for_coding", "qwen2.5-coder:7b")
+            model_planning = resolve_agent_model(provider, "planner", None)
+            model_coding = resolve_agent_model(provider, "coder", model)
 
             planner_prompt, err = get_agent_content("planner")
             if err or not planner_prompt:
@@ -1837,6 +2041,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                     "Você é o Planejador do Composer. Seu papel é analisar o pedido do usuário e o histórico de conversas "
                     "para propor um plano detalhado de alterações, identificando arquivos afetados e passos de implementação."
                 )
+            
+            planner_prompt += "\n\nSeja extremamente sucinto. Escreva o plano em pouquíssimas linhas (máximo 5 linhas). Não dê explicações detalhadas ou prolixas."
 
             planning_messages = [{"role": "system", "content": planner_prompt}]
             for m in messages:
@@ -1860,7 +2066,7 @@ class AIFlowHandler(BaseHTTPRequestHandler):
             coder_system_prompt = (
                 f"{coder_prompt}\n\n"
                 "INSTRUÇÕES CRÍTICAS DE FORMATAÇÃO DE CODE DIFFS:\n"
-                "Para cada arquivo que deseja alterar, você deve propor as mudanças EXATAMENTE usando tags XML estruturadas:\n"
+                "Para cada arquivo que deseja alterar, você deve propor as mudanças usando tags XML estruturadas:\n"
                 "<patch file=\"caminho/do/arquivo\">\n"
                 "<search>\n"
                 "[bloco de código original exato no arquivo, mantendo espaçamento e quebras de linha]\n"
@@ -1869,9 +2075,17 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                 "[bloco de código substituto com as alterações aplicadas]\n"
                 "</replace>\n"
                 "</patch>\n\n"
-                "Você pode especificar múltiplos blocos de patch para um ou mais arquivos. Todos os patches devem ser válidos. "
+                "REGRAS OBRIGATÓRIAS:\n"
+                "1. Leia o conteúdo atual do arquivo ANTES de gerar o patch. Use o contexto fornecido pelo usuário.\n"
+                "2. O bloco <search> deve conter EXATAMENTE o trecho existente no arquivo, incluindo indentação e espaçamento.\n"
+                "3. Prefira alterações PEQUENAS e focadas. Não reescreva o arquivo inteiro se a mudança for pequena.\n"
+                "4. Altere SOMENTE os arquivos necessários. Se a mudança está em um só arquivo, não edite dois.\n"
+                "5. Não invente arquivos nem caminhos. Use o caminho relativo à raiz do projeto.\n"
+                "6. Múltiplos patches por arquivo são permitidos (um patch por bloco de alteração).\n"
                 "Explique brevemente as alterações feitas antes ou após os blocos XML."
             )
+
+            coder_system_prompt += "\n\nSeja extremamente sucinto na explicação. Limite as mensagens explicativas ao mínimo absoluto. Mostre os blocos <patch> XML e no máximo uma frase curta."
 
             coder_messages = [{"role": "system", "content": coder_system_prompt}]
             for m in messages:
@@ -1924,25 +2138,6 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                     })
                     continue
 
-                old_content, err = read_file_content(file_path)
-                if err:
-                    results.append({
-                        "index": idx,
-                        "file": file_path,
-                        "ok": False,
-                        "error": f"Erro ao ler arquivo: {err}"
-                    })
-                    continue
-
-                if search_content not in old_content:
-                    results.append({
-                        "index": idx,
-                        "file": file_path,
-                        "ok": False,
-                        "error": "Conteudo de busca nao encontrado no arquivo para correspondencia exata"
-                    })
-                    continue
-
                 proj_path = find_project_path(file_path)
                 if not is_safe_file_path(proj_path, file_path):
                     results.append({
@@ -1950,6 +2145,58 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                         "file": file_path,
                         "ok": False,
                         "error": "Acesso negado: arquivo nao pertence a um projeto registrado"
+                    })
+                    continue
+
+                old_content = ""
+                if os.path.exists(file_path):
+                    old_content, err = read_file_content(file_path)
+                    if err:
+                        results.append({
+                            "index": idx,
+                            "file": file_path,
+                            "ok": False,
+                            "error": f"Erro ao ler arquivo: {err}"
+                        })
+                        continue
+                elif search_content:
+                    candidates = find_candidate_files(proj_path, file_path)
+                    results.append({
+                        "index": idx,
+                        "file": file_path,
+                        "ok": False,
+                        "error": f"Erro ao aplicar patch: Arquivo nao encontrado: {file_path}. Ele nao existe no projeto.",
+                        "details": {
+                            "search": search_content,
+                            "replace": replace_content,
+                            "search_preview": search_content[:300],
+                            "suggestions": {
+                                "match": "file_not_found",
+                                "candidates": candidates,
+                                "can_force": False,
+                                "normalized_matches": [],
+                                "alternatives": []
+                            }
+                        }
+                    })
+                    continue
+
+                # Use the enhanced apply function
+                new_content, patch_err, patch_info = apply_search_replace_patch(
+                    old_content, search_content, replace_content, force=False
+                )
+                if patch_err:
+                    results.append({
+                        "index": idx,
+                        "file": file_path,
+                        "ok": False,
+                        "error": patch_err,
+                        "details": {
+                            "search": search_content,
+                            "replace": replace_content,
+                            "search_preview": search_content[:300],
+                            "suggestions": patch_info,
+                        }
                     })
                     continue
 
@@ -1964,8 +2211,6 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                         "error": f"Erro ao salvar snapshot anterior: {err}"
                     })
                     continue
-
-                new_content = old_content.replace(search_content, replace_content, 1)
 
                 ok, err = write_file_content(file_path, new_content)
                 if err:
@@ -1984,7 +2229,8 @@ class AIFlowHandler(BaseHTTPRequestHandler):
                     "file": file_path,
                     "ok": True,
                     "snapshot_id": s2["id"] if s2 else None,
-                    "undo_snapshot_id": s1["id"] if s1 else None
+                    "undo_snapshot_id": s1["id"] if s1 else None,
+                    "match_type": patch_info.get("match") if patch_info else "exact",
                 })
 
             for p_path in proj_paths_to_qg:
@@ -2019,7 +2265,7 @@ def open_browser():
 
 def main():
     port = int(os.environ.get("AI_FLOW_PORT", SERVER_PORT))
-    server = HTTPServer(("0.0.0.0", port), AIFlowHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), AIFlowHandler)
 
     print("+===============================================+")
     print("|        AI-Flow Server                         |")

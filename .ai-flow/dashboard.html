@@ -2446,14 +2446,14 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 "path": "C:\\Users\\joaoh\\OneDrive\\Área de Trabalho\\Teste",
                 "branch": "master",
                 "commit": {
-                        "hash": "69b1224",
+                        "hash": "78dac84",
                         "author": "João Henrique",
-                        "date": "29 minutes ago",
-                        "message": "Add UI modals and server path validation"
+                        "date": "2 hours ago",
+                        "message": "a"
                 },
                 "has_changes": true,
-                "changes_count": 6,
-                "file_count": 211,
+                "changes_count": 8,
+                "file_count": 226,
                 "last_modified": "2026-05-25",
                 "has_aiflow": true,
                 "has_context_map": true,
@@ -2462,33 +2462,33 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 "has_manual_checklist": true,
                 "recent_artifacts": [
                         {
-                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/final-summary.md",
-                                "name": "final-summary.md",
+                                "path": ".ai-flow/reports/quality-gate.html",
+                                "name": "quality-gate.html",
+                                "kind": "html"
+                        },
+                        {
+                                "path": ".ai-flow/reports/project-context.html",
+                                "name": "project-context.html",
+                                "kind": "html"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-224552/patches-applied.json",
+                                "name": "patches-applied.json",
+                                "kind": "json"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-224552/coder-output.md",
+                                "name": "coder-output.md",
                                 "kind": "md"
                         },
                         {
-                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/tests.md",
-                                "name": "tests.md",
-                                "kind": "md"
-                        },
-                        {
-                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/checks-summary.md",
-                                "name": "checks-summary.md",
-                                "kind": "md"
-                        },
-                        {
-                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/review.md",
-                                "name": "review.md",
-                                "kind": "md"
-                        },
-                        {
-                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/plan.md",
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-224552/plan.md",
                                 "name": "plan.md",
                                 "kind": "md"
                         },
                         {
-                                "path": ".ai-flow/reports/visual-improvement-summary.md",
-                                "name": "visual-improvement-summary.md",
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-224552/context.md",
+                                "name": "context.md",
                                 "kind": "md"
                         }
                 ]
@@ -3930,6 +3930,9 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             } else if (type === 'warning') {
                 iconName = 'alert-triangle';
                 iconCls = 'toast-icon warning';
+            } else if (type === 'info') {
+                iconName = 'info';
+                iconCls = 'toast-icon success';
             }
 
             icon.innerHTML = `<i data-lucide="${iconName}" class="${iconCls}" style="width:14px; height:14px;"></i>`;
@@ -5281,7 +5284,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             const agent = document.getElementById('aiAgent').value;
             const temp = parseFloat(document.getElementById('aiTemp').value);
 
-            const model = syncAutoModelSelection(agent) || document.getElementById('aiModel').value || '';
+            const model = document.getElementById('aiModel').value || '';
 
             appendMessage('user', message, 'Você');
             inputEl.value = '';
@@ -5565,6 +5568,9 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             const container = document.getElementById('composerChatContainer');
             const cardId = 'patch_' + Math.random().toString(36).substr(2, 9);
             
+            window.activePatchesMap = window.activePatchesMap || {};
+            window.activePatchesMap[cardId] = patch;
+            
             const card = document.createElement('div');
             card.className = 'patch-proposed-card';
             card.id = cardId;
@@ -5636,9 +5642,19 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             lucide.createIcons();
         }
 
-        async function acceptProposedPatch(cardId, patch) {
+        async function acceptProposedPatch(cardId, patch, forceApply) {
             const badge = document.getElementById(`${cardId}_badge`);
             const actions = document.getElementById(`${cardId}_actions`);
+            const errorContainer = document.getElementById(`${cardId}_error`);
+            if (errorContainer) errorContainer.style.display = 'none';
+            
+            if (!patch) {
+                patch = window.activePatchesMap ? window.activePatchesMap[cardId] : null;
+            }
+            if (!patch) {
+                showToast('Erro: dados do patch não encontrados.', 'error');
+                return;
+            }
             
             badge.textContent = 'APLICANDO...';
             badge.className = 'git-badge M';
@@ -5650,7 +5666,8 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     search: patch.search,
                     replace: patch.replace,
                     description: `Composer: ${patch.file}`,
-                    agent: 'composer'
+                    agent: 'composer',
+                    force: forceApply === true
                 };
                 
                 const res = await fetch(`${serverUrl}/api/file/patch`, {
@@ -5677,7 +5694,98 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     badge.textContent = 'FALHA';
                     badge.className = 'git-badge D';
                     showToast(r.error || 'Erro ao aplicar alteração.', 'error');
-                    actions.innerHTML = `<span style="font-size:10px; color:var(--color-error);">${escapeHtml(r.error || 'Erro')}</span>`;
+                    
+                    // Build detailed error UI
+                    const details = r.details || {};
+                    let errorHtml = `<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">`;
+                    errorHtml += `<div style="font-size: 10.5px; color: var(--color-error); padding: 6px 8px; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); border-radius: 6px; display: flex; align-items: flex-start; gap: 6px;">
+                        <i data-lucide="alert-triangle" style="width: 13px; flex-shrink: 0; margin-top: 1px;"></i>
+                        <span>${escapeHtml(r.error || 'Erro ao aplicar alteração')}</span>
+                    </div>`;
+                    
+                    // Show search text that was not found
+                    if (details.search) {
+                        const searchPreview = details.search.length > 400
+                            ? details.search.substring(0, 400) + '...'
+                            : details.search;
+                        errorHtml += `<div style="font-size: 10px; color: var(--text-muted); padding: 6px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: var(--color-warning);">Texto procurado (não encontrado):</div>
+                            <pre style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; color: var(--text-main);">${escapeHtml(searchPreview)}</pre>
+                        </div>`;
+                    }
+                    
+                    // Show suggestions from backend
+                    const suggestions = details.suggestions || {};
+                    
+                    // Show candidates if file was not found
+                    if (suggestions.candidates && suggestions.candidates.length > 0) {
+                        errorHtml += `<div style="font-size: 10px; padding: 6px 8px; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15); border-radius: 6px; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-weight: 600; color: #60a5fa; margin-bottom: 2px;">Arquivos semelhantes no projeto:</div>`;
+                        suggestions.candidates.forEach(cand => {
+                            errorHtml += `<div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 2px 0;">
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;" title="${escapeHtml(cand)}">${escapeHtml(cand)}</span>
+                                <button onclick="useCandidateFile('${cardId}', '${cand.replace(/'/g, "\\'")}')" class="btn-action" style="font-size: 9px; height: 18px; padding: 0 6px; border-color: rgba(59,130,246,0.4); color: #60a5fa;">
+                                    Usar este
+                                </button>
+                            </div>`;
+                        });
+                        errorHtml += `</div>`;
+                    }
+                    
+                    if (suggestions.normalized_matches && suggestions.normalized_matches.length > 0) {
+                        errorHtml += `<div style="font-size: 10px; color: var(--text-muted); padding: 6px 8px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: 6px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: var(--color-warning);">Sugestões de normalização:</div>`;
+                        suggestions.normalized_matches.forEach(m => {
+                            errorHtml += `<div style="display: flex; align-items: center; gap: 4px; padding: 2px 0;">
+                                <i data-lucide="info" style="width: 10px; color: var(--color-warning);"></i>
+                                <span>${escapeHtml(m.message)} (linha ${m.line_start})</span>
+                            </div>`;
+                        });
+                        errorHtml += `</div>`;
+                    }
+                    
+                    if (suggestions.alternatives && suggestions.alternatives.length > 0) {
+                        errorHtml += `<div style="font-size: 10px; padding: 6px 8px; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15); border-radius: 6px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: #60a5fa;">Blocos parecidos encontrados no arquivo:</div>`;
+                        suggestions.alternatives.forEach(alt => {
+                            errorHtml += `<div style="margin-bottom: 6px; padding: 4px 6px; background: rgba(0,0,0,0.15); border-radius: 4px;">
+                                <div style="color: var(--text-muted); font-size: 9px; margin-bottom: 2px;">Linhas ${alt.line_start}-${alt.line_end} — ${Math.round(alt.similarity * 100)}% similar</div>
+                                <pre style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; max-height: 100px; overflow-y: auto; color: var(--text-main);">${escapeHtml(alt.content || '')}</pre>
+                            </div>`;
+                        });
+                        errorHtml += `</div>`;
+                    }
+                    
+                    // Action buttons
+                    errorHtml += `<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">`;
+                    
+                    // Regenerate with context button
+                    errorHtml += `<button onclick="regeneratePatchWithContext('${cardId}')" class="btn-action" style="font-size: 10px; flex: 1; justify-content: center;">
+                        <i data-lucide="refresh-cw" style="width: 11px;"></i> Regenerar com contexto atual
+                    </button>`;
+                    
+                    // Force apply button if available
+                    if (suggestions.can_force) {
+                        errorHtml += `<button onclick="acceptProposedPatch('${cardId}', null, true)" class="btn-action" style="font-size: 10px; flex: 1; justify-content: center; border-color: rgba(245,158,11,0.3); color: var(--color-warning);">
+                            <i data-lucide="zap" style="width: 11px;"></i> Aplicar mesmo assim (normalizado)
+                        </button>`;
+                    }
+                    
+                    errorHtml += `</div>`;
+                    errorHtml += `</div>`;
+                    
+                    // Remove existing error container if present, then append
+                    const existingError = document.getElementById(`${cardId}_error`);
+                    if (existingError) existingError.remove();
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.id = `${cardId}_error`;
+                    errorDiv.innerHTML = errorHtml;
+                    
+                    const card = document.getElementById(cardId);
+                    if (card) card.appendChild(errorDiv);
+                    
+                    lucide.createIcons();
                 }
             } catch(e) {
                 badge.textContent = 'ERRO';
@@ -5686,6 +5794,84 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             }
             
             lucide.createIcons();
+        }
+
+        function useCandidateFile(cardId, candidateFile) {
+            const patch = window.activePatchesMap ? window.activePatchesMap[cardId] : null;
+            if (!patch) {
+                showToast('Erro: dados do patch não encontrados.', 'error');
+                return;
+            }
+            
+            // Update the file in patch data structure
+            patch.file = candidateFile;
+            
+            // Update UI card title
+            const card = document.getElementById(cardId);
+            if (card) {
+                // The title span is inside a div inside the header
+                const titleSpan = card.querySelector('div div span');
+                if (titleSpan) {
+                    titleSpan.textContent = candidateFile;
+                }
+            }
+            
+            showToast(`Direcionando patch para: ${candidateFile}`, 'info');
+            
+            // Retry applying with the new file
+            acceptProposedPatch(cardId, patch);
+        }
+
+        async function regeneratePatchWithContext(cardId) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            
+            // Find the patch data from the card
+            const header = card.querySelector('div');
+            const titleSpan = header ? header.querySelector('span') : null;
+            const filePath = titleSpan ? titleSpan.textContent : '';
+            
+            if (!filePath) {
+                showToast('Não foi possível identificar o arquivo do patch.', 'error');
+                return;
+            }
+            
+            // Read current file content
+            try {
+                const res = await fetch(`${serverUrl}/api/file?path=${encodeURIComponent(activeProject.path)}&file=${encodeURIComponent(filePath)}`);
+                const r = await res.json();
+                if (!r.ok || !r.data) {
+                    showToast('Erro ao ler conteúdo atual do arquivo.', 'error');
+                    return;
+                }
+                const currentContent = r.data.content || '';
+                
+                // Update the chat input with regenerated context
+                const inputEl = document.getElementById('composerInput');
+                const normalizedFilePath = filePath.replace(/\\/g, '/');
+                const normalizedProjPath = activeProject.path.replace(/\\/g, '/');
+                let relPath = normalizedFilePath;
+                if (normalizedFilePath.toLowerCase().startsWith(normalizedProjPath.toLowerCase())) {
+                    relPath = normalizedFilePath.substring(normalizedProjPath.length);
+                }
+                relPath = relPath.replace(/^\//, '');
+                inputEl.value = `O patch anterior para ${relPath} falhou porque o trecho não foi encontrado. ` +
+                    `Aqui está o conteúdo ATUAL do arquivo:\n\`\`\`\n${currentContent.substring(0, 3000)}\n\`\`\`\n` +
+                    `Gere um novo patch para este arquivo com o trecho <search> exato do conteúdo acima.`;
+                inputEl.style.height = 'auto';
+                inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px';
+                
+                // Attach the file
+                composerAttachedFilesList.add(filePath);
+                renderAttachedFilesChips();
+                
+                // Automatically send
+                sendComposerMessage();
+                
+                showToast('Reenviando com contexto atualizado...', 'info');
+            } catch (e) {
+                showToast('Erro de rede ao ler arquivo.', 'error');
+            }
         }
 
         function rejectProposedPatch(cardId) {
