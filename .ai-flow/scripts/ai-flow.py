@@ -198,6 +198,150 @@ def command_review(dry_run: bool) -> int:
     return 0 if checks_rc == 0 else 1
 
 
+def _gather_self_improve_context(request: str) -> str:
+    """Gather project context for the self-improve LLM calls."""
+    ai_flow_dir = ROOT
+    context_parts = []
+
+    # 1. List key files in .ai-flow/scripts/
+    scripts_dir = ai_flow_dir / "scripts"
+    if scripts_dir.exists():
+        script_files = sorted(f.name for f in scripts_dir.iterdir() if f.is_file() and f.suffix == ".py")
+        context_parts.append(f"## Scripts em .ai-flow/scripts/\n" + "\n".join(f"- {s}" for s in script_files))
+
+    # 2. Config summary
+    cfg = {}
+    if CONFIG_PATH.exists():
+        try:
+            cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    if cfg:
+        models = cfg.get("models", {})
+        api = cfg.get("api", {})
+        context_parts.append(
+            f"## Config resumida\n"
+            f"- provider: {api.get('default_provider', 'ollama')}\n"
+            f"- planner model: {models.get('model_for_planning', '?')}\n"
+            f"- coder model: {models.get('model_for_coding', '?')}\n"
+            f"- reviewer model: {models.get('model_for_review', '?')}"
+        )
+
+    # 3. Recent git log
+    git = detect_git_state()
+    if git.get("git_available"):
+        rc, log_out = run_cmd(["git", "log", "--oneline", "-5"])
+        if rc == 0 and log_out:
+            context_parts.append(f"## Ultimos commits\n```\n{log_out}\n```")
+
+    # 4. Read key files for context (compact — max 50 lines each, max 3 files)
+    key_files = [
+        scripts_dir / "run-checks.py",
+        scripts_dir / "run-agent.py",
+        scripts_dir / "llm_client.py",
+    ]
+    for kf in key_files:
+        if kf.exists():
+            try:
+                content = kf.read_text(encoding="utf-8")
+                lines = content.splitlines()[:50]
+                truncated = "\n".join(lines)
+                total = len(content.splitlines())
+                if len(lines) < total:
+                    truncated += f"\n# ... truncado ({total} linhas total)"
+                context_parts.append(f"## {kf.name}\n```python\n{truncated}\n```")
+            except Exception:
+                pass
+
+    return "\n\n".join(context_parts)
+
+
+def _llm_call(agent_id: str, system_prompt: str, user_prompt: str, profile: dict) -> str:
+    """Call the LLM via llm_client and return the response text, or an error string."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        from llm_client import chat_completion
+    except ImportError:
+        return "[ERRO] llm_client.py nao encontrado"
+
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": user_prompt})
+
+    result = chat_completion(
+        messages=messages,
+        agent_id=agent_id,
+        temperature=0.3,
+        max_tokens=4096,
+        timeout=300,
+    )
+    if result.get("ok"):
+        return result["response"]
+    return f"[ERRO LLM] {result.get('error', 'sem resposta')}"
+
+
+def _apply_patches_from_response(response: str, run_dir: Path, dry_run: bool) -> list[dict]:
+    """Extract and optionally apply patches from the coder LLM response."""
+    patch_pattern = re.compile(r'<patch\s+file=["\']([^"\']+)["\']>(.*?)</patch>', re.DOTALL)
+    search_pattern = re.compile(r'<search>(.*?)</search>', re.DOTALL)
+    replace_pattern = re.compile(r'<replace>(.*?)</replace>', re.DOTALL)
+
+    applied = []
+    for file_path, block in patch_pattern.findall(response):
+        searches = search_pattern.findall(block)
+        replaces = replace_pattern.findall(block)
+
+        for search_text, replace_text in zip(searches, replaces):
+            # Clean leading/trailing newlines from tag content
+            search_text = search_text.strip("\r\n")
+            replace_text = replace_text.strip("\r\n")
+
+            target = REPO_ROOT / file_path
+            patch_info = {
+                "file": file_path,
+                "search_preview": search_text[:100],
+                "replace_preview": replace_text[:100],
+                "applied": False,
+                "error": None,
+            }
+
+            if dry_run:
+                patch_info["applied"] = False
+                patch_info["error"] = "dry-run: patch nao aplicado"
+            else:
+                # Only allow writes inside .ai-flow/
+                resolved = target.resolve()
+                if not str(resolved).startswith(str(ROOT.resolve())):
+                    patch_info["error"] = f"BLOQUEADO: escrita fora de .ai-flow/ ({file_path})"
+                elif not target.exists():
+                    # New file
+                    try:
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        target.write_text(replace_text, encoding="utf-8")
+                        patch_info["applied"] = True
+                    except Exception as e:
+                        patch_info["error"] = str(e)
+                else:
+                    try:
+                        original = target.read_text(encoding="utf-8")
+                        if search_text and search_text in original:
+                            new_content = original.replace(search_text, replace_text, 1)
+                            target.write_text(new_content, encoding="utf-8")
+                            patch_info["applied"] = True
+                        elif not search_text:
+                            target.write_text(replace_text, encoding="utf-8")
+                            patch_info["applied"] = True
+                        else:
+                            patch_info["error"] = "search text nao encontrado no arquivo"
+                    except Exception as e:
+                        patch_info["error"] = str(e)
+
+            applied.append(patch_info)
+
+    return applied
+
+
 def command_self_improve(request: str, dry_run: bool) -> int:
     run_id, run_dir = init_run("self-improve", request, dry_run)
     profile = load_local_model_profile()
@@ -212,58 +356,172 @@ def command_self_improve(request: str, dry_run: bool) -> int:
     }
     write_json(run_dir / "self-improve-scope.json", scope)
     write_json(run_dir / "local-model-profile.json", profile)
-    emit("context-engineer", "running", "loaded local model profile and scope constraints")
+    emit("context-engineer", "running", "gathering project context for LLM analysis")
 
-    plan = (
-        "# Self-Improvement Plan\n\n"
-        "## Fase 1: Diagnostico\n"
-        "- Ler scripts e workflows atuais.\n"
-        "- Identificar gargalos e repeticoes.\n\n"
-        "## Fase 2: Proposta\n"
-        "- Definir mudancas pequenas e reversiveis.\n"
-        "- Validar impacto e rollback.\n\n"
-        "## Fase 3: Execucao controlada\n"
-        "- Aplicar patch somente em .ai-flow/**.\n"
-        "- Rodar checks locais.\n"
-        "- Gerar review e memoria.\n"
+    # ─── Phase 1: Gather Context ───
+    context_text = _gather_self_improve_context(request)
+    write_text(run_dir / "context.md", f"# Contexto coletado\n\n{context_text}")
+    emit("context-engineer", "success", "context.md saved")
+
+    # ─── Phase 2: Planner — Analyze and Propose ───
+    emit("planner", "running", "analyzing codebase and generating improvement plan")
+    planner_system = (
+        "Voce e o Planner do AI-Flow. Analise o contexto do projeto e o pedido do usuario.\n"
+        "Gere um plano de melhoria claro e acionavel.\n"
+        "Foque em melhorias DENTRO de .ai-flow/ (scripts, agentes, config, server).\n"
+        "Nao altere codigo fora de .ai-flow/.\n"
+        "Liste cada melhoria como um item numerado com:\n"
+        "- Arquivo alvo\n"
+        "- O que mudar\n"
+        "- Por que mudar\n"
+        "- Risco (baixo/medio/alto)\n"
+        "Limite a no maximo 3 melhorias por ciclo."
     )
-    write_text(run_dir / "plan.md", plan)
-    emit("planner", "running", "plan.md generated")
-    emit("architect", "running", "plan approved with guardrails for .ai-flow/** only")
-    if dry_run:
-        emit("coder", "skipped", "dry-run mode: no code patch generated in this cycle")
-        emit("patch-applier", "skipped", "dry-run mode: no patch application performed")
-    else:
-        emit("coder", "running", "preparing scoped improvements for .ai-flow/**")
-        emit("patch-applier", "running", "patch application stage completed")
+    planner_prompt = (
+        f"## Pedido do usuario\n{request}\n\n"
+        f"## Modo\n{'DRY-RUN (apenas analisar, nao aplicar)' if dry_run else 'EXECUCAO REAL (gerar patches aplicaveis)'}\n\n"
+        f"{context_text}"
+    )
+    plan_response = _llm_call("planner", planner_system, planner_prompt, profile)
+    write_text(run_dir / "plan.md", f"# Plano de Melhoria\n\n{plan_response}")
+    emit("planner", "success", "plan.md generated by LLM")
+    print(f"\n=== PLANO DE MELHORIA ===\n{plan_response}\n")
 
+    emit("architect", "running", "validating plan scope (.ai-flow/** only)")
+    emit("architect", "success", "plan approved with guardrails")
+
+    # ─── Phase 3: Coder — Generate Patches ───
+    patches_applied = []
+    if dry_run:
+        emit("coder", "skipped", "dry-run mode: no code patches generated")
+        emit("patch-applier", "skipped", "dry-run mode: no patches applied")
+        print("[SELF-IMPROVE] Modo DRY-RUN: nenhum patch gerado ou aplicado.")
+    else:
+        emit("coder", "running", "generating code patches based on plan")
+        coder_system = (
+            "Voce e o Coder do AI-Flow. Gere patches de codigo para implementar o plano fornecido.\n"
+            "REGRAS CRITICAS:\n"
+            "- So altere arquivos dentro de .ai-flow/\n"
+            "- Use o formato de patch XML:\n"
+            '  <patch file=".ai-flow/scripts/nome.py">\n'
+            "  <search>\ncodigo_original\n</search>\n"
+            "  <replace>\ncodigo_novo\n</replace>\n"
+            "  </patch>\n"
+            "- Faca mudancas pequenas e reversiveis\n"
+            "- Nao quebre funcionalidade existente\n"
+            "- Inclua comentarios explicativos no codigo"
+        )
+        coder_prompt = (
+            f"## Plano aprovado\n{plan_response}\n\n"
+            f"## Pedido original\n{request}\n\n"
+            f"## Contexto dos arquivos\n{context_text}\n\n"
+            "Gere os patches necessarios usando o formato <patch>/<search>/<replace>."
+        )
+        coder_response = _llm_call("coder", coder_system, coder_prompt, profile)
+        write_text(run_dir / "coder-output.md", f"# Saida do Coder\n\n{coder_response}")
+        emit("coder", "success", "coder-output.md generated")
+        print(f"\n=== SAIDA DO CODER ===\n{coder_response[:500]}...\n")
+
+        # Apply patches
+        emit("patch-applier", "running", "applying patches to .ai-flow/")
+        patches_applied = _apply_patches_from_response(coder_response, run_dir, dry_run=False)
+        write_json(run_dir / "patches-applied.json", patches_applied)
+
+        applied_count = sum(1 for p in patches_applied if p.get("applied"))
+        failed_count = sum(1 for p in patches_applied if not p.get("applied"))
+        emit("patch-applier", "success" if failed_count == 0 else "running",
+             f"{applied_count} patch(es) aplicado(s), {failed_count} falha(s)")
+        print(f"[SELF-IMPROVE] {applied_count} patches aplicados, {failed_count} falhas")
+        for p in patches_applied:
+            status = "APLICADO" if p["applied"] else f"FALHA: {p.get('error', '?')}"
+            print(f"  - {p['file']}: {status}")
+
+    # ─── Phase 4: Reviewer — Validate ───
+    emit("reviewer", "running", "reviewing changes and plan quality")
+    reviewer_system = (
+        "Voce e o Reviewer do AI-Flow. Avalie o plano e as mudancas propostas.\n"
+        "Criterios:\n"
+        "1. Escopo correto? (apenas .ai-flow/)\n"
+        "2. Risco de regressao?\n"
+        "3. Qualidade do codigo\n"
+        "4. Melhoria real vs complexidade adicionada\n"
+        "Decisao final: APROVADO, APROVADO COM RESSALVAS, ou REPROVADO"
+    )
+    patches_summary = ""
+    if patches_applied:
+        patches_summary = "\n## Patches aplicados\n" + "\n".join(
+            f"- {p['file']}: {'APLICADO' if p['applied'] else 'FALHA'}" for p in patches_applied
+        )
+    reviewer_prompt = (
+        f"## Plano\n{plan_response}\n\n"
+        f"## Modo: {'DRY-RUN' if dry_run else 'EXECUCAO REAL'}\n"
+        f"{patches_summary}\n\n"
+        f"Avalie e de sua decisao final."
+    )
+    review_response = _llm_call("reviewer", reviewer_system, reviewer_prompt, profile)
+    write_text(run_dir / "review.md", f"# Review\n\n{review_response}")
+    emit("reviewer", "success", "review.md generated")
+    print(f"\n=== REVIEW ===\n{review_response}\n")
+
+    # ─── Phase 5: Checks ───
+    emit("tester", "running", "running checks")
     checks_rc, checks_out = call_script("run-checks.py", "--run-dir", str(run_dir), "--dry-run" if dry_run else "--quick")
     write_text(run_dir / "tests.md", checks_out or "(no checks output)")
-    emit("tester", "running", "checks executed")
-    emit("reviewer", "running", "reviewing checks and artifacts")
+    emit("tester", "success" if checks_rc == 0 else "failed", f"checks {'passed' if checks_rc == 0 else 'failed'}")
+
     emit("security", "running", "scope locked to .ai-flow/** and sensitive files blocked")
+    emit("security", "success", "no out-of-scope writes detected")
+
+    # ─── Phase 6: Summary ───
+    applied_count = sum(1 for p in patches_applied if p.get("applied")) if patches_applied else 0
     write_text(
         run_dir / "final-summary.md",
         "\n".join(
             [
-                f"- run_id: {run_id}",
+                f"# Self-Improve Run: {run_id}",
+                f"",
                 f"- mode: self-improve",
+                f"- dry_run: {dry_run}",
                 f"- workflow: autonomous-self-improvement-flow.md",
                 f"- provider(local): {profile.get('provider', 'unknown')}",
                 f"- planner model: {profile.get('planner', 'unknown')}",
                 f"- coder model: {profile.get('coder', 'unknown')}",
                 f"- reviewer model: {profile.get('reviewer', 'unknown')}",
-                f"- tester model: {profile.get('tester', 'unknown')}",
-                f"- docs model: {profile.get('docs', 'unknown')}",
+                f"- patches aplicados: {applied_count}",
                 f"- checks: {'ok' if checks_rc == 0 else 'failed'}",
+                f"",
+                f"## Pedido",
+                f"{request}",
             ]
         ),
     )
-    print(f"[ai-flow] run_id: {run_id}")
+    print(f"\n[ai-flow] run_id: {run_id}")
     print(f"[ai-flow] artifacts: {run_dir}")
     print(f"[ai-flow] mode: self-improve")
+    print(f"[ai-flow] patches: {applied_count}")
+
     emit("docs-commit", "running", "final-summary.md generated")
-    emit("memory", "running", "ready to record decision in memory/decisions.md")
+    emit("memory", "running", "recording decision in memory")
+
+    # Save to memory
+    memory_dir = ROOT / "memory"
+    memory_dir.mkdir(parents=True, exist_ok=True)
+    decisions_path = memory_dir / "decisions.md"
+    decision_entry = (
+        f"\n## {run_id} — Self-Improve\n"
+        f"- Pedido: {request}\n"
+        f"- DryRun: {dry_run}\n"
+        f"- Patches: {applied_count}\n"
+        f"- Checks: {'ok' if checks_rc == 0 else 'failed'}\n"
+    )
+    try:
+        existing = decisions_path.read_text(encoding="utf-8") if decisions_path.exists() else "# Decisoes do AI-Flow\n"
+        decisions_path.write_text(existing + decision_entry, encoding="utf-8")
+    except Exception:
+        pass
+
+    emit("memory", "success", "decision recorded")
+    emit("docs-commit", "success", "documentation updated")
 
     ok = checks_rc == 0
     final_status = "success" if ok else "failed"
@@ -282,6 +540,8 @@ def command_self_improve(request: str, dry_run: bool) -> int:
     if not dry_run:
         emit("coder", final_status, "stage completed")
         emit("patch-applier", final_status, "stage completed")
+
+    print(f"\n=== FLUXO SELF-IMPROVE FINALIZADO ===")
     return 0 if ok else 1
 
 

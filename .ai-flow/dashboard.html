@@ -78,7 +78,7 @@ body {
     font-size: 10px;
     background: linear-gradient(135deg, var(--color-primary), #6366f1);
     color: #fff;
-    box-shadow: 0 0 10px var(--color-primary-glow);
+    box-shadow: none;
 }
 .header h1 {
     font-size: 12.5px;
@@ -144,11 +144,11 @@ body {
     background: linear-gradient(135deg, var(--color-primary), #6366f1);
     border: none;
     color: #fff;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2);
 }
 .btn-primary:hover:not(:disabled) {
     background: linear-gradient(135deg, #b566ff, #787aff);
-    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
     color: #fff;
 }
 .btn-action:disabled {
@@ -177,6 +177,26 @@ body {
 }
 .icon-btn:active {
     transform: scale(0.95);
+}
+.header-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-main);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+.header-menu-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-bright);
 }
 
 .header-right {
@@ -768,7 +788,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     width: 90%;
-    max-width: 440px;
+    max-width: 480px;
     overflow: hidden;
     box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     transform: scale(0.96);
@@ -911,7 +931,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
     z-index: 10;
     user-select: none;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -956,8 +976,8 @@ body {
 }
 
 @keyframes nodePulse {
-    from { box-shadow: 0 0 15px rgba(168, 85, 247, 0.25), 0 10px 30px rgba(0,0,0,0.55); }
-    to { box-shadow: 0 0 28px rgba(168, 85, 247, 0.45), 0 10px 30px rgba(0,0,0,0.55); }
+    from { box-shadow: 0 0 8px rgba(168, 85, 247, 0.15), 0 4px 16px rgba(0,0,0,0.4); }
+    to { box-shadow: 0 0 16px rgba(168, 85, 247, 0.25), 0 4px 16px rgba(0,0,0,0.4); }
 }
 
 /* Ports styling (glowing pins) */
@@ -971,7 +991,7 @@ body {
     border-radius: 50%;
     background: #040406 !important;
     border: 2px solid currentColor !important;
-    box-shadow: 0 0 10px currentColor;
+    box-shadow: 0 0 4px currentColor;
     cursor: pointer;
     z-index: 20;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -979,7 +999,7 @@ body {
 .node-port-input:hover {
     background: currentColor !important;
     transform: translateY(-50%) scale(1.35) !important;
-    box-shadow: 0 0 15px currentColor;
+    box-shadow: 0 0 6px currentColor;
 }
 
 .node-port-output {
@@ -992,7 +1012,7 @@ body {
     border-radius: 50%;
     background: #040406 !important;
     border: 2px solid currentColor !important;
-    box-shadow: 0 0 10px currentColor;
+    box-shadow: 0 0 4px currentColor;
     cursor: pointer;
     z-index: 20;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -1000,7 +1020,7 @@ body {
 .node-port-output:hover {
     background: currentColor !important;
     transform: translateY(-50%) scale(1.35) !important;
-    box-shadow: 0 0 15px currentColor;
+    box-shadow: 0 0 6px currentColor;
 }
 
 /* Flow Dash connection path animation */
@@ -1093,7 +1113,7 @@ body {
     backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 16px !important;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
     transition: all 0.3s ease;
 }
 
@@ -1113,7 +1133,7 @@ body {
     backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 16px !important;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
     transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1685,23 +1705,30 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
         </div>
 
         <div class="header-right">
-            <button class="btn-action" onclick="checkModels()" title="Verificar conexao com LM Studio/Ollama">
-                <i data-lucide="cpu" style="width: 11px;"></i> Modelos
-            </button>
-            <button class="btn-action" onclick="openRunAgentDialog()" title="Executar agente via LLM local">
+            <button class="btn-action btn-primary" onclick="openRunAgentDialog()" title="Executar agente via LLM local">
                 <i data-lucide="bot" style="width: 11px;"></i> Executar Agente
             </button>
-            <button class="btn-action" onclick="runScript('quality-gate')">
-                <i data-lucide="shield" style="width: 11px;"></i> Quality Gate
-            </button>
-            <button class="btn-action" onclick="runScript('context-map')">
-                <i data-lucide="map" style="width: 11px;"></i> Mapa
-            </button>
-            <button class="btn-action" onclick="openSelfImproveDialog()" title="Auto aprimorar AI-Flow">
-                <i data-lucide="sparkles" style="width: 11px;"></i> Self-Improve
-            </button>
-            <button class="btn-action" onclick="openModal('configModal')" title="Configurações">
-                <i data-lucide="settings" style="width: 11px;"></i>
+            <div class="header-dropdown" id="headerMoreMenu" style="position: relative;">
+                <button class="btn-action" onclick="toggleHeaderMenu()" title="Mais ações">
+                    <i data-lucide="more-horizontal" style="width: 13px;"></i>
+                </button>
+                <div class="header-dropdown-menu" id="headerDropdownMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: rgba(10,10,16,0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px; min-width: 180px; z-index: 200; box-shadow: 0 12px 40px rgba(0,0,0,0.6);">
+                    <button class="header-menu-item" onclick="checkModels(); toggleHeaderMenu();">
+                        <i data-lucide="cpu" style="width: 12px;"></i> Provedores e Modelos
+                    </button>
+                    <button class="header-menu-item" onclick="runScript('quality-gate'); toggleHeaderMenu();">
+                        <i data-lucide="shield" style="width: 12px;"></i> Quality Gate
+                    </button>
+                    <button class="header-menu-item" onclick="runScript('context-map'); toggleHeaderMenu();">
+                        <i data-lucide="map" style="width: 12px;"></i> Context Map
+                    </button>
+                    <button class="header-menu-item" onclick="openSelfImproveDialog(); toggleHeaderMenu();">
+                        <i data-lucide="sparkles" style="width: 12px;"></i> Self-Improve
+                    </button>
+                </div>
+            </div>
+            <button class="icon-btn" onclick="openModal('configModal')" title="Configurações">
+                <i data-lucide="settings" style="width: 14px;"></i>
             </button>
             <div class="server-badge" id="serverBadge">
                 <span class="status-dot"></span>
@@ -1768,7 +1795,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                         <i data-lucide="file-code" style="width: 12px; margin-right: 6px;"></i> Editor
                     </div>
                     <div class="tab-item" id="center-tab-canvas" onclick="switchCenterTab('canvas')">
-                        <i data-lucide="git-merge" style="width: 12px; margin-right: 6px;"></i> AI-Flow Canvas
+                        <i data-lucide="git-merge" style="width: 12px; margin-right: 6px;"></i> AI-Flow Canvas <span style="font-size: 8px; padding: 1px 5px; background: rgba(245,158,11,0.1); color: var(--color-warning); border-radius: 4px; margin-left: 4px; font-weight: 600; letter-spacing: 0.3px;">BETA</span>
                     </div>
                 </div>
                 
@@ -2179,8 +2206,11 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                     <textarea class="form-control" id="selfImproveGoal" style="height: 80px; resize: none;" placeholder="Descreva o que deve ser aprimorado..."></textarea>
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="selfImproveDryRun" checked style="cursor: pointer;">
+                    <input type="checkbox" id="selfImproveDryRun" checked style="cursor: pointer;" onchange="document.getElementById('selfImproveDryRunBadge').style.display = this.checked ? 'flex' : 'none';">
                     <label style="margin-bottom: 0; cursor: pointer;" for="selfImproveDryRun">Rodar em DRY-RUN (Sem alterar código diretamente)</label>
+                </div>
+                <div id="selfImproveDryRunBadge" style="padding: 6px 10px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 6px; font-size: 10px; color: var(--color-warning); font-weight: 600; display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                    <i data-lucide="shield" style="width: 11px;"></i> MODO DRY-RUN — Nenhum arquivo será alterado
                 </div>
             </div>
             <div class="modal-footer">
@@ -2192,7 +2222,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
     <!-- MODAL: Confirmar Commit -->
     <div class="modal-overlay" id="confirmCommitModal">
-        <div class="modal" style="max-width: 500px;">
+        <div class="modal">
             <div class="modal-header">
                 <h3>Confirmar Commit Git</h3>
                 <button class="icon-btn" onclick="closeModal('confirmCommitModal')"><i data-lucide="x" style="width: 14px;"></i></button>
@@ -2237,7 +2267,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
     <!-- MODAL: Status de Provedores e Modelos -->
     <div class="modal-overlay" id="modelsStatusModal">
-        <div class="modal" style="max-width: 550px;">
+        <div class="modal" style="max-width: 480px;">
             <div class="modal-header">
                 <h3>Provedores e Modelos locais</h3>
                 <button class="icon-btn" onclick="closeModal('modelsStatusModal')"><i data-lucide="x" style="width: 14px;"></i></button>
@@ -2280,7 +2310,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
     <!-- MODAL: Confirmação Reutilizável -->
     <div class="modal-overlay" id="customConfirmModal">
-        <div class="modal" style="max-width: 400px;">
+        <div class="modal">
             <div class="modal-header">
                 <h3 id="customConfirmTitle">Confirmação</h3>
                 <button class="icon-btn" onclick="closeModal('customConfirmModal')"><i data-lucide="x" style="width: 14px;"></i></button>
@@ -2297,7 +2327,7 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
     <!-- MODAL: Prompt Reutilizável -->
     <div class="modal-overlay" id="customPromptModal">
-        <div class="modal" style="max-width: 400px;">
+        <div class="modal">
             <div class="modal-header">
                 <h3 id="customPromptTitle">Entrada</h3>
                 <button class="icon-btn" onclick="closeModal('customPromptModal')"><i data-lucide="x" style="width: 14px;"></i></button>
@@ -2416,15 +2446,15 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 "path": "C:\\Users\\joaoh\\OneDrive\\Área de Trabalho\\Teste",
                 "branch": "master",
                 "commit": {
-                        "hash": "4003860",
+                        "hash": "69b1224",
                         "author": "João Henrique",
-                        "date": "2 days ago",
-                        "message": "Add AI-Flow framework and agent docs"
+                        "date": "29 minutes ago",
+                        "message": "Add UI modals and server path validation"
                 },
                 "has_changes": true,
-                "changes_count": 14,
-                "file_count": 174,
-                "last_modified": "2026-05-24",
+                "changes_count": 6,
+                "file_count": 211,
+                "last_modified": "2026-05-25",
                 "has_aiflow": true,
                 "has_context_map": true,
                 "has_quality_report": true,
@@ -2432,33 +2462,33 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
                 "has_manual_checklist": true,
                 "recent_artifacts": [
                         {
-                                "path": ".ai-flow/reports/manual-test-checklist.md",
-                                "name": "manual-test-checklist.md",
-                                "kind": "md"
-                        },
-                        {
-                                "path": ".ai-flow/reports/project-context.html",
-                                "name": "project-context.html",
-                                "kind": "html"
-                        },
-                        {
-                                "path": ".ai-flow/reports/quality-gate.html",
-                                "name": "quality-gate.html",
-                                "kind": "html"
-                        },
-                        {
-                                "path": ".ai-flow/reports/ai-flow-diagnosis.md",
-                                "name": "ai-flow-diagnosis.md",
-                                "kind": "md"
-                        },
-                        {
-                                "path": ".ai-flow/artifacts/runs/2026-05-24-041950/final-summary.md",
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/final-summary.md",
                                 "name": "final-summary.md",
                                 "kind": "md"
                         },
                         {
-                                "path": ".ai-flow/artifacts/runs/2026-05-24-041950/tests.md",
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/tests.md",
                                 "name": "tests.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/checks-summary.md",
+                                "name": "checks-summary.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/review.md",
+                                "name": "review.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/artifacts/runs/2026-05-25-220145/plan.md",
+                                "name": "plan.md",
+                                "kind": "md"
+                        },
+                        {
+                                "path": ".ai-flow/reports/visual-improvement-summary.md",
+                                "name": "visual-improvement-summary.md",
                                 "kind": "md"
                         }
                 ]
@@ -3998,23 +4028,23 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             let escaped = escapeHtml(text);
             
             escaped = escaped
-                .replace(/\[OK\]/gi, '<span style="color: var(--color-success); font-weight: 700; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">[OK]</span>')
-                .replace(/\[SUCCESS\]/gi, '<span style="color: var(--color-success); font-weight: 700; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">[SUCCESS]</span>')
-                .replace(/\[SUCESSO\]/gi, '<span style="color: var(--color-success); font-weight: 700; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">[SUCESSO]</span>')
-                .replace(/\[ERRO\]/gi, '<span style="color: var(--color-error); font-weight: 700; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);">[ERRO]</span>')
-                .replace(/\[FALHA\]/gi, '<span style="color: var(--color-error); font-weight: 700; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);">[FALHA]</span>')
-                .replace(/\[ERROR\]/gi, '<span style="color: var(--color-error); font-weight: 700; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);">[ERROR]</span>')
-                .replace(/\[WARN\]/gi, '<span style="color: var(--color-warning); font-weight: 700;">[WARN]</span>')
-                .replace(/\[WARNING\]/gi, '<span style="color: var(--color-warning); font-weight: 700;">[WARNING]</span>')
+                .replace(/\[OK\]/gi, '<span style="color: var(--color-success); font-weight: 600;">[OK]</span>')
+                .replace(/\[SUCCESS\]/gi, '<span style="color: var(--color-success); font-weight: 600;">[SUCCESS]</span>')
+                .replace(/\[SUCESSO\]/gi, '<span style="color: var(--color-success); font-weight: 600;">[SUCESSO]</span>')
+                .replace(/\[ERRO\]/gi, '<span style="color: var(--color-error); font-weight: 600;">[ERRO]</span>')
+                .replace(/\[FALHA\]/gi, '<span style="color: var(--color-error); font-weight: 600;">[FALHA]</span>')
+                .replace(/\[ERROR\]/gi, '<span style="color: var(--color-error); font-weight: 600;">[ERROR]</span>')
+                .replace(/\[WARN\]/gi, '<span style="color: var(--color-warning); font-weight: 600;">[WARN]</span>')
+                .replace(/\[WARNING\]/gi, '<span style="color: var(--color-warning); font-weight: 600;">[WARNING]</span>')
                 .replace(/^(\s*\$\s+.*)$/gm, '<span style="color: var(--af-info, #60a5fa); font-weight: 500;">$1</span>')
-                .replace(/=== (.*) ===/g, '<span style="color: var(--color-primary); font-weight: 700; text-shadow: 0 0 10px var(--color-primary-glow);">=== $1 ===</span>');
+                .replace(/=== (.*) ===/g, '<span style="color: var(--color-primary); font-weight: 600;">── $1 ──</span>');
 
-            consoleEl.innerHTML += `\n<span style="color: var(--text-muted);">[${now}]</span> ${escaped}`;
+            consoleEl.innerHTML += `\n<span style="color: var(--text-muted); opacity: 0.5; font-size: 9px;">${now}</span> ${escaped}`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
         function clearConsole() {
-            document.getElementById('consoleOutput').innerHTML = '<span style="color: var(--color-success); font-weight: 600;">&gt; AI-Flow Workspace pronto.</span>';
+            document.getElementById('consoleOutput').innerHTML = '<span style="color: var(--text-muted);">&gt; AI-Flow Workspace pronto.</span>';
             resetAgentTimeline();
         }
 
@@ -4782,6 +4812,11 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
             }
             openModal('runAgentModal');
             document.getElementById('runAgentTask').value = '';
+            // Populate provider/model info
+            const provEl = document.getElementById('runAgentProviderInfo');
+            const modEl = document.getElementById('runAgentModelInfo');
+            if (provEl) provEl.textContent = document.getElementById('aiProvider').value || '—';
+            if (modEl) modEl.textContent = document.getElementById('aiModel').value || '—';
         }
 
         function submitRunAgent() {
@@ -5958,6 +5993,24 @@ input[type="range"].form-control::-webkit-slider-thumb:hover {
 
             lucide.createIcons();
             return bubble;
+        }
+        function toggleHeaderMenu() {
+            const menu = document.getElementById('headerDropdownMenu');
+            if (menu.style.display === 'none') {
+                menu.style.display = 'block';
+                // Close on click outside
+                setTimeout(() => {
+                    document.addEventListener('click', function closeMenu(e) {
+                        if (!e.target.closest('#headerMoreMenu')) {
+                            menu.style.display = 'none';
+                            document.removeEventListener('click', closeMenu);
+                        }
+                    });
+                }, 10);
+            } else {
+                menu.style.display = 'none';
+            }
+            lucide.createIcons();
         }
     </script>
 </body>
